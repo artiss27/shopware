@@ -1,0 +1,99 @@
+{
+    "name": "swag/migration-assistant",
+    "description": "Migration plugin for shopware/platform",
+    "version": "15.0.3",
+    "type": "shopware-platform-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Shopware"
+        }
+    ],
+    "require": {
+        "shopware/core": "~6.7"
+    },
+    "extra": {
+        "shopware-plugin-class": "SwagMigrationAssistant\\SwagMigrationAssistant",
+        "plugin-icon": "src/Resources/config/plugin.png",
+        "copyright": "(c) by shopware AG",
+        "label": {
+            "de-DE": "Migrations-Assistent",
+            "en-GB": "Migration Assistant"
+        },
+        "description": {
+            "de-DE": "Der Migrations-Assistent stellt eine Verbindung von einer Datenquelle (z.B Shopware 5) zu Shopware 6 her und begleitet Dich Schritt für Schritt beim Migrationsprozess.",
+            "en-GB": "The Migration Assistant establishes a connection between a data source (e.g. Shopware 5) and Shopware 6 and guides you step by step through the migration process."
+        },
+        "manufacturerLink": {
+            "de-DE": "https://store.shopware.com/shopware-ag.html",
+            "en-GB": "https://store.shopware.com/en/shopware-ag.html"
+        },
+        "supportLink": {
+            "de-DE": "https://issues.shopware.com/",
+            "en-GB": "https://issues.shopware.com/"
+        }
+    },
+    "scripts": {
+        "lint": [
+            "@ecs-fix",
+            "@phpstan",
+            "@phpunit",
+            "@admin:lint"
+        ],
+        "ecs": "../../../vendor/bin/php-cs-fixer fix --dry-run",
+        "ecs-fix": "../../../vendor/bin/php-cs-fixer fix",
+        "phpunit": "../../../vendor/bin/phpunit",
+        "phpstan": [
+            "php ../../../src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php",
+            "php bin/phpstan-config-generator.php",
+            "../../../vendor/bin/phpstan analyze"
+        ],
+        "install5db": "./bin/install-5-test-data.sh",
+        "setup": [
+            "@composer install -o",
+            "@composer install5db",
+            "@php ../../../bin/console p:i -a -c SwagMigrationAssistant"
+        ],
+        "admin:install": [
+            "@npm:admin install",
+            "@npm:jest install",
+            "@npm:acceptance install"
+        ],
+        "admin:lint": [
+            "@npm:jest run lint",
+            "@npm:admin run lint",
+            "@npm:acceptance run lint",
+            "@npm:admin run lint:scss"
+        ],
+        "admin:lint:fix": [
+            "@npm:jest run lint-fix",
+            "@npm:admin run lint-fix",
+            "@npm:acceptance run lint-fix",
+            "@npm:admin run lint:scss-fix"
+        ],
+        "admin:lint:scss": [
+            "@npm:admin run lint:scss"
+        ],
+        "admin:unit": "@npm:jest run unit",
+        "admin:unit:watch": "@npm:jest run unit-watch",
+        "admin:acceptance": "@npm:acceptance run test",
+        "npm:admin": "cd src/Resources/app/administration && npm",
+        "npm:jest": "cd tests/Jest && npm",
+        "npm:acceptance": "cd tests/acceptance && npm"
+    },
+    "autoload": {
+        "psr-4": {
+            "SwagMigrationAssistant\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SwagMigrationAssistant\\Test\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/runtime": true
+        }
+    }
+}

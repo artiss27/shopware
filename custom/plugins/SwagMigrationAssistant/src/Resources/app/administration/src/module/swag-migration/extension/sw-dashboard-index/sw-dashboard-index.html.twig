@@ -1,0 +1,10 @@
+{% block sw_dashboard_index_content_intro_card %}
+    {% parent %}
+
+    {%  block swag_migration_dashboard_card %}
+
+        {% block sw_dashboard_index_content_migration_card %}
+            <swag-migration-dashboard-card v-if="acl.isAdmin()" />
+        {% endblock %}
+    {% endblock %}
+{% endblock %}

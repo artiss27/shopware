@@ -1,0 +1,93 @@
+.swag-migration-process-screen {
+    .swag-migration-process-screen__step-display {
+        position: absolute;
+        padding-right: 50px;
+        top: var(--scale-size-40);
+        left: calc(50% - 450px);
+        transform: translate(-100%, 0);
+
+        @media screen and (max-width: 1600px) {
+            position: static;
+            transform: none;
+            padding: 0 0 var(--scale-size-10) 0;
+            margin: 13px 0 var(--scale-size-16) 0;
+            text-align: center;
+
+            .sw-step-item {
+                display: inline-flex;
+                flex-direction: column;
+                margin-top: 0;
+                width: 84px;
+
+                &:before {
+                    width: 84px;
+                    height: 1px;
+                    top: 15px;
+                    transform: translate(-50%, 0);
+                    z-index: -1;
+                }
+
+                .sw-step-item__description {
+                    white-space: nowrap;
+                    padding-left: 0;
+                    padding-top: var(--scale-size-10);
+                }
+            }
+        }
+
+        @media screen and (max-width: 780px) {
+            .sw-step-item {
+                width: 52px;
+
+                &:before {
+                    width: 52px;
+                }
+
+                .sw-step-item__description {
+                    display: none;
+                }
+
+                &.sw-step-item--active {
+                    .sw-step-item__description {
+                        display: inline;
+                    }
+                }
+            }
+        }
+    }
+
+    .swag-migration-process-screen__confirm-warning {
+        margin-top: 33px;
+    }
+
+    .sw-card {
+        .sw-card__title {
+            margin-bottom: var(--scale-size-12);
+            font-size: 18px;
+            line-height: 24px;
+
+            width: unset;
+            position: unset;
+            left: unset;
+            top: unset;
+            text-align: unset;
+        }
+    }
+}
+
+.swag-migration-index-modal-abort-migration-confirm-dialog {
+
+    .sw-modal__body {
+        padding: var(--scale-size-32);
+    }
+
+    .swag-migration-index-modal-abort-migration-confirm-dialog-content {
+        text-align: center;
+    }
+
+    .swag-migration-index-modal-abort-migration-confirm-dialog-hint {
+        text-align: center;
+        font-weight: 600;
+        padding-top: var(--scale-size-32);
+    }
+}

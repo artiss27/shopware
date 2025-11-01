@@ -1,0 +1,60 @@
+{% block swag_migration_tab_card %}
+    <div class="swag-migration-tab-card">
+        <mt-card
+            ref="card"
+            class="sw-card--grid"
+            :title="title"
+            position-identifier="swag-migration-tab-card"
+        >
+            <template #tabs>
+
+                {% block swag_migration_tab_card_item_tab %}
+                    <sw-tabs
+                        ref="swTabs"
+                        :small="false"
+                        position-identifier="swag-migration-tab-card-item-tab"
+                        @new-item-active="onNewActiveItem"
+                    >
+                        <sw-tabs-item
+                            v-for="(item, index) in items"
+                            :key="getKey(item)"
+                            ref="swTabsItems"
+                            :name="index.toString()"
+                            :has-error="getErrorCountForGroupTab(item) > 0"
+                        >
+
+                            {% block swag_migration_tab_card_item_tab_content %}
+                                <span class="swag-migration-tab-card__title">
+                                    {{ $tc(`swag-migration.index.premappingCard.group.${item.entity}`) }}
+                                </span>
+                            {% endblock %}
+
+                            {% block swag_migration_tab_card_item_tab_invalid_badge %}
+                                <span v-show="getErrorCountForGroupTab(item) > 0"
+                                      class="swag-migration-tab-card__invalid-badge">
+                                    {{ getErrorCountForGroupTab(item) }}
+                                </span>
+                            {% endblock %}
+                        </sw-tabs-item>
+                    </sw-tabs>
+                {% endblock %}
+            </template>
+
+            <template
+                v-for="(item, index) in items"
+                :key="getKey(item)"
+            >
+                <swag-migration-tab-card-item ref="contentContainer">
+                    <slot
+                        name="items"
+                        :item="item"
+                    ></slot>
+                </swag-migration-tab-card-item>
+            </template>
+
+            <slot>
+                {% block swag_migration_tab_card_slot %}{% endblock %}
+            </slot>
+        </mt-card>
+    </div>
+{% endblock %}

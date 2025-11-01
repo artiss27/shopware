@@ -1,0 +1,72 @@
+@import "~scss/variables";
+
+.swag-migration-history-detail__modal {
+    .swag-migration-history-detail__loading-placeholder {
+        height: 100px;
+    }
+
+    .swag-migration-history-detail__header {
+        display: grid;
+        grid-template-columns: 80px 1fr min-content;
+    }
+
+    .swag-migration-history-detail__connection-info {
+        padding-left: var(--scale-size-16);
+        line-height: 22px;
+        font-size: $font-size-xxs;
+    }
+
+    .swag-migration-history-detail__connection-name {
+        font-size: $font-size-m;
+        font-weight: 600;
+        line-height: 25px;
+    }
+
+    .swag-migration-history-detail__shop-domain-prefix {
+        color: $color-pumpkin-spice-300;
+    }
+
+    .swag-migration-shop-information__shop-domain-prefix--is-ssl {
+        color: $color-emerald-500;
+    }
+
+    .swag-migration-history-detail__run-info {
+        white-space: nowrap;
+        font-size: 12px;
+        line-height: 19px;
+        padding-right: var(--scale-size-16);
+    }
+
+    .swag-migration-history-detail__run-status-label {
+        margin-top: var(--scale-size-4);
+    }
+
+    .swag-migration-history-detail__run-timestamp-value,
+    .swag-migration-history-detail__run-status-value {
+        font-weight: 600;
+    }
+
+    .swag-migration-history-detail__run-status-value {
+        color: $color-darkgray-200;
+    }
+
+    .swag-migration-history-detail__run-status-value--finished {
+        color: $color-emerald-500;
+    }
+
+    .swag-migration-history-detail__run-status-value--aborted {
+        color: $color-crimson-500;
+    }
+
+    .sw-tabs__custom-content {
+        display: none;
+    }
+
+    .sw-tabs {
+        margin-bottom: 0;
+    }
+
+    .swag-migration-history-detail__body {
+        padding-top: var(--scale-size-16);
+    }
+}

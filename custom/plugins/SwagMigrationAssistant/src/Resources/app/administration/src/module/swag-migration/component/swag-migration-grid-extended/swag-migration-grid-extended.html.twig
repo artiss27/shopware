@@ -1,0 +1,27 @@
+{% block sw_grid_body_slot_items %}
+    <sw-grid-row :key="item.id"
+                 ref="rowRefs"
+                 :class="extendedGridRowClasses(item, index)"
+                 :style="columnFlex"
+                 :item="item"
+                 :index="index"
+                 @inline-edit-finish="onInlineEditFinish"
+                 @inline-edit-start="onInlineEditStart">
+
+        {% block sw_grid_body_item_selectable %}
+            <div v-if="selectable"
+                 class="sw-grid-column">
+                <div class="sw-grid__cell-content">
+                    <mt-checkbox :checked="isSelected(item.id)"
+                                 :disabled="isDisabled(item)"
+                                 @update:checked="selectItem($event, item)" />
+                </div>
+            </div>
+        {% endblock %}
+
+        <slot name="columns"
+              :item="item">
+            {% block sw_grid_slot_columns %}{% endblock %}
+        </slot>
+    </sw-grid-row>
+{% endblock %}

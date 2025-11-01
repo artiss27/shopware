@@ -1,0 +1,49 @@
+{% block swag_migration_result_screen %}
+    <div>
+
+        {% block swag_migration_result_screen_card %}
+            <mt-card class="swag-migration-result-screen"
+                     position-identifier="swag-migration-result-screen">
+
+                {% block swag_migration_result_screen_content %}
+                    <div class="swag-migration-result-screen__content">
+
+                        {% block swag_migration_result_screen_icon %}
+                            <div class="swag-migration-result-screen__bubble">
+                                <mt-icon class="swag-migration-result-screen__icon"
+                                         name="regular-thumbs-up"
+                                         size="36px"
+                                         decorative />
+                            </div>
+                        {% endblock %}
+
+                        {% block swag_migration_result_screen_title %}
+                            <div class="swag-migration-result-screen__title">
+                                {{ $tc('swag-migration.index.loadingScreenCard.result.title') }}
+                            </div>
+                            <div class="swag-migration-result-screen__caption">
+                                {{ $tc('swag-migration.index.loadingScreenCard.result.caption') }}
+                            </div>
+                        {% endblock %}
+                    </div>
+                {% endblock %}
+            </mt-card>
+        {% endblock %}
+
+        <mt-card
+            position-identifier="swag-migration-result-screen__log-summary"
+            :is-loading="!latestRun"
+            :title="$tc('swag-migration.index.loadingScreenCard.result.logSummary')"
+        >
+            <mt-banner>
+                {{ $tc('swag-migration.index.loadingScreenCard.result.historyHint') }}
+            </mt-banner>
+
+            <swag-migration-history-detail-errors
+                v-if="latestRun"
+                :migration-run="latestRun"
+            />
+        </mt-card>
+
+    </div>
+{% endblock %}
