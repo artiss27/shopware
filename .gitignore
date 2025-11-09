@@ -49,6 +49,9 @@ auth.json
 *.sql
 *.sqlite
 
+# Bitrix export data
+/bitrix-export/
+
 # OS files
 Thumbs.db
 .DS_Store
