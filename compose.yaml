@@ -3,6 +3,8 @@ services:
 ###> shopware/core ###
   database:
     image: mariadb:11.8
+    ports:
+      - "3306:3306"
     environment:
       MARIADB_DATABASE: shopware
       MARIADB_ROOT_PASSWORD: root

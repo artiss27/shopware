@@ -1278,15 +1278,21 @@ export interface components {
             full_name: string;
         };
         paypal_v1_token: {
-            /** @description Scopes expressed in the form of resource URL endpoints. The value of the scope parameter
-             *     is expressed as a list of space-delimited, case-sensitive strings. */
+            /**
+             * @description Scopes expressed in the form of resource URL endpoints. The value of the scope parameter
+             *     is expressed as a list of space-delimited, case-sensitive strings.
+             */
             scope: string;
             nonce: string;
-            /** @description The access token issued by PayPal. After the access token
-             *     expires (see $expiresIn), you must request a new access token. */
+            /**
+             * @description The access token issued by PayPal. After the access token
+             *     expires (see $expiresIn), you must request a new access token.
+             */
             access_token: string;
-            /** @description The type of the token issued as described in OAuth2.0 RFC6749,
-             *     Section 7.1. Value is case insensitive. */
+            /**
+             * @description The type of the token issued as described in OAuth2.0 RFC6749,
+             *     Section 7.1. Value is case insensitive.
+             */
             token_type: string;
             app_id: string;
             id_token: string | null;
@@ -1340,16 +1346,23 @@ export interface components {
             state: string;
             merchant_id: string | null;
         };
+        paypal_v1_webhook_list: {
+            webhooks: components["schemas"]["paypal_v1_webhook"][];
+        };
         paypal_v2_common_address: {
-            /** @description The first line of the address. For example, number or street. For example, 173 Drury Lane.
-             *     Required for data entry and compliance and risk checks. Must contain the full address. */
+            /**
+             * @description The first line of the address. For example, number or street. For example, 173 Drury Lane.
+             *     Required for data entry and compliance and risk checks. Must contain the full address.
+             */
             address_line_1: string | null;
             /** @description The second line of the address. For example, suite or apartment number. */
             address_line_2: string | null;
             /** @description A city, town, or village. Smaller than $adminArea1 */
             admin_area_2: string | null;
-            /** @description The highest level sub-division in a country, which is usually a province, state, or ISO-3166-2 subdivision.
-             *     Format for postal delivery. For example, CA and not California. */
+            /**
+             * @description The highest level sub-division in a country, which is usually a province, state, or ISO-3166-2 subdivision.
+             *     Format for postal delivery. For example, CA and not California.
+             */
             admin_area_1: string | null;
             postal_code: string | null;
             country_code: string;
@@ -1371,6 +1384,10 @@ export interface components {
         paypal_v2_common_phone_number: {
             national_number: string;
             country_code: string;
+        };
+        paypal_v2_common_upc: {
+            type: string;
+            code: string;
         };
         paypal_v2_order: {
             create_time: string;
@@ -1501,6 +1518,10 @@ export interface components {
         paypal_v2_order_payment_source_common_attributes_customer: {
             id: string;
         };
+        paypal_v2_order_payment_source_common_attributes_order_update_callback_config: {
+            callback_url: string;
+            callback_events: ("SHIPPING_ADDRESS" | "SHIPPING_OPTIONS")[];
+        };
         paypal_v2_order_payment_source_common_attributes_vault: {
             id: string | null;
             store_in_vault: string;
@@ -1542,6 +1563,7 @@ export interface components {
             payment_method_preference: "UNRESTRICTED" | "IMMEDIATE_PAYMENT_REQUIRED";
             /** @description Only: PUI */
             customer_service_instructions: string[];
+            order_update_callback_config: components["schemas"]["paypal_v2_order_payment_source_common_attributes_order_update_callback_config"];
         };
         paypal_v2_order_payment_source_common_phone: {
             phone_type: string;
@@ -1650,6 +1672,8 @@ export interface components {
             items: components["schemas"]["paypal_v2_order_purchase_unit_item"][] | null;
             shipping: components["schemas"]["paypal_v2_order_purchase_unit_shipping"];
             payments: components["schemas"]["paypal_v2_order_purchase_unit_payments"] | null;
+            supplementary_data: components["schemas"]["paypal_v2_order_purchase_unit_supplementary_data"];
+            shipping_options: components["schemas"]["paypal_v2_order_purchase_unit_shipping_option"][] | null;
         };
         paypal_v2_order_purchase_unit_amount: components["schemas"]["paypal_v2_common_money"] & {
             breakdown: components["schemas"]["paypal_v2_order_purchase_unit_amount_breakdown"] | null;
@@ -1771,6 +1795,54 @@ export interface components {
             url: string | null;
             image_url: string | null;
         };
+        paypal_v2_order_purchase_unit_shipping_option: {
+            id: string;
+            label: string;
+            amount: components["schemas"]["paypal_v2_common_money"];
+            /** @enum {string} */
+            type: "SHIPPING" | "PICKUP";
+            selected: boolean;
+        };
+        paypal_v2_order_purchase_unit_supplementary_data: {
+            card: components["schemas"]["paypal_v2_order_purchase_unit_supplementary_data_card"];
+            risk: components["schemas"]["paypal_v2_order_purchase_unit_supplementary_data_risk"];
+        };
+        paypal_v2_order_purchase_unit_supplementary_data_card: {
+            address: components["schemas"]["paypal_v2_order_purchase_unit_supplementary_data_card_level2"];
+        };
+        paypal_v2_order_purchase_unit_supplementary_data_card_level2: {
+            invoice_id: string;
+            tax_total: components["schemas"]["paypal_v2_common_money"];
+        };
+        paypal_v2_order_purchase_unit_supplementary_data_card_level3: {
+            shipping_amount: components["schemas"]["paypal_v2_common_money"];
+            duty_amount: components["schemas"]["paypal_v2_common_money"];
+            discount_amount: components["schemas"]["paypal_v2_common_money"];
+            shipping_address: components["schemas"]["paypal_v2_common_address"];
+            ships_from_postal_code: string;
+            line_items: components["schemas"]["paypal_v2_order_purchase_unit_supplementary_data_card_line_item"][];
+        };
+        paypal_v2_order_purchase_unit_supplementary_data_card_line_item: {
+            name: string;
+            quantity: number;
+            description: string;
+            sku: string;
+            url: string;
+            image_url: string;
+            upc: components["schemas"]["paypal_v2_common_upc"];
+            unit_amount: components["schemas"]["paypal_v2_common_money"];
+            tax: components["schemas"]["paypal_v2_common_money"];
+            commodity_code: string;
+            discount_amount: components["schemas"]["paypal_v2_common_money"];
+            total_amount: components["schemas"]["paypal_v2_common_money"];
+            unit_of_measure: string;
+        };
+        paypal_v2_order_purchase_unit_supplementary_data_risk: {
+            address: components["schemas"]["paypal_v2_order_purchase_unit_supplementary_data_risk_participant_metadata"];
+        };
+        paypal_v2_order_purchase_unit_supplementary_data_risk_participant_metadata: {
+            ip_address: string;
+        };
         paypal_v2_order_tracker: {
             capture_id: string;
             tracking_number: string;
@@ -1779,6 +1851,12 @@ export interface components {
             /** @default false */
             notify_payer: boolean;
             items: components["schemas"]["paypal_v2_order_purchase_unit_shipping_tracker_item"][];
+        };
+        paypal_v2_order_shipping_callback: {
+            id: string;
+            shipping_address: components["schemas"]["paypal_v2_common_address"];
+            shipping_option: components["schemas"]["paypal_v2_order_purchase_unit_shipping_option"];
+            purchase_units: components["schemas"]["paypal_v2_order_purchase_unit"][];
         };
         paypal_v2_patch: {
             op: string;

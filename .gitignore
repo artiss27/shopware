@@ -14,7 +14,6 @@ composer.phar
 auth.json
 
 ###> shopware/core ###
-.env
 .env.local
 .env.local.php
 .env.*.local
@@ -27,6 +26,7 @@ auth.json
 !/files/.htaccess
 /var/*
 !/var/.htaccess
+/auth.json
 /install.lock
 /public/asset-manifest.json
 ###< shopware/core ###
@@ -48,6 +48,7 @@ auth.json
 # Database dumps
 *.sql
 *.sqlite
+/backups/
 
 # Bitrix export data
 /bitrix-export/

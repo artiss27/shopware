@@ -3,12 +3,13 @@
     "type": "project",
     "require": {
         "composer-runtime-api": "^2.0",
-        "shopware/administration": "*",
-        "shopware/core": "v6.7.3.1",
+        "shopware/administration": "6.7.4.1",
+        "shopware/core": "6.7.4.1",
         "shopware/docker-dev": "^0.1.2",
-        "shopware/elasticsearch": "*",
-        "shopware/storefront": "*",
-        "swag/paypal": "10.1.2",
+        "shopware/elasticsearch": "6.7.4.1",
+        "shopware/storefront": "6.7.4.1",
+        "swag/language-pack": "^5.25",
+        "swag/paypal": "10.2.0",
         "symfony/flex": "~2"
     },
     "repositories": [
@@ -39,10 +40,10 @@
             "App\\": "src/"
         }
     },
-    "minimum-stability": "stable",
     "prefer-stable": true,
     "config": {
         "allow-plugins": {
+            "php-http/discovery": true,
             "symfony/flex": true,
             "symfony/runtime": true
         },

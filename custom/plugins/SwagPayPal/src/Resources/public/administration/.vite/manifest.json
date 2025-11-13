@@ -25,7 +25,7 @@
     ]
   },
   "main.ts": {
-    "file": "assets/swag-pay-pal-CxVLxCV9.js",
+    "file": "assets/swag-pay-pal-BK6eFknw.js",
     "name": "swag-pay-pal",
     "src": "main.ts",
     "isEntry": true,
@@ -73,7 +73,7 @@
     ]
   },
   "module/extension/sw-sales-channel-modal-detail/index.ts": {
-    "file": "assets/index-DCwFf7fJ.js",
+    "file": "assets/index-CjVvnoWQ.js",
     "name": "index",
     "src": "module/extension/sw-sales-channel-modal-detail/index.ts",
     "isDynamicEntry": true,
@@ -85,7 +85,7 @@
     ]
   },
   "module/extension/sw-sales-channel-modal-grid/index.ts": {
-    "file": "assets/index-V1j4Yd5J.js",
+    "file": "assets/index-CGrqMB-e.js",
     "name": "index",
     "src": "module/extension/sw-sales-channel-modal-grid/index.ts",
     "isDynamicEntry": true,
@@ -196,7 +196,7 @@
     ]
   },
   "module/swag-paypal-settings/components/swag-paypal-settings-webhook/index.ts": {
-    "file": "assets/index-8wR70pcV.js",
+    "file": "assets/index-CzUkyfh1.js",
     "name": "index",
     "src": "module/swag-paypal-settings/components/swag-paypal-settings-webhook/index.ts",
     "isDynamicEntry": true,
