@@ -66,7 +66,11 @@ backup-smart: ## Smart backup (all structures, data without cache/logs) - RECOMM
 		dead_message message_queue_stats notification webhook_event_log \
 		>> "$$BACKUP_FILE" 2>/dev/null; \
 	SIZE=$$(ls -lh "$$BACKUP_FILE" | awk '{print $$5}'); \
-	echo "✅ Smart backup: $$BACKUP_FILE ($$SIZE)"
+	echo "✅ Smart backup: $$BACKUP_FILE ($$SIZE)"; \
+	echo "🗑️  Cleaning old backups (keeping last 3)..."; \
+	ls -t backups/shopware-smart-*.sql 2>/dev/null | tail -n +4 | xargs -r rm -f; \
+	echo "📋 Current backups:"; \
+	ls -lh backups/shopware-smart-*.sql 2>/dev/null | tail -3 || echo "No backups"
 
 restore: ## Restore backup (usage: make restore FILE=backups/shopware-smart-xxx.sql)
 ifndef FILE
@@ -82,4 +86,18 @@ list-backups: ## List all backups
 	@ls -lh backups/ 2>/dev/null || echo "No backups"
 ###< database backup ###
 
-###> shopware/docker-dev ###
+###> seo ###
+seo-regenerate: ## Regenerate SEO URLs for all entities (clears old URLs first)
+	@echo "🗑️  Clearing old SEO URLs..."
+	@docker compose exec database mariadb -u shopware -pshopware shopware -e "DELETE FROM seo_url WHERE route_name = 'frontend.navigation.page';"
+	@echo "🔗 Regenerating SEO URLs..."
+	@docker compose exec web bin/console dal:refresh:index
+	@docker compose exec web bin/console cache:clear
+	@echo "✅ SEO URLs regenerated"
+
+seo-clean: ## Clear all SEO URLs (use before regenerate)
+	@echo "🗑️  Clearing all SEO URLs..."
+	@docker compose exec database mariadb -u shopware -pshopware shopware -e "TRUNCATE TABLE seo_url;"
+	@echo "✅ SEO URLs cleared"
+###< seo ###
+
