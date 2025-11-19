@@ -10,7 +10,8 @@
         "shopware/storefront": "6.7.4.2",
         "swag/language-pack": "^5.25",
         "swag/paypal": "10.2.0",
-        "symfony/flex": "~2"
+        "symfony/flex": "~2",
+        "symfony/redis-messenger": "^7.3"
     },
     "repositories": [
         {
