@@ -12,23 +12,41 @@
     "list": {
       "buttonAddSupplier": "Lieferant hinzufügen",
       "columnName": "Name",
-      "columnCode": "Code",
-      "columnActive": "Aktiv",
-      "columnBitrixId": "Bitrix ID"
+      "columnCity": "Stadt",
+      "columnEmail": "E-Mail"
     },
     "detail": {
       "cardTitleGeneral": "Allgemeine Informationen",
+      "cardTitleContacts": "Kontaktinformationen",
+      "cardTitleBusiness": "Geschäftsbedingungen",
+      "cardTitleAdditional": "Zusätzlich",
       "labelName": "Name",
       "placeholderName": "Lieferantenname eingeben...",
-      "labelCode": "Code",
-      "placeholderCode": "Code eingeben...",
-      "labelActive": "Aktiv",
-      "labelSort": "Sortierung",
-      "labelBitrixId": "Bitrix ID",
+      "labelCity": "Stadt",
+      "placeholderCity": "Stadt eingeben...",
+      "labelContacts": "Kontakte",
+      "placeholderContacts": "Telefon, Fax...",
+      "labelEmail": "E-Mail",
+      "placeholderEmail": "email@example.com",
+      "labelWebsite": "Webseite",
+      "placeholderWebsite": "https://...",
+      "labelDiscountOnline": "Online-Rabatt",
+      "placeholderDiscountOnline": "Z.B.: 5%",
+      "labelDiscountOpt": "Großhandelsrabatt",
+      "placeholderDiscountOpt": "Z.B.: 10%",
+      "labelMargin": "Marge",
+      "placeholderMargin": "Z.B.: 15%",
+      "labelNote": "Notiz",
+      "placeholderNote": "Kurze Notiz...",
+      "labelDetails": "Detaillierte Beschreibung",
+      "placeholderDetails": "Detaillierte Informationen über Lieferant...",
       "buttonSave": "Speichern",
       "buttonCancel": "Abbrechen",
+      "successSave": "Lieferant erfolgreich gespeichert",
       "errorSave": "Fehler beim Speichern des Lieferanten",
-      "errorCreate": "Fehler beim Erstellen des Lieferanten"
+      "errorLoad": "Fehler beim Laden des Lieferanten",
+      "errorCreate": "Fehler beim Erstellen des Lieferanten",
+      "titleNew": "Neuer Lieferant"
     }
   }
 }

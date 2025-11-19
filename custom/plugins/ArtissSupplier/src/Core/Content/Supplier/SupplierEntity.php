@@ -11,10 +11,25 @@ class SupplierEntity extends Entity
     use EntityIdTrait;
 
     protected string $name;
-    protected ?string $code = null;
-    protected bool $active = true;
-    protected ?int $sort = null;
-    protected ?int $bitrixId = null;
+
+    // Contact information
+    protected ?string $city = null;
+    protected ?string $contacts = null;
+    protected ?string $email = null;
+    protected ?string $website = null;
+
+    // Business terms
+    protected ?string $discountOnline = null;
+    protected ?string $discountOpt = null;
+    protected ?string $margin = null;
+
+    // Additional info
+    protected ?string $note = null;
+    protected ?string $details = null;
+
+    // Custom fields (code, bitrix_id, etc.)
+    protected ?array $customFields = null;
+
     protected ?ProductCollection $products = null;
 
     public function getName(): string
@@ -27,44 +42,104 @@ class SupplierEntity extends Entity
         $this->name = $name;
     }
 
-    public function getCode(): ?string
+    public function getCity(): ?string
     {
-        return $this->code;
+        return $this->city;
     }
 
-    public function setCode(?string $code): void
+    public function setCity(?string $city): void
     {
-        $this->code = $code;
+        $this->city = $city;
     }
 
-    public function isActive(): bool
+    public function getContacts(): ?string
     {
-        return $this->active;
+        return $this->contacts;
     }
 
-    public function setActive(bool $active): void
+    public function setContacts(?string $contacts): void
     {
-        $this->active = $active;
+        $this->contacts = $contacts;
     }
 
-    public function getSort(): ?int
+    public function getEmail(): ?string
     {
-        return $this->sort;
+        return $this->email;
     }
 
-    public function setSort(?int $sort): void
+    public function setEmail(?string $email): void
     {
-        $this->sort = $sort;
+        $this->email = $email;
     }
 
-    public function getBitrixId(): ?int
+    public function getWebsite(): ?string
     {
-        return $this->bitrixId;
+        return $this->website;
     }
 
-    public function setBitrixId(?int $bitrixId): void
+    public function setWebsite(?string $website): void
     {
-        $this->bitrixId = $bitrixId;
+        $this->website = $website;
+    }
+
+    public function getDiscountOnline(): ?string
+    {
+        return $this->discountOnline;
+    }
+
+    public function setDiscountOnline(?string $discountOnline): void
+    {
+        $this->discountOnline = $discountOnline;
+    }
+
+    public function getDiscountOpt(): ?string
+    {
+        return $this->discountOpt;
+    }
+
+    public function setDiscountOpt(?string $discountOpt): void
+    {
+        $this->discountOpt = $discountOpt;
+    }
+
+    public function getMargin(): ?string
+    {
+        return $this->margin;
+    }
+
+    public function setMargin(?string $margin): void
+    {
+        $this->margin = $margin;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): void
+    {
+        $this->note = $note;
+    }
+
+    public function getDetails(): ?string
+    {
+        return $this->details;
+    }
+
+    public function setDetails(?string $details): void
+    {
+        $this->details = $details;
+    }
+
+    public function getCustomFields(): ?array
+    {
+        return $this->customFields;
+    }
+
+    public function setCustomFields(?array $customFields): void
+    {
+        $this->customFields = $customFields;
     }
 
     public function getProducts(): ?ProductCollection

@@ -6,7 +6,7 @@ const { Criteria } = Shopware.Data;
 Component.register('supplier-detail', {
     template,
 
-    inject: ['repositoryFactory'],
+    inject: ['repositoryFactory', 'customFieldDataProviderService'],
 
     mixins: [
         Mixin.getByName('notification')
@@ -23,7 +23,8 @@ Component.register('supplier-detail', {
             supplier: null,
             isLoading: false,
             processSuccess: false,
-            repository: null
+            repository: null,
+            customFieldSets: []
         };
     },
 
@@ -40,9 +41,14 @@ Component.register('supplier-detail', {
     created() {
         this.repository = this.supplierRepository;
         this.getSupplier();
+        this.loadCustomFieldSets();
     },
 
     methods: {
+        async loadCustomFieldSets() {
+            this.customFieldSets = await this.customFieldDataProviderService.getCustomFieldSets('supplier');
+        },
+
         async getSupplier() {
             this.isLoading = true;
             try {

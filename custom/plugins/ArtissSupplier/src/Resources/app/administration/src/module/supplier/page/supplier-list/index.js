@@ -41,22 +41,15 @@ Component.register('supplier-list', {
                     primary: true
                 },
                 {
-                    property: 'code',
-                    dataIndex: 'code',
-                    label: this.$tc('supplier.list.columnCode'),
+                    property: 'city',
+                    dataIndex: 'city',
+                    label: this.$tc('supplier.list.columnCity'),
                     allowResize: true
                 },
                 {
-                    property: 'active',
-                    dataIndex: 'active',
-                    label: this.$tc('supplier.list.columnActive'),
-                    allowResize: true,
-                    align: 'center'
-                },
-                {
-                    property: 'bitrixId',
-                    dataIndex: 'bitrixId',
-                    label: this.$tc('supplier.list.columnBitrixId'),
+                    property: 'email',
+                    dataIndex: 'email',
+                    label: this.$tc('supplier.list.columnEmail'),
                     allowResize: true
                 }
             ];

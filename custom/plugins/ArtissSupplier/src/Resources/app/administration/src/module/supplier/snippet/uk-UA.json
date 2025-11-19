@@ -7,28 +7,46 @@
   "supplier": {
     "general": {
       "mainMenuItemGeneral": "Постачальники",
-      "description": "Управління постачальниками"
+      "description": "Керування постачальниками"
     },
     "list": {
       "buttonAddSupplier": "Додати постачальника",
       "columnName": "Назва",
-      "columnCode": "Код",
-      "columnActive": "Активний",
-      "columnBitrixId": "ID в Бітрікс"
+      "columnCity": "Місто",
+      "columnEmail": "Email"
     },
     "detail": {
       "cardTitleGeneral": "Загальна інформація",
+      "cardTitleContacts": "Контактна інформація",
+      "cardTitleBusiness": "Комерційні умови",
+      "cardTitleAdditional": "Додатково",
       "labelName": "Назва",
       "placeholderName": "Введіть назву постачальника...",
-      "labelCode": "Код",
-      "placeholderCode": "Введіть код...",
-      "labelActive": "Активний",
-      "labelSort": "Сортування",
-      "labelBitrixId": "ID в Бітрікс",
+      "labelCity": "Місто",
+      "placeholderCity": "Введіть місто...",
+      "labelContacts": "Контакти",
+      "placeholderContacts": "Телефон, факс...",
+      "labelEmail": "Email",
+      "placeholderEmail": "email@example.com",
+      "labelWebsite": "Сайт",
+      "placeholderWebsite": "https://...",
+      "labelDiscountOnline": "Знижка онлайн",
+      "placeholderDiscountOnline": "Наприклад: 5%",
+      "labelDiscountOpt": "Оптова знижка",
+      "placeholderDiscountOpt": "Наприклад: 10%",
+      "labelMargin": "Маржа",
+      "placeholderMargin": "Наприклад: 15%",
+      "labelNote": "Примітка",
+      "placeholderNote": "Коротка примітка...",
+      "labelDetails": "Детальний опис",
+      "placeholderDetails": "Детальна інформація про постачальника...",
       "buttonSave": "Зберегти",
       "buttonCancel": "Скасувати",
+      "successSave": "Постачальник успішно збережений",
       "errorSave": "Помилка при збереженні постачальника",
-      "errorCreate": "Помилка при створенні постачальника"
+      "errorLoad": "Помилка при завантаженні постачальника",
+      "errorCreate": "Помилка при створенні постачальника",
+      "titleNew": "Новий постачальник"
     }
   }
 }

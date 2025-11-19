@@ -12,12 +12,14 @@
     "list": {
       "buttonAddSupplier": "Добавить поставщика",
       "columnName": "Название",
-      "columnCode": "Код",
-      "columnActive": "Активен",
-      "columnBitrixId": "ID в Битрикс"
+      "columnCity": "Город",
+      "columnEmail": "Email"
     },
     "detail": {
       "cardTitleGeneral": "Общая информация",
+      "cardTitleContacts": "Контактная информация",
+      "cardTitleBusiness": "Коммерческие условия",
+      "cardTitleAdditional": "Дополнительно",
       "labelName": "Название",
       "placeholderName": "Введите название поставщика...",
       "labelCode": "Код",
@@ -25,10 +27,31 @@
       "labelActive": "Активен",
       "labelSort": "Сортировка",
       "labelBitrixId": "ID в Битрикс",
+      "labelCity": "Город",
+      "placeholderCity": "Введите город...",
+      "labelContacts": "Контакты",
+      "placeholderContacts": "Телефон, факс...",
+      "labelEmail": "Email",
+      "placeholderEmail": "email@example.com",
+      "labelWebsite": "Сайт",
+      "placeholderWebsite": "https://...",
+      "labelDiscountOnline": "Скидка онлайн",
+      "placeholderDiscountOnline": "Например: 5%",
+      "labelDiscountOpt": "Оптовая скидка",
+      "placeholderDiscountOpt": "Например: 10%",
+      "labelMargin": "Маржа",
+      "placeholderMargin": "Например: 15%",
+      "labelNote": "Примечание",
+      "placeholderNote": "Краткое примечание...",
+      "labelDetails": "Детальное описание",
+      "placeholderDetails": "Подробная информация о поставщике...",
       "buttonSave": "Сохранить",
       "buttonCancel": "Отмена",
+      "successSave": "Поставщик успешно сохранён",
       "errorSave": "Ошибка при сохранении поставщика",
-      "errorCreate": "Ошибка при создании поставщика"
+      "errorLoad": "Ошибка при загрузке поставщика",
+      "errorCreate": "Ошибка при создании поставщика",
+      "titleNew": "Новый поставщик"
     }
   }
 }

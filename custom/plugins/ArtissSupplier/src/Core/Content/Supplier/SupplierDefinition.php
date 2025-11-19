@@ -4,13 +4,12 @@ namespace Artiss\Supplier\Core\Content\Supplier;
 
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\BoolField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\CustomFields;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\ApiAware;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\SearchRanking;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\IntField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
@@ -45,13 +44,23 @@ class SupplierDefinition extends EntityDefinition
                 new SearchRanking(SearchRanking::HIGH_SEARCH_RANKING)
             ),
 
-            (new StringField('code', 'code', 255))->addFlags(new ApiAware()),
+            // Contact information
+            (new StringField('city', 'city', 255))->addFlags(new ApiAware()),
+            (new StringField('contacts', 'contacts', 1000))->addFlags(new ApiAware()),
+            (new StringField('email', 'email', 255))->addFlags(new ApiAware()),
+            (new StringField('website', 'website', 255))->addFlags(new ApiAware()),
 
-            (new BoolField('active', 'active'))->addFlags(new ApiAware()),
+            // Business terms
+            (new StringField('discount_online', 'discountOnline', 50))->addFlags(new ApiAware()),
+            (new StringField('discount_opt', 'discountOpt', 50))->addFlags(new ApiAware()),
+            (new StringField('margin', 'margin', 50))->addFlags(new ApiAware()),
 
-            (new IntField('sort', 'sort'))->addFlags(new ApiAware()),
+            // Additional info
+            (new StringField('note', 'note', 1000))->addFlags(new ApiAware()),
+            (new StringField('details', 'details', 5000))->addFlags(new ApiAware()),
 
-            (new IntField('bitrix_id', 'bitrixId'))->addFlags(new ApiAware()),
+            // Custom fields for code, bitrix_id and other metadata
+            (new CustomFields())->addFlags(new ApiAware()),
 
             // Products that belong to this supplier
             new OneToManyAssociationField('products', ProductDefinition::class, 'supplier_id', 'id'),
