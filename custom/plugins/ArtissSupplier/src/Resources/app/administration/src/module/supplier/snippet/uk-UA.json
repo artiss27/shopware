@@ -1,0 +1,34 @@
+{
+  "artiss": {
+    "general": {
+      "mainMenuLabel": "ARTISS"
+    }
+  },
+  "supplier": {
+    "general": {
+      "mainMenuItemGeneral": "Постачальники",
+      "description": "Управління постачальниками"
+    },
+    "list": {
+      "buttonAddSupplier": "Додати постачальника",
+      "columnName": "Назва",
+      "columnCode": "Код",
+      "columnActive": "Активний",
+      "columnBitrixId": "ID в Бітрікс"
+    },
+    "detail": {
+      "cardTitleGeneral": "Загальна інформація",
+      "labelName": "Назва",
+      "placeholderName": "Введіть назву постачальника...",
+      "labelCode": "Код",
+      "placeholderCode": "Введіть код...",
+      "labelActive": "Активний",
+      "labelSort": "Сортування",
+      "labelBitrixId": "ID в Бітрікс",
+      "buttonSave": "Зберегти",
+      "buttonCancel": "Скасувати",
+      "errorSave": "Помилка при збереженні постачальника",
+      "errorCreate": "Помилка при створенні постачальника"
+    }
+  }
+}

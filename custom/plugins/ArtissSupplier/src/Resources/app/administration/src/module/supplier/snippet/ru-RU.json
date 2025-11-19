@@ -1,0 +1,34 @@
+{
+  "artiss": {
+    "general": {
+      "mainMenuLabel": "ARTISS"
+    }
+  },
+  "supplier": {
+    "general": {
+      "mainMenuItemGeneral": "Поставщики",
+      "description": "Управление поставщиками"
+    },
+    "list": {
+      "buttonAddSupplier": "Добавить поставщика",
+      "columnName": "Название",
+      "columnCode": "Код",
+      "columnActive": "Активен",
+      "columnBitrixId": "ID в Битрикс"
+    },
+    "detail": {
+      "cardTitleGeneral": "Общая информация",
+      "labelName": "Название",
+      "placeholderName": "Введите название поставщика...",
+      "labelCode": "Код",
+      "placeholderCode": "Введите код...",
+      "labelActive": "Активен",
+      "labelSort": "Сортировка",
+      "labelBitrixId": "ID в Битрикс",
+      "buttonSave": "Сохранить",
+      "buttonCancel": "Отмена",
+      "errorSave": "Ошибка при сохранении поставщика",
+      "errorCreate": "Ошибка при создании поставщика"
+    }
+  }
+}

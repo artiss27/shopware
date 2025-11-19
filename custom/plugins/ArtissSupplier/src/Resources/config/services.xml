@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="Artiss\Supplier\Core\Content\Supplier\SupplierDefinition">
+            <tag name="shopware.entity.definition" entity="supplier"/>
+        </service>
+
+        <service id="Artiss\Supplier\Core\Content\Product\ProductSupplierExtension">
+            <tag name="shopware.entity.extension"/>
+        </service>
+    </services>
+</container>

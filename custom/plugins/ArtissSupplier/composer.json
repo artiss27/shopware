@@ -1,0 +1,27 @@
+{
+    "name": "artiss/supplier",
+    "description": "Supplier management plugin",
+    "version": "1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Artiss"
+        }
+    ],
+    "require": {
+        "shopware/core": "~6.6.0 || ~6.7.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "Artiss\\Supplier\\ArtissSupplier",
+        "label": {
+            "en-GB": "Supplier Management",
+            "de-DE": "Lieferantenverwaltung"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Artiss\\Supplier\\": "src/"
+        }
+    }
+}

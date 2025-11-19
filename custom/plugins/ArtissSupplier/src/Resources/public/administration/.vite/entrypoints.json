@@ -1,0 +1,23 @@
+{
+  "base": "/bundles/artisssupplier/administration/",
+  "entryPoints": {
+    "artiss-supplier": {
+      "css": [],
+      "dynamic": [],
+      "js": [
+        "/bundles/artisssupplier/administration/assets/artiss-supplier-BmSwabRL.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "7.1.0",
+    7,
+    1,
+    0
+  ],
+  "viteServer": null
+}

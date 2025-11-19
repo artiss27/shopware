@@ -1,0 +1,43 @@
+{% block supplier_list %}
+    <sw-page class="supplier-list">
+        {% block supplier_list_smart_bar_header %}
+            <template #smart-bar-header>
+                <h2>
+                    {{ $tc('supplier.general.mainMenuItemGeneral') }}
+                </h2>
+            </template>
+        {% endblock %}
+
+        {% block supplier_list_smart_bar_actions %}
+            <template #smart-bar-actions>
+                {% block supplier_list_smart_bar_actions_add %}
+                    <sw-button
+                        :routerLink="{ name: 'artiss.supplier.create' }"
+                        variant="primary"
+                    >
+                        {{ $tc('supplier.list.buttonAddSupplier') }}
+                    </sw-button>
+                {% endblock %}
+            </template>
+        {% endblock %}
+
+        {% block supplier_list_content %}
+            <template #content>
+                {% block supplier_list_content_list %}
+                    <sw-entity-listing
+                        v-if="suppliers"
+                        :items="suppliers"
+                        :repository="supplierRepository"
+                        :showSelection="false"
+                        :columns="supplierColumns"
+                        :isLoading="isLoading"
+                        :total="total"
+                        detailRoute="artiss.supplier.detail"
+                        @page-change="onPageChange"
+                    >
+                    </sw-entity-listing>
+                {% endblock %}
+            </template>
+        {% endblock %}
+    </sw-page>
+{% endblock %}

@@ -1,0 +1,34 @@
+{
+  "artiss": {
+    "general": {
+      "mainMenuLabel": "ARTISS"
+    }
+  },
+  "supplier": {
+    "general": {
+      "mainMenuItemGeneral": "Suppliers",
+      "description": "Manage suppliers"
+    },
+    "list": {
+      "buttonAddSupplier": "Add supplier",
+      "columnName": "Name",
+      "columnCode": "Code",
+      "columnActive": "Active",
+      "columnBitrixId": "Bitrix ID"
+    },
+    "detail": {
+      "cardTitleGeneral": "General information",
+      "labelName": "Name",
+      "placeholderName": "Enter supplier name...",
+      "labelCode": "Code",
+      "placeholderCode": "Enter code...",
+      "labelActive": "Active",
+      "labelSort": "Sort order",
+      "labelBitrixId": "Bitrix ID",
+      "buttonSave": "Save",
+      "buttonCancel": "Cancel",
+      "errorSave": "Error saving supplier",
+      "errorCreate": "Error creating supplier"
+    }
+  }
+}
