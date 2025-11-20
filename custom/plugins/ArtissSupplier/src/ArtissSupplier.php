@@ -2,6 +2,7 @@
 
 namespace Artiss\Supplier;
 
+use Artiss\Supplier\Service\CustomFieldInstaller;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
@@ -11,6 +12,11 @@ class ArtissSupplier extends Plugin
     public function install(InstallContext $installContext): void
     {
         parent::install($installContext);
+
+        // Install custom fields manually without service container
+        $customFieldSetRepository = $this->container->get('custom_field_set.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository);
+        $customFieldInstaller->install($installContext->getContext());
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
@@ -21,10 +27,13 @@ class ArtissSupplier extends Plugin
             return;
         }
 
-        // Remove tables if needed
+        // Remove custom fields
+        $customFieldSetRepository = $this->container->get('custom_field_set.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository);
+        $customFieldInstaller->uninstall($uninstallContext->getContext());
+
+        // Remove tables
         $connection = $this->container->get('Doctrine\DBAL\Connection');
-        $connection->executeStatement('DROP TABLE IF EXISTS `supplier_manufacturer`');
-        $connection->executeStatement('DROP TABLE IF EXISTS `supplier_category`');
         $connection->executeStatement('DROP TABLE IF EXISTS `supplier`');
     }
 }

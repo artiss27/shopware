@@ -11,5 +11,9 @@
         <service id="Artiss\Supplier\Core\Content\Product\ProductSupplierExtension">
             <tag name="shopware.entity.extension"/>
         </service>
+
+        <service id="Artiss\Supplier\Service\CustomFieldInstaller">
+            <argument type="service" id="custom_field_set.repository"/>
+        </service>
     </services>
 </container>

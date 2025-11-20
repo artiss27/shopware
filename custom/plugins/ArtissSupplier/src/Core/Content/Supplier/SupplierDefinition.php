@@ -10,6 +10,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\SearchRanking;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\JsonField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
@@ -44,22 +45,13 @@ class SupplierDefinition extends EntityDefinition
                 new SearchRanking(SearchRanking::HIGH_SEARCH_RANKING)
             ),
 
-            // Contact information
-            (new StringField('city', 'city', 255))->addFlags(new ApiAware()),
-            (new StringField('contacts', 'contacts', 1000))->addFlags(new ApiAware()),
-            (new StringField('email', 'email', 255))->addFlags(new ApiAware()),
-            (new StringField('website', 'website', 255))->addFlags(new ApiAware()),
+            // JSON field for manufacturer IDs (for filtering)
+            (new JsonField('manufacturer_ids', 'manufacturerIds'))->addFlags(new ApiAware()),
 
-            // Business terms
-            (new StringField('discount_online', 'discountOnline', 50))->addFlags(new ApiAware()),
-            (new StringField('discount_opt', 'discountOpt', 50))->addFlags(new ApiAware()),
-            (new StringField('margin', 'margin', 50))->addFlags(new ApiAware()),
+            // JSON field for equipment type IDs (for filtering)
+            (new JsonField('equipment_type_ids', 'equipmentTypeIds'))->addFlags(new ApiAware()),
 
-            // Additional info
-            (new StringField('note', 'note', 1000))->addFlags(new ApiAware()),
-            (new StringField('details', 'details', 5000))->addFlags(new ApiAware()),
-
-            // Custom fields for code, bitrix_id and other metadata
+            // Custom fields for all other properties (contacts, commercial terms, etc.)
             (new CustomFields())->addFlags(new ApiAware()),
 
             // Products that belong to this supplier

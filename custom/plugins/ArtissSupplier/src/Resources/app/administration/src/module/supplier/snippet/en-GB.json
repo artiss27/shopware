@@ -11,42 +11,23 @@
     },
     "list": {
       "buttonAddSupplier": "Add supplier",
-      "columnName": "Name",
-      "columnCity": "City",
-      "columnEmail": "Email"
+      "columnName": "Name"
     },
     "detail": {
       "cardTitleGeneral": "General information",
-      "cardTitleContacts": "Contact information",
-      "cardTitleBusiness": "Business terms",
-      "cardTitleAdditional": "Additional",
       "labelName": "Name",
       "placeholderName": "Enter supplier name...",
-      "labelCity": "City",
-      "placeholderCity": "Enter city...",
-      "labelContacts": "Contacts",
-      "placeholderContacts": "Phone, fax...",
-      "labelEmail": "Email",
-      "placeholderEmail": "email@example.com",
-      "labelWebsite": "Website",
-      "placeholderWebsite": "https://...",
-      "labelDiscountOnline": "Online discount",
-      "placeholderDiscountOnline": "E.g.: 5%",
-      "labelDiscountOpt": "Wholesale discount",
-      "placeholderDiscountOpt": "E.g.: 10%",
-      "labelMargin": "Margin",
-      "placeholderMargin": "E.g.: 15%",
-      "labelNote": "Note",
-      "placeholderNote": "Brief note...",
-      "labelDetails": "Detailed description",
-      "placeholderDetails": "Detailed information about supplier...",
       "buttonSave": "Save",
       "buttonCancel": "Cancel",
       "successSave": "Supplier saved successfully",
       "errorSave": "Error saving supplier",
       "errorLoad": "Error loading supplier",
       "errorCreate": "Error creating supplier",
-      "titleNew": "New supplier"
+      "titleNew": "New supplier",
+      "tabContacts": "Contacts",
+      "tabCommercial": "Commercial Terms",
+      "tabAdditional": "Additional",
+      "tabFiles": "Files"
     }
   }
 }

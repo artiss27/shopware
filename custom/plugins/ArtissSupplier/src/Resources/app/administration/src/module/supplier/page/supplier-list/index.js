@@ -39,18 +39,6 @@ Component.register('supplier-list', {
                     inlineEdit: 'string',
                     allowResize: true,
                     primary: true
-                },
-                {
-                    property: 'city',
-                    dataIndex: 'city',
-                    label: this.$tc('supplier.list.columnCity'),
-                    allowResize: true
-                },
-                {
-                    property: 'email',
-                    dataIndex: 'email',
-                    label: this.$tc('supplier.list.columnEmail'),
-                    allowResize: true
                 }
             ];
         }

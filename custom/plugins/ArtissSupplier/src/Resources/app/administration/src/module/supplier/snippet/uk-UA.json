@@ -11,42 +11,23 @@
     },
     "list": {
       "buttonAddSupplier": "Додати постачальника",
-      "columnName": "Назва",
-      "columnCity": "Місто",
-      "columnEmail": "Email"
+      "columnName": "Назва"
     },
     "detail": {
       "cardTitleGeneral": "Загальна інформація",
-      "cardTitleContacts": "Контактна інформація",
-      "cardTitleBusiness": "Комерційні умови",
-      "cardTitleAdditional": "Додатково",
       "labelName": "Назва",
       "placeholderName": "Введіть назву постачальника...",
-      "labelCity": "Місто",
-      "placeholderCity": "Введіть місто...",
-      "labelContacts": "Контакти",
-      "placeholderContacts": "Телефон, факс...",
-      "labelEmail": "Email",
-      "placeholderEmail": "email@example.com",
-      "labelWebsite": "Сайт",
-      "placeholderWebsite": "https://...",
-      "labelDiscountOnline": "Знижка онлайн",
-      "placeholderDiscountOnline": "Наприклад: 5%",
-      "labelDiscountOpt": "Оптова знижка",
-      "placeholderDiscountOpt": "Наприклад: 10%",
-      "labelMargin": "Маржа",
-      "placeholderMargin": "Наприклад: 15%",
-      "labelNote": "Примітка",
-      "placeholderNote": "Коротка примітка...",
-      "labelDetails": "Детальний опис",
-      "placeholderDetails": "Детальна інформація про постачальника...",
       "buttonSave": "Зберегти",
       "buttonCancel": "Скасувати",
       "successSave": "Постачальник успішно збережений",
       "errorSave": "Помилка при збереженні постачальника",
       "errorLoad": "Помилка при завантаженні постачальника",
       "errorCreate": "Помилка при створенні постачальника",
-      "titleNew": "Новий постачальник"
+      "titleNew": "Новий постачальник",
+      "tabContacts": "Контакти",
+      "tabCommercial": "Комерційні умови",
+      "tabAdditional": "Додатково",
+      "tabFiles": "Файли"
     }
   }
 }

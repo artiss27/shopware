@@ -11,42 +11,23 @@
     },
     "list": {
       "buttonAddSupplier": "Lieferant hinzufügen",
-      "columnName": "Name",
-      "columnCity": "Stadt",
-      "columnEmail": "E-Mail"
+      "columnName": "Name"
     },
     "detail": {
       "cardTitleGeneral": "Allgemeine Informationen",
-      "cardTitleContacts": "Kontaktinformationen",
-      "cardTitleBusiness": "Geschäftsbedingungen",
-      "cardTitleAdditional": "Zusätzlich",
       "labelName": "Name",
       "placeholderName": "Lieferantenname eingeben...",
-      "labelCity": "Stadt",
-      "placeholderCity": "Stadt eingeben...",
-      "labelContacts": "Kontakte",
-      "placeholderContacts": "Telefon, Fax...",
-      "labelEmail": "E-Mail",
-      "placeholderEmail": "email@example.com",
-      "labelWebsite": "Webseite",
-      "placeholderWebsite": "https://...",
-      "labelDiscountOnline": "Online-Rabatt",
-      "placeholderDiscountOnline": "Z.B.: 5%",
-      "labelDiscountOpt": "Großhandelsrabatt",
-      "placeholderDiscountOpt": "Z.B.: 10%",
-      "labelMargin": "Marge",
-      "placeholderMargin": "Z.B.: 15%",
-      "labelNote": "Notiz",
-      "placeholderNote": "Kurze Notiz...",
-      "labelDetails": "Detaillierte Beschreibung",
-      "placeholderDetails": "Detaillierte Informationen über Lieferant...",
       "buttonSave": "Speichern",
       "buttonCancel": "Abbrechen",
       "successSave": "Lieferant erfolgreich gespeichert",
       "errorSave": "Fehler beim Speichern des Lieferanten",
       "errorLoad": "Fehler beim Laden des Lieferanten",
       "errorCreate": "Fehler beim Erstellen des Lieferanten",
-      "titleNew": "Neuer Lieferant"
+      "titleNew": "Neuer Lieferant",
+      "tabContacts": "Kontakte",
+      "tabCommercial": "Geschäftsbedingungen",
+      "tabAdditional": "Zusätzlich",
+      "tabFiles": "Dateien"
     }
   }
 }

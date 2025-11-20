@@ -47,101 +47,89 @@
                                 required
                             >
                             </sw-text-field>
-
-                            <sw-custom-field-set-renderer
-                                v-if="supplier"
-                                :entity="supplier"
-                                :sets="customFieldSets"
-                            >
-                            </sw-custom-field-set-renderer>
                         </sw-card>
                     {% endblock %}
 
-                    {% block supplier_detail_content_card_contacts %}
-                        <sw-card
-                            :title="$tc('supplier.detail.cardTitleContacts')"
-                            :isLoading="isLoading"
-                        >
-                            <sw-container columns="repeat(auto-fit, minmax(250px, 1fr))" gap="0px 30px">
-                                <sw-text-field
-                                    v-model="supplier.city"
-                                    :label="$tc('supplier.detail.labelCity')"
-                                    :placeholder="$tc('supplier.detail.placeholderCity')"
+                    {% block supplier_detail_content_tabs %}
+                        <sw-card v-if="supplier" :isLoading="isLoading">
+                            <div class="sw-tabs">
+                                <a
+                                    class="sw-tabs-item"
+                                    :class="{ 'sw-tabs-item--active': activeTab === 'contacts' }"
+                                    @click.prevent="activeTab = 'contacts'"
                                 >
-                                </sw-text-field>
-
-                                <sw-text-field
-                                    v-model="supplier.email"
-                                    :label="$tc('supplier.detail.labelEmail')"
-                                    :placeholder="$tc('supplier.detail.placeholderEmail')"
+                                    {{ $tc('supplier.detail.tabContacts') }}
+                                </a>
+                                <a
+                                    class="sw-tabs-item"
+                                    :class="{ 'sw-tabs-item--active': activeTab === 'commercial' }"
+                                    @click.prevent="activeTab = 'commercial'"
                                 >
-                                </sw-text-field>
-
-                                <sw-text-field
-                                    v-model="supplier.website"
-                                    :label="$tc('supplier.detail.labelWebsite')"
-                                    :placeholder="$tc('supplier.detail.placeholderWebsite')"
+                                    {{ $tc('supplier.detail.tabCommercial') }}
+                                </a>
+                                <a
+                                    class="sw-tabs-item"
+                                    :class="{ 'sw-tabs-item--active': activeTab === 'additional' }"
+                                    @click.prevent="activeTab = 'additional'"
                                 >
-                                </sw-text-field>
-
-                                <sw-textarea-field
-                                    v-model="supplier.contacts"
-                                    :label="$tc('supplier.detail.labelContacts')"
-                                    :placeholder="$tc('supplier.detail.placeholderContacts')"
+                                    {{ $tc('supplier.detail.tabAdditional') }}
+                                </a>
+                                <a
+                                    class="sw-tabs-item"
+                                    :class="{ 'sw-tabs-item--active': activeTab === 'files' }"
+                                    @click.prevent="activeTab = 'files'"
                                 >
-                                </sw-textarea-field>
-                            </sw-container>
-                        </sw-card>
-                    {% endblock %}
+                                    {{ $tc('supplier.detail.tabFiles') }}
+                                </a>
+                            </div>
 
-                    {% block supplier_detail_content_card_business %}
-                        <sw-card
-                            :title="$tc('supplier.detail.cardTitleBusiness')"
-                            :isLoading="isLoading"
-                        >
-                            <sw-container columns="repeat(auto-fit, minmax(250px, 1fr))" gap="0px 30px">
-                                <sw-text-field
-                                    v-model="supplier.discountOnline"
-                                    :label="$tc('supplier.detail.labelDiscountOnline')"
-                                    :placeholder="$tc('supplier.detail.placeholderDiscountOnline')"
-                                >
-                                </sw-text-field>
+                            {# Contacts Tab #}
+                            <div v-show="activeTab === 'contacts'" class="sw-card__content">
+                                <div v-for="field in contactsFields" :key="field" class="sw-field">
+                                    <sw-form-field-renderer
+                                        v-if="getCustomField(field)"
+                                        v-model:value="supplier.customFields[field]"
+                                        :config="getCustomField(field).config"
+                                    >
+                                    </sw-form-field-renderer>
+                                </div>
+                            </div>
 
-                                <sw-text-field
-                                    v-model="supplier.discountOpt"
-                                    :label="$tc('supplier.detail.labelDiscountOpt')"
-                                    :placeholder="$tc('supplier.detail.placeholderDiscountOpt')"
-                                >
-                                </sw-text-field>
+                            {# Commercial Tab #}
+                            <div v-show="activeTab === 'commercial'" class="sw-card__content">
+                                <div v-for="field in commercialFields" :key="field" class="sw-field">
+                                    <sw-form-field-renderer
+                                        v-if="getCustomField(field)"
+                                        v-model:value="supplier.customFields[field]"
+                                        :config="getCustomField(field).config"
+                                    >
+                                    </sw-form-field-renderer>
+                                </div>
+                            </div>
 
-                                <sw-text-field
-                                    v-model="supplier.margin"
-                                    :label="$tc('supplier.detail.labelMargin')"
-                                    :placeholder="$tc('supplier.detail.placeholderMargin')"
-                                >
-                                </sw-text-field>
-                            </sw-container>
-                        </sw-card>
-                    {% endblock %}
+                            {# Additional Tab #}
+                            <div v-show="activeTab === 'additional'" class="sw-card__content">
+                                <div v-for="field in additionalFields" :key="field" class="sw-field">
+                                    <sw-form-field-renderer
+                                        v-if="getCustomField(field)"
+                                        v-model:value="supplier.customFields[field]"
+                                        :config="getCustomField(field).config"
+                                    >
+                                    </sw-form-field-renderer>
+                                </div>
+                            </div>
 
-                    {% block supplier_detail_content_card_additional %}
-                        <sw-card
-                            :title="$tc('supplier.detail.cardTitleAdditional')"
-                            :isLoading="isLoading"
-                        >
-                            <sw-textarea-field
-                                v-model="supplier.note"
-                                :label="$tc('supplier.detail.labelNote')"
-                                :placeholder="$tc('supplier.detail.placeholderNote')"
-                            >
-                            </sw-textarea-field>
-
-                            <sw-textarea-field
-                                v-model="supplier.details"
-                                :label="$tc('supplier.detail.labelDetails')"
-                                :placeholder="$tc('supplier.detail.placeholderDetails')"
-                            >
-                            </sw-textarea-field>
+                            {# Files Tab #}
+                            <div v-show="activeTab === 'files'" class="sw-card__content">
+                                <div v-for="field in filesFields" :key="field" class="sw-field">
+                                    <sw-form-field-renderer
+                                        v-if="getCustomField(field)"
+                                        v-model:value="supplier.customFields[field]"
+                                        :config="getCustomField(field).config"
+                                    >
+                                    </sw-form-field-renderer>
+                                </div>
+                            </div>
                         </sw-card>
                     {% endblock %}
                 </sw-card-view>

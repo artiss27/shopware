@@ -8,8 +8,6 @@ Component.extend('supplier-create', 'supplier-detail', {
     methods: {
         getSupplier() {
             this.supplier = this.repository.create();
-            this.supplier.active = true;
-            this.supplier.sort = 500;
         },
 
         onClickSave() {

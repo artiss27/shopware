@@ -12,22 +12,13 @@ class SupplierEntity extends Entity
 
     protected string $name;
 
-    // Contact information
-    protected ?string $city = null;
-    protected ?string $contacts = null;
-    protected ?string $email = null;
-    protected ?string $website = null;
+    // JSON field for manufacturer IDs
+    protected ?array $manufacturerIds = null;
 
-    // Business terms
-    protected ?string $discountOnline = null;
-    protected ?string $discountOpt = null;
-    protected ?string $margin = null;
+    // JSON field for equipment type IDs
+    protected ?array $equipmentTypeIds = null;
 
-    // Additional info
-    protected ?string $note = null;
-    protected ?string $details = null;
-
-    // Custom fields (code, bitrix_id, etc.)
+    // Custom fields (contacts, commercial terms, additional info, service flags, files)
     protected ?array $customFields = null;
 
     protected ?ProductCollection $products = null;
@@ -42,94 +33,24 @@ class SupplierEntity extends Entity
         $this->name = $name;
     }
 
-    public function getCity(): ?string
+    public function getManufacturerIds(): ?array
     {
-        return $this->city;
+        return $this->manufacturerIds;
     }
 
-    public function setCity(?string $city): void
+    public function setManufacturerIds(?array $manufacturerIds): void
     {
-        $this->city = $city;
+        $this->manufacturerIds = $manufacturerIds;
     }
 
-    public function getContacts(): ?string
+    public function getEquipmentTypeIds(): ?array
     {
-        return $this->contacts;
+        return $this->equipmentTypeIds;
     }
 
-    public function setContacts(?string $contacts): void
+    public function setEquipmentTypeIds(?array $equipmentTypeIds): void
     {
-        $this->contacts = $contacts;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(?string $email): void
-    {
-        $this->email = $email;
-    }
-
-    public function getWebsite(): ?string
-    {
-        return $this->website;
-    }
-
-    public function setWebsite(?string $website): void
-    {
-        $this->website = $website;
-    }
-
-    public function getDiscountOnline(): ?string
-    {
-        return $this->discountOnline;
-    }
-
-    public function setDiscountOnline(?string $discountOnline): void
-    {
-        $this->discountOnline = $discountOnline;
-    }
-
-    public function getDiscountOpt(): ?string
-    {
-        return $this->discountOpt;
-    }
-
-    public function setDiscountOpt(?string $discountOpt): void
-    {
-        $this->discountOpt = $discountOpt;
-    }
-
-    public function getMargin(): ?string
-    {
-        return $this->margin;
-    }
-
-    public function setMargin(?string $margin): void
-    {
-        $this->margin = $margin;
-    }
-
-    public function getNote(): ?string
-    {
-        return $this->note;
-    }
-
-    public function setNote(?string $note): void
-    {
-        $this->note = $note;
-    }
-
-    public function getDetails(): ?string
-    {
-        return $this->details;
-    }
-
-    public function setDetails(?string $details): void
-    {
-        $this->details = $details;
+        $this->equipmentTypeIds = $equipmentTypeIds;
     }
 
     public function getCustomFields(): ?array
