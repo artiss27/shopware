@@ -47,6 +47,17 @@
                                 required
                             >
                             </sw-text-field>
+
+                            <sw-multi-select
+                                :value="safeManufacturerIds"
+                                @update:value="onManufacturersChange"
+                                :label="$tc('supplier.detail.labelManufacturers')"
+                                :placeholder="$tc('supplier.detail.placeholderManufacturers')"
+                                :options="manufacturerOptions"
+                                labelProperty="label"
+                                valueProperty="value"
+                            >
+                            </sw-multi-select>
                         </sw-card>
                     {% endblock %}
 
@@ -61,24 +72,32 @@
                                 <sw-tabs-item
                                     name="contacts"
                                     :title="$tc('supplier.detail.tabContacts')"
+                                    :activeTab="activeTab"
+                                    positionIdentifier="contacts"
                                 >
                                     {{ $tc('supplier.detail.tabContacts') }}
                                 </sw-tabs-item>
                                 <sw-tabs-item
                                     name="commercial"
                                     :title="$tc('supplier.detail.tabCommercial')"
+                                    :activeTab="activeTab"
+                                    positionIdentifier="commercial"
                                 >
                                     {{ $tc('supplier.detail.tabCommercial') }}
                                 </sw-tabs-item>
                                 <sw-tabs-item
                                     name="additional"
                                     :title="$tc('supplier.detail.tabAdditional')"
+                                    :activeTab="activeTab"
+                                    positionIdentifier="additional"
                                 >
                                     {{ $tc('supplier.detail.tabAdditional') }}
                                 </sw-tabs-item>
                                 <sw-tabs-item
                                     name="files"
                                     :title="$tc('supplier.detail.tabFiles')"
+                                    :activeTab="activeTab"
+                                    positionIdentifier="files"
                                 >
                                     {{ $tc('supplier.detail.tabFiles') }}
                                 </sw-tabs-item>

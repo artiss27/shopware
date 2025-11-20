@@ -17,6 +17,8 @@
       "cardTitleGeneral": "General information",
       "labelName": "Name",
       "placeholderName": "Enter supplier name...",
+      "labelManufacturers": "Brands on Website",
+      "placeholderManufacturers": "Select brands...",
       "buttonSave": "Save",
       "buttonCancel": "Cancel",
       "successSave": "Supplier saved successfully",

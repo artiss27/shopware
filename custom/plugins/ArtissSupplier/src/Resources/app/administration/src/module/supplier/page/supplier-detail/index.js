@@ -6,7 +6,10 @@ const { Criteria } = Shopware.Data;
 Component.register('supplier-detail', {
     template,
 
-    inject: ['repositoryFactory', 'customFieldDataProviderService'],
+    inject: [
+        'repositoryFactory',
+        'customFieldDataProviderService'
+    ],
 
     mixins: [
         Mixin.getByName('notification')
@@ -26,6 +29,7 @@ Component.register('supplier-detail', {
             repository: null,
             customFieldSets: [],
             activeTab: 'contacts',
+            manufacturers: [],
             // Field name filters for each tab
             contactsFields: [
                 'supplier_contacts_city',
@@ -58,13 +62,47 @@ Component.register('supplier-detail', {
 
         supplierRepository() {
             return this.repositoryFactory.create('supplier');
+        },
+
+        manufacturerRepository() {
+            return this.repositoryFactory.create('product_manufacturer');
+        },
+
+        manufacturerOptions() {
+            return this.manufacturers.map(manufacturer => ({
+                value: manufacturer.id,
+                label: manufacturer.name
+            }));
+        },
+
+        safeManufacturerIds: {
+            get() {
+                if (!this.supplier || !this.supplier.manufacturerIds) {
+                    return [];
+                }
+                if (!Array.isArray(this.supplier.manufacturerIds)) {
+                    return [];
+                }
+                return this.supplier.manufacturerIds;
+            },
+            set(value) {
+                if (this.supplier) {
+                    this.supplier.manufacturerIds = Array.isArray(value) ? value : [];
+                }
+            }
         }
     },
 
     created() {
         this.repository = this.supplierRepository;
+        this.loadManufacturers();
         this.getSupplier();
         this.loadCustomFieldSets();
+    },
+
+    mounted() {
+        // Set first tab as active after component is mounted
+        this.activeTab = 'contacts';
     },
 
     watch: {
@@ -74,6 +112,19 @@ Component.register('supplier-detail', {
     },
 
     methods: {
+        async loadManufacturers() {
+            try {
+                const criteria = new Criteria();
+                criteria.addSorting(Criteria.sort('name', 'ASC'));
+                criteria.setLimit(500);
+
+                const result = await this.manufacturerRepository.search(criteria);
+                this.manufacturers = result;
+            } catch (error) {
+                console.error('Error loading manufacturers:', error);
+            }
+        },
+
         async loadCustomFieldSets() {
             this.customFieldSets = await this.customFieldDataProviderService.getCustomFieldSets('supplier');
         },
@@ -97,11 +148,20 @@ Component.register('supplier-detail', {
         async getSupplier() {
             this.isLoading = true;
             try {
-                const entity = await this.repository.get(this.$route.params.id);
-                this.supplier = entity;
+                if (this.$route.params.id) {
+                    const entity = await this.repository.get(this.$route.params.id);
+                    this.supplier = entity;
+                } else {
+                    this.supplier = this.repository.create();
+                }
+
                 // Initialize customFields if null
                 if (!this.supplier.customFields) {
                     this.supplier.customFields = {};
+                }
+                // Initialize manufacturerIds if null or not an array
+                if (!this.supplier.manufacturerIds || !Array.isArray(this.supplier.manufacturerIds)) {
+                    this.supplier.manufacturerIds = [];
                 }
             } catch (error) {
                 console.error('Error loading supplier:', error);
@@ -137,17 +197,30 @@ Component.register('supplier-detail', {
             this.processSuccess = false;
         },
 
+        onManufacturersChange(selectedValues) {
+            console.log('onManufacturersChange called with:', selectedValues);
+            if (this.supplier) {
+                this.supplier.manufacturerIds = Array.isArray(selectedValues) ? selectedValues : [];
+                console.log('Updated supplier.manufacturerIds to:', this.supplier.manufacturerIds);
+            }
+        },
+
         onTabChange(tabItem) {
-            console.log('onTabChange called with:', tabItem);
             // Extract name from tab item component
-            if (tabItem && tabItem.name) {
-                console.log('Setting activeTab to:', tabItem.name);
-                this.activeTab = tabItem.name;
+            let tabName = null;
+
+            if (tabItem && typeof tabItem === 'string') {
+                tabName = tabItem;
+            } else if (tabItem && tabItem.name) {
+                tabName = tabItem.name;
             } else if (tabItem && tabItem.$props && tabItem.$props.name) {
-                console.log('Setting activeTab to:', tabItem.$props.name);
-                this.activeTab = tabItem.$props.name;
-            } else {
-                console.log('Could not extract tab name from:', tabItem);
+                tabName = tabItem.$props.name;
+            } else if (tabItem && tabItem.positionIdentifier) {
+                tabName = tabItem.positionIdentifier;
+            }
+
+            if (tabName) {
+                this.activeTab = tabName;
             }
         }
     }

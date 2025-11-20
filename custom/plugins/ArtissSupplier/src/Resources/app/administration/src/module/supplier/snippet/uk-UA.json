@@ -17,6 +17,8 @@
       "cardTitleGeneral": "Загальна інформація",
       "labelName": "Назва",
       "placeholderName": "Введіть назву постачальника...",
+      "labelManufacturers": "ТМ на сайті",
+      "placeholderManufacturers": "Оберіть ТМ...",
       "buttonSave": "Зберегти",
       "buttonCancel": "Скасувати",
       "successSave": "Постачальник успішно збережений",

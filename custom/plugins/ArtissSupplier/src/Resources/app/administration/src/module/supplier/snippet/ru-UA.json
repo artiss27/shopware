@@ -17,6 +17,8 @@
       "cardTitleGeneral": "Общая информация",
       "labelName": "Название",
       "placeholderName": "Введите название поставщика...",
+      "labelManufacturers": "ТМ на сайте",
+      "placeholderManufacturers": "Выберите ТМ...",
       "buttonSave": "Сохранить",
       "buttonCancel": "Отменить",
       "successSave": "Поставщик успешно сохранен",

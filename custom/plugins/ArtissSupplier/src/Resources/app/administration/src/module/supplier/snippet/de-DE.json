@@ -17,6 +17,8 @@
       "cardTitleGeneral": "Allgemeine Informationen",
       "labelName": "Name",
       "placeholderName": "Lieferantenname eingeben...",
+      "labelManufacturers": "Marken auf der Website",
+      "placeholderManufacturers": "Marken auswählen...",
       "buttonSave": "Speichern",
       "buttonCancel": "Abbrechen",
       "successSave": "Lieferant erfolgreich gespeichert",
