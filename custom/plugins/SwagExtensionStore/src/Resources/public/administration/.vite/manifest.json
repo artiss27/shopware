@@ -1,6 +1,6 @@
 {
   "main.js": {
-    "file": "assets/swag-extension-store-uL8m4Cxe.js",
+    "file": "assets/swag-extension-store-WNtjc0HE.js",
     "name": "swag-extension-store",
     "src": "main.js",
     "isEntry": true,
@@ -32,12 +32,12 @@
     ]
   },
   "module/sw-dashboard/component/sw-dashboard-statistics-promotion-card/index.js": {
-    "file": "assets/index-DQeqGYt1.js",
+    "file": "assets/index-CXDontPK.js",
     "name": "index",
     "src": "module/sw-dashboard/component/sw-dashboard-statistics-promotion-card/index.js",
     "isDynamicEntry": true,
     "css": [
-      "assets/index-74-FFmJT.css"
+      "assets/index-DYKXP6dV.css"
     ]
   },
   "module/sw-dashboard/page/sw-dashboard-index/index.js": {
@@ -122,12 +122,12 @@
     ]
   },
   "module/sw-extension-store/component/sw-extension-store-slider/index.js": {
-    "file": "assets/index-Blaprb7h.js",
+    "file": "assets/index-CC5LyEx_.js",
     "name": "index",
     "src": "module/sw-extension-store/component/sw-extension-store-slider/index.js",
     "isDynamicEntry": true,
     "css": [
-      "assets/index-Dl_yw-Gl.css"
+      "assets/index-AoUar5wV.css"
     ]
   },
   "module/sw-extension-store/component/sw-extension-store-statistics-promotion/index.js": {

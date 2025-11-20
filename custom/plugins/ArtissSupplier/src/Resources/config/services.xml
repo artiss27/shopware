@@ -5,7 +5,7 @@
 
     <services>
         <service id="Artiss\Supplier\Core\Content\Supplier\SupplierDefinition">
-            <tag name="shopware.entity.definition" entity="supplier"/>
+            <tag name="shopware.entity.definition" entity="art_supplier"/>
         </service>
 
         <service id="Artiss\Supplier\Core\Content\Product\ProductSupplierExtension">

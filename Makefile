@@ -27,6 +27,8 @@ build-administration:
 	docker compose exec web ./bin/build-administration.sh
 setup:
 	docker compose exec web bin/console system:install --basic-setup --create-database --drop-database --force
+clear-cache: ## Clear Shopware cache
+	docker compose exec web bin/console cache:clear
 
 ###> database backup ###
 backup: backup-smart ## Create smart backup (without cache/logs data) - RECOMMENDED

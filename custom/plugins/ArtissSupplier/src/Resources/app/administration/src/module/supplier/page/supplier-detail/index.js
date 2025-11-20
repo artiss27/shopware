@@ -3,6 +3,8 @@ import template from './supplier-detail.html.twig';
 const { Component, Mixin } = Shopware;
 const { Criteria } = Shopware.Data;
 
+console.log('[SUPPLIER-DETAIL] Registering component, timestamp:', Date.now());
+
 Component.register('supplier-detail', {
     template,
 
@@ -23,7 +25,9 @@ Component.register('supplier-detail', {
 
     data() {
         return {
-            supplier: null,
+            supplier: {
+                customFields: {}
+            },
             isLoading: false,
             processSuccess: false,
             repository: null,
@@ -61,7 +65,7 @@ Component.register('supplier-detail', {
         },
 
         supplierRepository() {
-            return this.repositoryFactory.create('supplier');
+            return this.repositoryFactory.create('art_supplier');
         },
 
         manufacturerRepository() {
@@ -90,6 +94,46 @@ Component.register('supplier-detail', {
                     this.supplier.manufacturerIds = Array.isArray(value) ? value : [];
                 }
             }
+        },
+
+        filteredContactsSets() {
+            return this.filterCustomFieldSets(this.contactsFields);
+        },
+
+        filteredCommercialSets() {
+            return this.filterCustomFieldSets(this.commercialFields);
+        },
+
+        filteredAdditionalSets() {
+            return this.filterCustomFieldSets(this.additionalFields);
+        },
+
+        filteredFilesSets() {
+            return this.filterCustomFieldSets(this.filesFields);
+        },
+
+        contactsFieldsWithConfig() {
+            return this.contactsFields
+                .map(fieldName => this.getCustomField(fieldName))
+                .filter(field => field && field.config);
+        },
+
+        commercialFieldsWithConfig() {
+            return this.commercialFields
+                .map(fieldName => this.getCustomField(fieldName))
+                .filter(field => field && field.config);
+        },
+
+        additionalFieldsWithConfig() {
+            return this.additionalFields
+                .map(fieldName => this.getCustomField(fieldName))
+                .filter(field => field && field.config);
+        },
+
+        filesFieldsWithConfig() {
+            return this.filesFields
+                .map(fieldName => this.getCustomField(fieldName))
+                .filter(field => field && field.config);
         }
     },
 
@@ -106,8 +150,8 @@ Component.register('supplier-detail', {
     },
 
     watch: {
-        activeTab(newVal, oldVal) {
-            console.log('Tab changed from', oldVal, 'to', newVal);
+        activeTab(newVal) {
+            // Tab changed - test watch mode
         }
     },
 
@@ -126,7 +170,17 @@ Component.register('supplier-detail', {
         },
 
         async loadCustomFieldSets() {
-            this.customFieldSets = await this.customFieldDataProviderService.getCustomFieldSets('supplier');
+            try {
+                const customFieldSetRepository = this.repositoryFactory.create('custom_field_set');
+                const criteria = new Criteria();
+                criteria.addAssociation('customFields');
+                criteria.addFilter(Criteria.equals('name', 'supplier_fields'));
+
+                const result = await customFieldSetRepository.search(criteria);
+                this.customFieldSets = Array.from(result);
+            } catch (error) {
+                console.error('Error loading custom field sets:', error);
+            }
         },
 
         getCustomField(fieldName) {
@@ -149,7 +203,8 @@ Component.register('supplier-detail', {
             this.isLoading = true;
             try {
                 if (this.$route.params.id) {
-                    const entity = await this.repository.get(this.$route.params.id);
+                    const criteria = new Criteria();
+                    const entity = await this.repository.get(this.$route.params.id, Shopware.Context.api, criteria);
                     this.supplier = entity;
                 } else {
                     this.supplier = this.repository.create();
@@ -173,24 +228,57 @@ Component.register('supplier-detail', {
             }
         },
 
-        async onClickSave() {
+        onClickSave() {
+            console.log('[SUPPLIER] onClickSave called, version: 2024-11-20-22:30');
             this.isLoading = true;
+            this.processSuccess = false;
+            const isNew = !this.$route.params.id;
+            const supplierId = this.supplier.id;
 
-            try {
-                await this.repository.save(this.supplier);
-                this.getSupplier();
-                this.createNotificationSuccess({
-                    message: this.$tc('supplier.detail.successSave')
+            console.log('[SUPPLIER] Saving supplier:', supplierId, 'isNew:', isNew);
+
+            return this.repository.save(this.supplier, Shopware.Context.api)
+                .then(() => {
+                    console.log('[SUPPLIER] Save successful, loading full data...');
+                    // После успешного сохранения принудительно перезагружаем данные с сервера
+                    const criteria = new Criteria();
+                    return this.repository.get(supplierId, Shopware.Context.api, criteria);
+                })
+                .then((loadedSupplier) => {
+                    console.log('[SUPPLIER] Loaded full supplier:', loadedSupplier);
+                    // Обновляем локальные данные загруженными с сервера
+                    this.supplier = loadedSupplier;
+
+                    // Инициализируем поля если они null
+                    if (!this.supplier.customFields) {
+                        this.supplier.customFields = {};
+                    }
+                    if (!this.supplier.manufacturerIds || !Array.isArray(this.supplier.manufacturerIds)) {
+                        this.supplier.manufacturerIds = [];
+                    }
+
+                    this.createNotificationSuccess({
+                        message: this.$tc('supplier.detail.successSave')
+                    });
+
+                    this.isLoading = false;
+                    this.processSuccess = true;
+
+                    if (isNew) {
+                        // Для нового поставщика перенаправляем на страницу редактирования
+                        return this.$router.push({
+                            name: 'artiss.supplier.detail',
+                            params: { id: supplierId }
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error saving supplier:', error);
+                    this.createNotificationError({
+                        message: this.$tc('supplier.detail.errorSave')
+                    });
+                    this.isLoading = false;
                 });
-                this.processSuccess = true;
-            } catch (error) {
-                console.error('Error saving supplier:', error);
-                this.createNotificationError({
-                    message: this.$tc('supplier.detail.errorSave')
-                });
-            } finally {
-                this.isLoading = false;
-            }
         },
 
         saveFinish() {
@@ -198,30 +286,40 @@ Component.register('supplier-detail', {
         },
 
         onManufacturersChange(selectedValues) {
-            console.log('onManufacturersChange called with:', selectedValues);
             if (this.supplier) {
                 this.supplier.manufacturerIds = Array.isArray(selectedValues) ? selectedValues : [];
-                console.log('Updated supplier.manufacturerIds to:', this.supplier.manufacturerIds);
             }
         },
 
         onTabChange(tabItem) {
-            // Extract name from tab item component
-            let tabName = null;
+            if (tabItem && tabItem.name) {
+                this.activeTab = tabItem.name;
+            }
+        },
 
-            if (tabItem && typeof tabItem === 'string') {
-                tabName = tabItem;
-            } else if (tabItem && tabItem.name) {
-                tabName = tabItem.name;
-            } else if (tabItem && tabItem.$props && tabItem.$props.name) {
-                tabName = tabItem.$props.name;
-            } else if (tabItem && tabItem.positionIdentifier) {
-                tabName = tabItem.positionIdentifier;
+        filterCustomFieldSets(fieldNames) {
+            if (!this.customFieldSets || this.customFieldSets.length === 0) {
+                return [];
             }
 
-            if (tabName) {
-                this.activeTab = tabName;
-            }
+            return this.customFieldSets.map(set => {
+                if (!set.customFields || set.customFields.length === 0) {
+                    return null;
+                }
+
+                const filteredFields = set.customFields.filter(field =>
+                    fieldNames.includes(field.name)
+                );
+
+                if (filteredFields.length === 0) {
+                    return null;
+                }
+
+                return {
+                    ...set,
+                    customFields: filteredFields
+                };
+            }).filter(set => set !== null);
         }
     }
 });

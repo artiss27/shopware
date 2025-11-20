@@ -26,7 +26,7 @@ Component.register('supplier-list', {
 
     computed: {
         supplierRepository() {
-            return this.repositoryFactory.create('supplier');
+            return this.repositoryFactory.create('art_supplier');
         },
 
         supplierColumns() {

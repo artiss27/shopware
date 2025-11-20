@@ -34,6 +34,6 @@ class ArtissSupplier extends Plugin
 
         // Remove tables
         $connection = $this->container->get('Doctrine\DBAL\Connection');
-        $connection->executeStatement('DROP TABLE IF EXISTS `supplier`');
+        $connection->executeStatement('DROP TABLE IF EXISTS `art_supplier`');
     }
 }
