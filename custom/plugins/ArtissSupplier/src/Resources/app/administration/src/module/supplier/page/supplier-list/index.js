@@ -59,8 +59,6 @@ Component.register('supplier-list', {
                 const result = await this.supplierRepository.search(criteria);
                 this.suppliers = result;
                 this.total = result.total;
-            } catch (error) {
-                console.error('Error loading suppliers:', error);
             } finally {
                 this.isLoading = false;
             }
