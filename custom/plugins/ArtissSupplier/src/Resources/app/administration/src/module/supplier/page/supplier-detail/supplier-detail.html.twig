@@ -52,39 +52,40 @@
 
                     {% block supplier_detail_content_tabs %}
                         <sw-card v-if="supplier" :isLoading="isLoading">
-                            <div class="sw-tabs">
-                                <a
-                                    class="sw-tabs-item"
-                                    :class="{ 'sw-tabs-item--active': activeTab === 'contacts' }"
-                                    @click.prevent="activeTab = 'contacts'"
+                            <sw-tabs
+                                class="supplier-detail-tabs"
+                                :defaultItem="activeTab"
+                                @new-item-active="onTabChange"
+                                :small="false"
+                            >
+                                <sw-tabs-item
+                                    name="contacts"
+                                    :title="$tc('supplier.detail.tabContacts')"
                                 >
                                     {{ $tc('supplier.detail.tabContacts') }}
-                                </a>
-                                <a
-                                    class="sw-tabs-item"
-                                    :class="{ 'sw-tabs-item--active': activeTab === 'commercial' }"
-                                    @click.prevent="activeTab = 'commercial'"
+                                </sw-tabs-item>
+                                <sw-tabs-item
+                                    name="commercial"
+                                    :title="$tc('supplier.detail.tabCommercial')"
                                 >
                                     {{ $tc('supplier.detail.tabCommercial') }}
-                                </a>
-                                <a
-                                    class="sw-tabs-item"
-                                    :class="{ 'sw-tabs-item--active': activeTab === 'additional' }"
-                                    @click.prevent="activeTab = 'additional'"
+                                </sw-tabs-item>
+                                <sw-tabs-item
+                                    name="additional"
+                                    :title="$tc('supplier.detail.tabAdditional')"
                                 >
                                     {{ $tc('supplier.detail.tabAdditional') }}
-                                </a>
-                                <a
-                                    class="sw-tabs-item"
-                                    :class="{ 'sw-tabs-item--active': activeTab === 'files' }"
-                                    @click.prevent="activeTab = 'files'"
+                                </sw-tabs-item>
+                                <sw-tabs-item
+                                    name="files"
+                                    :title="$tc('supplier.detail.tabFiles')"
                                 >
                                     {{ $tc('supplier.detail.tabFiles') }}
-                                </a>
-                            </div>
+                                </sw-tabs-item>
+                            </sw-tabs>
 
                             {# Contacts Tab #}
-                            <div v-show="activeTab === 'contacts'" class="sw-card__content">
+                            <div v-if="activeTab === 'contacts'" class="sw-card__content">
                                 <div v-for="field in contactsFields" :key="field" class="sw-field">
                                     <sw-form-field-renderer
                                         v-if="getCustomField(field)"
@@ -96,7 +97,7 @@
                             </div>
 
                             {# Commercial Tab #}
-                            <div v-show="activeTab === 'commercial'" class="sw-card__content">
+                            <div v-if="activeTab === 'commercial'" class="sw-card__content">
                                 <div v-for="field in commercialFields" :key="field" class="sw-field">
                                     <sw-form-field-renderer
                                         v-if="getCustomField(field)"
@@ -108,7 +109,7 @@
                             </div>
 
                             {# Additional Tab #}
-                            <div v-show="activeTab === 'additional'" class="sw-card__content">
+                            <div v-if="activeTab === 'additional'" class="sw-card__content">
                                 <div v-for="field in additionalFields" :key="field" class="sw-field">
                                     <sw-form-field-renderer
                                         v-if="getCustomField(field)"
@@ -120,7 +121,7 @@
                             </div>
 
                             {# Files Tab #}
-                            <div v-show="activeTab === 'files'" class="sw-card__content">
+                            <div v-if="activeTab === 'files'" class="sw-card__content">
                                 <div v-for="field in filesFields" :key="field" class="sw-field">
                                     <sw-form-field-renderer
                                         v-if="getCustomField(field)"

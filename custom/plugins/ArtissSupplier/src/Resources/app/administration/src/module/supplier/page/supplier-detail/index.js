@@ -67,6 +67,12 @@ Component.register('supplier-detail', {
         this.loadCustomFieldSets();
     },
 
+    watch: {
+        activeTab(newVal, oldVal) {
+            console.log('Tab changed from', oldVal, 'to', newVal);
+        }
+    },
+
     methods: {
         async loadCustomFieldSets() {
             this.customFieldSets = await this.customFieldDataProviderService.getCustomFieldSets('supplier');
@@ -129,6 +135,20 @@ Component.register('supplier-detail', {
 
         saveFinish() {
             this.processSuccess = false;
+        },
+
+        onTabChange(tabItem) {
+            console.log('onTabChange called with:', tabItem);
+            // Extract name from tab item component
+            if (tabItem && tabItem.name) {
+                console.log('Setting activeTab to:', tabItem.name);
+                this.activeTab = tabItem.name;
+            } else if (tabItem && tabItem.$props && tabItem.$props.name) {
+                console.log('Setting activeTab to:', tabItem.$props.name);
+                this.activeTab = tabItem.$props.name;
+            } else {
+                console.log('Could not extract tab name from:', tabItem);
+            }
         }
     }
 });
