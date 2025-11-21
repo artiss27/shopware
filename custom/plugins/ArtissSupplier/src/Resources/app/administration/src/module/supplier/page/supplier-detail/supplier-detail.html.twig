@@ -57,6 +57,17 @@
                                 valueProperty="value"
                             >
                             </sw-multi-select>
+
+                            <sw-multi-select
+                                :value="safeEquipmentTypeIds"
+                                @update:value="onEquipmentTypesChange"
+                                :label="$tc('supplier.detail.labelEquipmentTypes')"
+                                :placeholder="$tc('supplier.detail.placeholderEquipmentTypes')"
+                                :options="equipmentTypeOptions"
+                                labelProperty="label"
+                                valueProperty="value"
+                            >
+                            </sw-multi-select>
                         </sw-card>
                     {% endblock %}
 

@@ -30,6 +30,9 @@ Component.extend('supplier-create', 'supplier-detail', {
                     if (!this.supplier.manufacturerIds || !Array.isArray(this.supplier.manufacturerIds)) {
                         this.supplier.manufacturerIds = [];
                     }
+                    if (!this.supplier.equipmentTypeIds || !Array.isArray(this.supplier.equipmentTypeIds)) {
+                        this.supplier.equipmentTypeIds = [];
+                    }
 
                     this.createNotificationSuccess({
                         message: this.$tc('supplier.detail.successSave')

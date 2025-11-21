@@ -30,7 +30,9 @@ Component.register('supplier-detail', {
             processSuccess: false,
             repository: null,
             customFieldSets: [],
-            manufacturers: []
+            manufacturers: [],
+            equipmentTypes: [],
+            equipmentTypePropertyGroupId: '20836795-aab8-97d8-c709-a2535f197268'
         };
     },
 
@@ -54,6 +56,13 @@ Component.register('supplier-detail', {
             }));
         },
 
+        equipmentTypeOptions() {
+            return this.equipmentTypes.map(option => ({
+                value: option.id,
+                label: option.translated?.name || option.name || option.id
+            }));
+        },
+
         safeManufacturerIds: {
             get() {
                 if (!this.supplier || !this.supplier.manufacturerIds) {
@@ -69,12 +78,30 @@ Component.register('supplier-detail', {
                     this.supplier.manufacturerIds = Array.isArray(value) ? value : [];
                 }
             }
+        },
+
+        safeEquipmentTypeIds: {
+            get() {
+                if (!this.supplier || !this.supplier.equipmentTypeIds) {
+                    return [];
+                }
+                if (!Array.isArray(this.supplier.equipmentTypeIds)) {
+                    return [];
+                }
+                return this.supplier.equipmentTypeIds;
+            },
+            set(value) {
+                if (this.supplier) {
+                    this.supplier.equipmentTypeIds = Array.isArray(value) ? value : [];
+                }
+            }
         }
     },
 
     created() {
         this.repository = this.supplierRepository;
         this.loadManufacturers();
+        this.loadEquipmentTypes();
         this.getSupplier();
         this.loadCustomFieldSets();
     },
@@ -91,6 +118,59 @@ Component.register('supplier-detail', {
             } catch (error) {
                 this.createNotificationError({
                     message: this.$tc('supplier.detail.errorLoadManufacturers')
+                });
+            }
+        },
+
+        async loadEquipmentTypes() {
+            try {
+                const propertyGroupRepository = this.repositoryFactory.create('property_group');
+                const allCriteria = new Criteria();
+                allCriteria.setLimit(100);
+
+                const allGroups = await propertyGroupRepository.search(allCriteria, Shopware.Context.api);
+
+                const equipmentGroup = Array.from(allGroups).find(group =>
+                    group.name === 'Тип обладнання' ||
+                    group.name === 'Equipment Type' ||
+                    group.id === this.equipmentTypePropertyGroupId
+                );
+
+                if (equipmentGroup) {
+                    const criteria = new Criteria();
+                    criteria.addAssociation('options');
+                    criteria.setIds([equipmentGroup.id]);
+
+                    const result = await propertyGroupRepository.search(criteria, Shopware.Context.api);
+
+                    if (result && result.length > 0) {
+                        const propertyGroup = result.first();
+                        if (propertyGroup && propertyGroup.options) {
+                            const options = Array.from(propertyGroup.options);
+                            options.sort((a, b) => {
+                                const posA = a.position || 0;
+                                const posB = b.position || 0;
+                                if (posA !== posB) {
+                                    return posA - posB;
+                                }
+                                const nameA = a.translated?.name || a.name || '';
+                                const nameB = b.translated?.name || b.name || '';
+                                return nameA.localeCompare(nameB);
+                            });
+                            this.equipmentTypes = options;
+                        } else {
+                            this.equipmentTypes = [];
+                        }
+                    } else {
+                        this.equipmentTypes = [];
+                    }
+                } else {
+                    this.equipmentTypes = [];
+                }
+            } catch (error) {
+                this.equipmentTypes = [];
+                this.createNotificationError({
+                    message: this.$tc('supplier.detail.errorLoadEquipmentTypes')
                 });
             }
         },
@@ -128,6 +208,9 @@ Component.register('supplier-detail', {
                 if (!this.supplier.manufacturerIds || !Array.isArray(this.supplier.manufacturerIds)) {
                     this.supplier.manufacturerIds = [];
                 }
+                if (!this.supplier.equipmentTypeIds || !Array.isArray(this.supplier.equipmentTypeIds)) {
+                    this.supplier.equipmentTypeIds = [];
+                }
             } catch (error) {
                 this.createNotificationError({
                     message: this.$tc('supplier.detail.errorLoad')
@@ -156,6 +239,9 @@ Component.register('supplier-detail', {
                     }
                     if (!this.supplier.manufacturerIds || !Array.isArray(this.supplier.manufacturerIds)) {
                         this.supplier.manufacturerIds = [];
+                    }
+                    if (!this.supplier.equipmentTypeIds || !Array.isArray(this.supplier.equipmentTypeIds)) {
+                        this.supplier.equipmentTypeIds = [];
                     }
 
                     this.createNotificationSuccess({
@@ -187,6 +273,12 @@ Component.register('supplier-detail', {
         onManufacturersChange(selectedValues) {
             if (this.supplier) {
                 this.supplier.manufacturerIds = Array.isArray(selectedValues) ? selectedValues : [];
+            }
+        },
+
+        onEquipmentTypesChange(selectedValues) {
+            if (this.supplier) {
+                this.supplier.equipmentTypeIds = Array.isArray(selectedValues) ? selectedValues : [];
             }
         }
     }

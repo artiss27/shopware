@@ -8,6 +8,13 @@
 # Dependencies
 /vendor/
 /node_modules/
+**/node_modules/
+package-lock.json
+**/package-lock.json
+.pnpm-lock.yaml
+**/.pnpm-lock.yaml
+yarn.lock
+**/yarn.lock
 
 # Composer
 composer.phar
@@ -44,6 +51,12 @@ auth.json
 *.min.css
 /public/build/*
 /public/dist/*
+
+# Plugin build files
+**/Resources/public/administration/.vite/
+**/Resources/public/administration/assets/
+**/Resources/public/storefront/
+custom/plugins/*/src/Resources/public/
 
 # Database dumps
 *.sql
