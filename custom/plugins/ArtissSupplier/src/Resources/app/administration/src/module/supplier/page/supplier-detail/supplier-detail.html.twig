@@ -59,6 +59,17 @@
                             </sw-multi-select>
 
                             <sw-multi-select
+                                :value="safeAlternativeManufacturerIds"
+                                @update:value="onAlternativeManufacturersChange"
+                                :label="$tc('supplier.detail.labelAlternativeManufacturers')"
+                                :placeholder="$tc('supplier.detail.placeholderAlternativeManufacturers')"
+                                :options="manufacturerOptions"
+                                labelProperty="label"
+                                valueProperty="value"
+                            >
+                            </sw-multi-select>
+
+                            <sw-multi-select
                                 :value="safeEquipmentTypeIds"
                                 @update:value="onEquipmentTypesChange"
                                 :label="$tc('supplier.detail.labelEquipmentTypes')"

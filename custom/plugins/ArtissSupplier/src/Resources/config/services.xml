@@ -15,5 +15,13 @@
         <service id="Artiss\Supplier\Service\CustomFieldInstaller">
             <argument type="service" id="custom_field_set.repository"/>
         </service>
+
+        <service id="Artiss\Supplier\Command\ImportSuppliersCommand">
+            <argument type="service" id="art_supplier.repository"/>
+            <argument type="service" id="product_manufacturer.repository"/>
+            <argument type="service" id="property_group.repository"/>
+            <argument type="service" id="property_group_option.repository"/>
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>

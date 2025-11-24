@@ -15,6 +15,9 @@ class SupplierEntity extends Entity
     // JSON field for manufacturer IDs
     protected ?array $manufacturerIds = null;
 
+    // JSON field for alternative manufacturer IDs
+    protected ?array $alternativeManufacturerIds = null;
+
     // JSON field for equipment type IDs
     protected ?array $equipmentTypeIds = null;
 
@@ -41,6 +44,16 @@ class SupplierEntity extends Entity
     public function setManufacturerIds(?array $manufacturerIds): void
     {
         $this->manufacturerIds = $manufacturerIds;
+    }
+
+    public function getAlternativeManufacturerIds(): ?array
+    {
+        return $this->alternativeManufacturerIds;
+    }
+
+    public function setAlternativeManufacturerIds(?array $alternativeManufacturerIds): void
+    {
+        $this->alternativeManufacturerIds = $alternativeManufacturerIds;
     }
 
     public function getEquipmentTypeIds(): ?array

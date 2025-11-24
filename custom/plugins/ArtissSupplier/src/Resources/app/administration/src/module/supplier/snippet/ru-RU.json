@@ -19,6 +19,8 @@
       "placeholderName": "Введите название поставщика...",
       "labelManufacturers": "ТМ на сайте",
       "placeholderManufacturers": "Выберите ТМ...",
+      "labelAlternativeManufacturers": "Альтерн. ТМ",
+      "placeholderAlternativeManufacturers": "Выберите альтернативные ТМ...",
       "labelEquipmentTypes": "Тип оборудования",
       "placeholderEquipmentTypes": "Выберите тип оборудования...",
       "buttonSave": "Сохранить",

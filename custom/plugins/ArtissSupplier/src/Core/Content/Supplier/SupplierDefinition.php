@@ -48,6 +48,9 @@ class SupplierDefinition extends EntityDefinition
             // JSON field for manufacturer IDs (for filtering)
             (new JsonField('manufacturer_ids', 'manufacturerIds'))->addFlags(new ApiAware()),
 
+            // JSON field for alternative manufacturer IDs (for filtering)
+            (new JsonField('alternative_manufacturer_ids', 'alternativeManufacturerIds'))->addFlags(new ApiAware()),
+
             // JSON field for equipment type IDs (for filtering)
             (new JsonField('equipment_type_ids', 'equipmentTypeIds'))->addFlags(new ApiAware()),
 

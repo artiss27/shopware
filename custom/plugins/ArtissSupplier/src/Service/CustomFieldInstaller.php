@@ -74,10 +74,10 @@ class CustomFieldInstaller
                 ],
                 [
                     'name' => 'supplier_contacts_email',
-                    'type' => CustomFieldTypes::TEXT,
+                    'type' => CustomFieldTypes::JSON,
                     'config' => [
-                        'componentName' => 'sw-text-field',
-                        'customFieldType' => 'text',
+                        'componentName' => 'sw-tagged-field',
+                        'customFieldType' => 'select',
                         'customFieldPosition' => 3,
                         'label' => [
                             'en-GB' => 'Email',
@@ -90,10 +90,10 @@ class CustomFieldInstaller
                 ],
                 [
                     'name' => 'supplier_contacts_website',
-                    'type' => CustomFieldTypes::TEXT,
+                    'type' => CustomFieldTypes::JSON,
                     'config' => [
-                        'componentName' => 'sw-text-field',
-                        'customFieldType' => 'text',
+                        'componentName' => 'sw-tagged-field',
+                        'customFieldType' => 'select',
                         'customFieldPosition' => 4,
                         'label' => [
                             'en-GB' => 'Website',
@@ -108,10 +108,10 @@ class CustomFieldInstaller
                 // Commercial Terms (positions 11-14)
                 [
                     'name' => 'supplier_commercial_purchase',
-                    'type' => CustomFieldTypes::TEXT,
+                    'type' => CustomFieldTypes::JSON,
                     'config' => [
-                        'componentName' => 'sw-text-field',
-                        'customFieldType' => 'text',
+                        'componentName' => 'sw-tagged-field',
+                        'customFieldType' => 'select',
                         'customFieldPosition' => 11,
                         'label' => [
                             'en-GB' => 'Purchase',
@@ -124,10 +124,10 @@ class CustomFieldInstaller
                 ],
                 [
                     'name' => 'supplier_commercial_margin',
-                    'type' => CustomFieldTypes::TEXT,
+                    'type' => CustomFieldTypes::JSON,
                     'config' => [
-                        'componentName' => 'sw-text-field',
-                        'customFieldType' => 'text',
+                        'componentName' => 'sw-tagged-field',
+                        'customFieldType' => 'select',
                         'customFieldPosition' => 12,
                         'label' => [
                             'en-GB' => 'Margin',
@@ -139,28 +139,12 @@ class CustomFieldInstaller
                     ]
                 ],
                 [
-                    'name' => 'supplier_commercial_discount_opt',
-                    'type' => CustomFieldTypes::JSON,
-                    'config' => [
-                        'componentName' => 'sw-tagged-field',
-                        'customFieldType' => 'select',
-                        'customFieldPosition' => 13,
-                        'label' => [
-                            'en-GB' => 'Wholesale Discount',
-                            'de-DE' => 'Großhandelsrabatt',
-                            'ru-RU' => 'Оптовая скидка',
-                            'ru-UA' => 'Оптовая скидка',
-                            'uk-UA' => 'Оптова знижка',
-                        ]
-                    ]
-                ],
-                [
                     'name' => 'supplier_commercial_discount_online',
                     'type' => CustomFieldTypes::JSON,
                     'config' => [
                         'componentName' => 'sw-tagged-field',
                         'customFieldType' => 'select',
-                        'customFieldPosition' => 14,
+                        'customFieldPosition' => 13,
                         'label' => [
                             'en-GB' => 'Online Discount',
                             'de-DE' => 'Online-Rabatt',
@@ -206,10 +190,10 @@ class CustomFieldInstaller
                 ],
                 [
                     'name' => 'supplier_additional_comment_content',
-                    'type' => CustomFieldTypes::JSON,
+                    'type' => CustomFieldTypes::HTML,
                     'config' => [
-                        'componentName' => 'sw-tagged-field',
-                        'customFieldType' => 'select',
+                        'componentName' => 'sw-text-editor',
+                        'customFieldType' => 'html',
                         'customFieldPosition' => 23,
                         'label' => [
                             'en-GB' => 'Import Comments',

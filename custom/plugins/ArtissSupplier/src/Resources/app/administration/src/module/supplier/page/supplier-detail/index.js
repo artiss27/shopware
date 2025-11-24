@@ -80,6 +80,23 @@ Component.register('supplier-detail', {
             }
         },
 
+        safeAlternativeManufacturerIds: {
+            get() {
+                if (!this.supplier || !this.supplier.alternativeManufacturerIds) {
+                    return [];
+                }
+                if (!Array.isArray(this.supplier.alternativeManufacturerIds)) {
+                    return [];
+                }
+                return this.supplier.alternativeManufacturerIds;
+            },
+            set(value) {
+                if (this.supplier) {
+                    this.supplier.alternativeManufacturerIds = Array.isArray(value) ? value : [];
+                }
+            }
+        },
+
         safeEquipmentTypeIds: {
             get() {
                 if (!this.supplier || !this.supplier.equipmentTypeIds) {
@@ -208,6 +225,9 @@ Component.register('supplier-detail', {
                 if (!this.supplier.manufacturerIds || !Array.isArray(this.supplier.manufacturerIds)) {
                     this.supplier.manufacturerIds = [];
                 }
+                if (!this.supplier.alternativeManufacturerIds || !Array.isArray(this.supplier.alternativeManufacturerIds)) {
+                    this.supplier.alternativeManufacturerIds = [];
+                }
                 if (!this.supplier.equipmentTypeIds || !Array.isArray(this.supplier.equipmentTypeIds)) {
                     this.supplier.equipmentTypeIds = [];
                 }
@@ -239,6 +259,9 @@ Component.register('supplier-detail', {
                     }
                     if (!this.supplier.manufacturerIds || !Array.isArray(this.supplier.manufacturerIds)) {
                         this.supplier.manufacturerIds = [];
+                    }
+                    if (!this.supplier.alternativeManufacturerIds || !Array.isArray(this.supplier.alternativeManufacturerIds)) {
+                        this.supplier.alternativeManufacturerIds = [];
                     }
                     if (!this.supplier.equipmentTypeIds || !Array.isArray(this.supplier.equipmentTypeIds)) {
                         this.supplier.equipmentTypeIds = [];
@@ -273,6 +296,12 @@ Component.register('supplier-detail', {
         onManufacturersChange(selectedValues) {
             if (this.supplier) {
                 this.supplier.manufacturerIds = Array.isArray(selectedValues) ? selectedValues : [];
+            }
+        },
+
+        onAlternativeManufacturersChange(selectedValues) {
+            if (this.supplier) {
+                this.supplier.alternativeManufacturerIds = Array.isArray(selectedValues) ? selectedValues : [];
             }
         },
 
