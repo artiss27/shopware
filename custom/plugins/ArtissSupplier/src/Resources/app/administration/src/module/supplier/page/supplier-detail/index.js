@@ -1,4 +1,5 @@
 import template from './supplier-detail.html.twig';
+import './supplier-detail.scss';
 
 const { Component, Mixin } = Shopware;
 const { Criteria } = Shopware.Data;
@@ -112,6 +113,24 @@ Component.register('supplier-detail', {
                     this.supplier.equipmentTypeIds = Array.isArray(value) ? value : [];
                 }
             }
+        },
+
+        selectedManufacturerOptions() {
+            return this.manufacturerOptions.filter(option =>
+                this.safeManufacturerIds.includes(option.value)
+            );
+        },
+
+        selectedAlternativeManufacturerOptions() {
+            return this.manufacturerOptions.filter(option =>
+                this.safeAlternativeManufacturerIds.includes(option.value)
+            );
+        },
+
+        selectedEquipmentTypeOptions() {
+            return this.equipmentTypeOptions.filter(option =>
+                this.safeEquipmentTypeIds.includes(option.value)
+            );
         }
     },
 
@@ -126,12 +145,26 @@ Component.register('supplier-detail', {
     methods: {
         async loadManufacturers() {
             try {
-                const criteria = new Criteria();
-                criteria.addSorting(Criteria.sort('name', 'ASC'));
-                criteria.setLimit(500);
+                const allManufacturers = [];
+                let page = 1;
+                const limit = 500;
+                let hasMore = true;
 
-                const result = await this.manufacturerRepository.search(criteria);
-                this.manufacturers = result;
+                while (hasMore) {
+                    const criteria = new Criteria(page, limit);
+                    criteria.addSorting(Criteria.sort('name', 'ASC'));
+
+                    const result = await this.manufacturerRepository.search(criteria);
+                    allManufacturers.push(...result);
+
+                    hasMore = result.total > page * limit;
+                    page++;
+
+                    // Safety limit to prevent infinite loops
+                    if (page > 20) break;
+                }
+
+                this.manufacturers = allManufacturers;
             } catch (error) {
                 this.createNotificationError({
                     message: this.$tc('supplier.detail.errorLoadManufacturers')

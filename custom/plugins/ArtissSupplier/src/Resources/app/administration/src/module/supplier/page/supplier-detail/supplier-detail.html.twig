@@ -57,6 +57,16 @@
                                 valueProperty="value"
                             >
                             </sw-multi-select>
+                            <div v-if="selectedManufacturerOptions.length > 0" class="selected-items-list">
+                                <div class="selected-items-header">
+                                    <strong>{{ $tc('supplier.detail.selectedCount', { count: selectedManufacturerOptions.length }) }}:</strong>
+                                </div>
+                                <div class="selected-items-tags">
+                                    <span v-for="option in selectedManufacturerOptions" :key="option.value" class="selected-tag">
+                                        {{ option.label }}
+                                    </span>
+                                </div>
+                            </div>
 
                             <sw-multi-select
                                 :value="safeAlternativeManufacturerIds"
@@ -68,6 +78,16 @@
                                 valueProperty="value"
                             >
                             </sw-multi-select>
+                            <div v-if="selectedAlternativeManufacturerOptions.length > 0" class="selected-items-list">
+                                <div class="selected-items-header">
+                                    <strong>{{ $tc('supplier.detail.selectedCount', { count: selectedAlternativeManufacturerOptions.length }) }}:</strong>
+                                </div>
+                                <div class="selected-items-tags">
+                                    <span v-for="option in selectedAlternativeManufacturerOptions" :key="option.value" class="selected-tag">
+                                        {{ option.label }}
+                                    </span>
+                                </div>
+                            </div>
 
                             <sw-multi-select
                                 :value="safeEquipmentTypeIds"
@@ -79,6 +99,16 @@
                                 valueProperty="value"
                             >
                             </sw-multi-select>
+                            <div v-if="selectedEquipmentTypeOptions.length > 0" class="selected-items-list">
+                                <div class="selected-items-header">
+                                    <strong>{{ $tc('supplier.detail.selectedCount', { count: selectedEquipmentTypeOptions.length }) }}:</strong>
+                                </div>
+                                <div class="selected-items-tags">
+                                    <span v-for="option in selectedEquipmentTypeOptions" :key="option.value" class="selected-tag">
+                                        {{ option.label }}
+                                    </span>
+                                </div>
+                            </div>
                         </sw-card>
                     {% endblock %}
 
