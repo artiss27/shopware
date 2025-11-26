@@ -11,7 +11,12 @@
     },
     "list": {
       "buttonAddSupplier": "Додати постачальника",
-      "columnName": "Назва"
+      "buttonDelete": "Видалити",
+      "columnName": "Назва",
+      "successDelete": "Жоден постачальник не видалено | {count} постачальник видалено | {count} постачальники видалено | {count} постачальників видалено",
+      "errorDelete": "Помилка при видаленні постачальників",
+      "searchTitle": "Пошук",
+      "searchPlaceholder": "Пошук за назвою..."
     },
     "detail": {
       "cardTitleGeneral": "Загальна інформація",

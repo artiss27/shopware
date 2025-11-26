@@ -1,6 +1,6 @@
 import template from './supplier-list.html.twig';
 
-const { Component } = Shopware;
+const { Component, Mixin } = Shopware;
 const { Criteria } = Shopware.Data;
 
 Component.register('supplier-list', {
@@ -8,13 +8,19 @@ Component.register('supplier-list', {
 
     inject: ['repositoryFactory'],
 
+    mixins: [
+        Mixin.getByName('notification')
+    ],
+
     data() {
         return {
             suppliers: null,
             isLoading: false,
             total: 0,
             page: 1,
-            limit: 25
+            limit: 25,
+            selection: {},
+            term: ''
         };
     },
 
@@ -41,6 +47,10 @@ Component.register('supplier-list', {
                     primary: true
                 }
             ];
+        },
+
+        selectionCount() {
+            return Object.keys(this.selection).length;
         }
     },
 
@@ -55,6 +65,10 @@ Component.register('supplier-list', {
             const criteria = new Criteria(this.page, this.limit);
             criteria.addSorting(Criteria.sort('name', 'ASC'));
 
+            if (this.term) {
+                criteria.setTerm(this.term);
+            }
+
             try {
                 const result = await this.supplierRepository.search(criteria);
                 this.suppliers = result;
@@ -68,6 +82,47 @@ Component.register('supplier-list', {
             this.page = page;
             this.limit = limit;
             this.getList();
+        },
+
+        onSearch(searchTerm) {
+            this.term = searchTerm;
+            this.page = 1;
+            this.getList();
+        },
+
+        onSelectionChanged(selection) {
+            this.selection = selection;
+        },
+
+        async onDelete() {
+            if (this.selectionCount === 0) {
+                return;
+            }
+
+            this.isLoading = true;
+
+            try {
+                const deletePromises = Object.keys(this.selection).map(id => {
+                    return this.supplierRepository.delete(id, Shopware.Context.api);
+                });
+
+                await Promise.all(deletePromises);
+
+                this.createNotificationSuccess({
+                    message: this.$tc('supplier.list.successDelete', this.selectionCount, {
+                        count: this.selectionCount
+                    })
+                });
+
+                this.selection = {};
+                await this.getList();
+            } catch (error) {
+                this.createNotificationError({
+                    message: this.$tc('supplier.list.errorDelete')
+                });
+            } finally {
+                this.isLoading = false;
+            }
         }
     }
 });

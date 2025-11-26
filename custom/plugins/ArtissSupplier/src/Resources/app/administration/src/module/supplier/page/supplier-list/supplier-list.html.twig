@@ -4,12 +4,24 @@
             <template #smart-bar-header>
                 <h2>
                     {{ $tc('supplier.general.mainMenuItemGeneral') }}
+                    <span v-if="!isLoading" class="sw-page__smart-bar-amount">({{ total }})</span>
                 </h2>
             </template>
         {% endblock %}
 
         {% block supplier_list_smart_bar_actions %}
             <template #smart-bar-actions>
+                {% block supplier_list_smart_bar_actions_delete %}
+                    <sw-button
+                        v-if="selectionCount > 0"
+                        @click="onDelete"
+                        variant="danger"
+                        :disabled="isLoading"
+                    >
+                        {{ $tc('supplier.list.buttonDelete') }}
+                    </sw-button>
+                {% endblock %}
+
                 {% block supplier_list_smart_bar_actions_add %}
                     <sw-button
                         :routerLink="{ name: 'artiss.supplier.create' }"
@@ -21,19 +33,37 @@
             </template>
         {% endblock %}
 
+        {% block supplier_list_language_switch %}
+            <template #language-switch>
+                <sw-language-switch @on-change="getList"></sw-language-switch>
+            </template>
+        {% endblock %}
+
         {% block supplier_list_content %}
             <template #content>
+                {% block supplier_list_content_search %}
+                    <sw-card :title="$tc('supplier.list.searchTitle')">
+                        <sw-simple-search-field
+                            v-model:value="term"
+                            :placeholder="$tc('supplier.list.searchPlaceholder')"
+                            @search-term-change="onSearch"
+                        >
+                        </sw-simple-search-field>
+                    </sw-card>
+                {% endblock %}
+
                 {% block supplier_list_content_list %}
                     <sw-entity-listing
                         v-if="suppliers"
                         :items="suppliers"
                         :repository="supplierRepository"
-                        :showSelection="false"
+                        :showSelection="true"
                         :columns="supplierColumns"
                         :isLoading="isLoading"
                         :total="total"
                         detailRoute="artiss.supplier.detail"
                         @page-change="onPageChange"
+                        @selection-change="onSelectionChanged"
                     >
                     </sw-entity-listing>
                 {% endblock %}

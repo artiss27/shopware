@@ -11,7 +11,12 @@
     },
     "list": {
       "buttonAddSupplier": "Add supplier",
-      "columnName": "Name"
+      "buttonDelete": "Delete",
+      "columnName": "Name",
+      "successDelete": "No supplier deleted | {count} supplier deleted | {count} suppliers deleted",
+      "errorDelete": "Error deleting suppliers",
+      "searchTitle": "Search",
+      "searchPlaceholder": "Search by name..."
     },
     "detail": {
       "cardTitleGeneral": "General information",
