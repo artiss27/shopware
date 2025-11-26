@@ -27,6 +27,15 @@ Module.register('artiss-supplier', {
     targetVersion: '1.0.0',
     color: '#ff3d58',
     icon: 'regular-shopping-bag',
+    entity: 'art_supplier',
+
+    defaultSearchConfiguration: {
+        _searchable: true,
+        name: {
+            _searchable: true,
+            _score: 500,
+        },
+    },
 
     routes: {
         index: {
