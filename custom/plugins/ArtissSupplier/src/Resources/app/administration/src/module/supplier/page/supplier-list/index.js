@@ -45,6 +45,13 @@ Component.register('supplier-list', {
                     inlineEdit: 'string',
                     allowResize: true,
                     primary: true
+                },
+                {
+                    property: 'updatedAt',
+                    dataIndex: 'updatedAt',
+                    label: this.$tc('supplier.list.columnUpdatedAt'),
+                    allowResize: true,
+                    sortable: true
                 }
             ];
         },
@@ -123,6 +130,19 @@ Component.register('supplier-list', {
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleString('ru-RU', options);
         }
     }
 });

@@ -8,6 +8,10 @@
             <tag name="shopware.entity.definition" entity="art_supplier"/>
         </service>
 
+        <service id="Artiss\Supplier\Core\Content\Supplier\Aggregate\SupplierMedia\SupplierMediaDefinition">
+            <tag name="shopware.entity.definition" entity="art_supplier_media"/>
+        </service>
+
         <service id="Artiss\Supplier\Core\Content\Product\ProductSupplierExtension">
             <tag name="shopware.entity.extension"/>
         </service>
@@ -21,6 +25,19 @@
             <argument type="service" id="product_manufacturer.repository"/>
             <argument type="service" id="property_group.repository"/>
             <argument type="service" id="property_group_option.repository"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Artiss\Supplier\Command\CreateMediaFolderCommand">
+            <argument type="service" id="media_folder.repository"/>
+            <argument type="service" id="media_folder_configuration.repository"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Artiss\Supplier\Command\CleanupOrphanedPriceListsCommand">
+            <argument type="service" id="media.repository"/>
+            <argument type="service" id="media_folder.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
             <tag name="console.command"/>
         </service>
     </services>

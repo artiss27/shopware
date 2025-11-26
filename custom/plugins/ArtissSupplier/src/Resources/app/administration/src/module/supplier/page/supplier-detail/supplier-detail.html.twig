@@ -112,6 +112,58 @@
                         </sw-card>
                     {% endblock %}
 
+                    {% block supplier_detail_content_price_lists %}
+                        <sw-card
+                            :title="$tc('supplier.detail.cardTitlePriceLists')"
+                            :isLoading="isLoading"
+                        >
+                            <sw-upload-listener
+                                :uploadTag="uploadTag"
+                                @media-upload-finish="onMediaUploadFinish"
+                                autoUpload
+                            />
+
+                            <sw-media-upload-v2
+                                v-if="mediaFolderId"
+                                variant="regular"
+                                :uploadTag="uploadTag"
+                                :label="$tc('supplier.detail.labelUploadPriceList')"
+                                :allowMultiSelect="true"
+                                :target-folder-id="mediaFolderId"
+                            />
+                            <div v-else>
+                                <sw-loader />
+                            </div>
+
+                            <sw-data-grid
+                                v-if="supplier.media && supplier.media.length > 0"
+                                :dataSource="mediaItems"
+                                :columns="mediaColumns"
+                                :showSelection="false"
+                                :isLoading="isLoading"
+                            >
+                                <template #column-fileName="{ item }">
+                                    <div class="sw-data-grid__cell-content" style="display: flex; align-items: center; gap: 8px;">
+                                        <sw-media-preview-v2
+                                            :source="item.id"
+                                            :showControls="false"
+                                        />
+                                        {{ item.fileName }}
+                                    </div>
+                                </template>
+
+                                <template #actions="{ item }">
+                                    <sw-context-menu-item
+                                        variant="danger"
+                                        @click="onRemoveMedia(item)"
+                                    >
+                                        {{ $tc('global.default.delete') }}
+                                    </sw-context-menu-item>
+                                </template>
+                            </sw-data-grid>
+                        </sw-card>
+                    {% endblock %}
+
                     {% block supplier_detail_content_tabs %}
                         <sw-card v-if="supplier && customFieldSets.length > 0" :isLoading="isLoading">
                             <sw-custom-field-set-renderer

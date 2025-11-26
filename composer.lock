@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "45274c87c9c93dc50ec947b02741634a",
+    "content-hash": "e62dc225fb8ce9930150876e4ac1e560",
     "packages": [
         {
             "name": "async-aws/core",
@@ -6330,11 +6330,11 @@
         },
         {
             "name": "swag/paypal",
-            "version": "10.2.0",
+            "version": "10.3.0",
             "dist": {
                 "type": "path",
                 "url": "custom/plugins/SwagPayPal",
-                "reference": "823017bfd290ff291094e8d043c9f2133f73c648"
+                "reference": "0ba1eb0be16d1d8feeb7b30f6f0c80afe0078a5b"
             },
             "require": {
                 "shopware/core": "~6.7.0@dev",
@@ -6418,9 +6418,8 @@
                     "../../../vendor/bin/phpunit"
                 ],
                 "phpstan": [
-                    "php ../../../src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php",
                     "php bin/phpstan-config-generator.php",
-                    "php -dmemory_limit=512M ../../../vendor/bin/phpstan analyze"
+                    "php ../../../vendor/bin/phpstan analyze"
                 ],
                 "rector": [
                     "../../../vendor/bin/rector process"
@@ -11557,5 +11556,5 @@
         "composer-runtime-api": "^2.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

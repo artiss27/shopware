@@ -33,7 +33,9 @@ Component.register('supplier-detail', {
             customFieldSets: [],
             manufacturers: [],
             equipmentTypes: [],
-            equipmentTypePropertyGroupId: '20836795-aab8-97d8-c709-a2535f197268'
+            equipmentTypePropertyGroupId: '20836795-aab8-97d8-c709-a2535f197268',
+            uploadTag: 'supplier-price-list-upload',
+            mediaFolderId: null
         };
     },
 
@@ -48,6 +50,33 @@ Component.register('supplier-detail', {
 
         manufacturerRepository() {
             return this.repositoryFactory.create('product_manufacturer');
+        },
+
+        mediaRepository() {
+            return this.repositoryFactory.create('media');
+        },
+
+        mediaColumns() {
+            return [
+                {
+                    property: 'fileName',
+                    label: this.$tc('supplier.detail.columnFileName'),
+                    allowResize: true,
+                    primary: true
+                },
+                {
+                    property: 'fileSize',
+                    label: this.$tc('supplier.detail.columnFileSize'),
+                    allowResize: true
+                }
+            ];
+        },
+
+        mediaItems() {
+            if (!this.supplier.media) {
+                return [];
+            }
+            return Array.from(this.supplier.media);
         },
 
         manufacturerOptions() {
@@ -140,6 +169,7 @@ Component.register('supplier-detail', {
         this.loadEquipmentTypes();
         this.getSupplier();
         this.loadCustomFieldSets();
+        this.loadMediaFolder();
     },
 
     methods: {
@@ -246,6 +276,7 @@ Component.register('supplier-detail', {
             try {
                 if (this.$route.params.id) {
                     const criteria = new Criteria();
+                    criteria.addAssociation('media');
                     const entity = await this.repository.get(this.$route.params.id, Shopware.Context.api, criteria);
                     this.supplier = entity;
                 } else {
@@ -282,6 +313,7 @@ Component.register('supplier-detail', {
             return this.repository.save(this.supplier, Shopware.Context.api)
                 .then(() => {
                     const criteria = new Criteria();
+                    criteria.addAssociation('media');
                     return this.repository.get(supplierId, Shopware.Context.api, criteria);
                 })
                 .then((loadedSupplier) => {
@@ -300,6 +332,9 @@ Component.register('supplier-detail', {
                         this.supplier.equipmentTypeIds = [];
                     }
 
+                    // Force update media items in UI
+                    this.$forceUpdate();
+
                     this.createNotificationSuccess({
                         message: this.$tc('supplier.detail.successSave')
                     });
@@ -314,7 +349,8 @@ Component.register('supplier-detail', {
                         });
                     }
                 })
-                .catch(() => {
+                .catch((error) => {
+                    console.error('Save error:', error);
                     this.createNotificationError({
                         message: this.$tc('supplier.detail.errorSave')
                     });
@@ -342,6 +378,37 @@ Component.register('supplier-detail', {
             if (this.supplier) {
                 this.supplier.equipmentTypeIds = Array.isArray(selectedValues) ? selectedValues : [];
             }
+        },
+
+        async loadMediaFolder() {
+            try {
+                const mediaFolderRepository = this.repositoryFactory.create('media_folder');
+                const criteria = new Criteria();
+                criteria.addFilter(Criteria.equals('name', 'Suppliers Prices'));
+
+                const result = await mediaFolderRepository.search(criteria, Shopware.Context.api);
+                if (result.length > 0) {
+                    this.mediaFolderId = result.first().id;
+                }
+            } catch (error) {
+                console.error('Error loading media folder:', error);
+            }
+        },
+
+        async onMediaUploadFinish({ targetId }) {
+            const media = await this.mediaRepository.get(targetId, Shopware.Context.api);
+
+            if (media && this.supplier.media) {
+                this.supplier.media.add(media);
+            }
+        },
+
+        onRemoveMedia(item) {
+            if (!this.supplier.media) {
+                return;
+            }
+
+            this.supplier.media.remove(item.id);
         }
     }
 });

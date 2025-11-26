@@ -65,6 +65,11 @@
                         @page-change="onPageChange"
                         @selection-change="onSelectionChanged"
                     >
+                        <template #column-updatedAt="{ item }">
+                            <template v-if="item.updatedAt">
+                                {{ formatDate(item.updatedAt) }}
+                            </template>
+                        </template>
                     </sw-entity-listing>
                 {% endblock %}
             </template>

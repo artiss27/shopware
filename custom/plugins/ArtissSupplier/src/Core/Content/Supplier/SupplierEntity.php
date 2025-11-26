@@ -2,6 +2,7 @@
 
 namespace Artiss\Supplier\Core\Content\Supplier;
 
+use Shopware\Core\Content\Media\MediaCollection;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
@@ -25,6 +26,8 @@ class SupplierEntity extends Entity
     protected ?array $customFields = null;
 
     protected ?ProductCollection $products = null;
+
+    protected ?MediaCollection $media = null;
 
     public function getName(): string
     {
@@ -84,5 +87,15 @@ class SupplierEntity extends Entity
     public function setProducts(?ProductCollection $products): void
     {
         $this->products = $products;
+    }
+
+    public function getMedia(): ?MediaCollection
+    {
+        return $this->media;
+    }
+
+    public function setMedia(?MediaCollection $media): void
+    {
+        $this->media = $media;
     }
 }

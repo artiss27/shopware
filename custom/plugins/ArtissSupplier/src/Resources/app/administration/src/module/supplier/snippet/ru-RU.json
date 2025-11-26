@@ -11,10 +11,17 @@
     },
     "list": {
       "buttonAddSupplier": "Добавить поставщика",
-      "columnName": "Название"
+      "buttonDelete": "Удалить",
+      "columnName": "Название",
+      "columnUpdatedAt": "Последнее обновление",
+      "successDelete": "Ни один поставщик не удален | {count} поставщик удален | {count} поставщика удалено | {count} поставщиков удалено",
+      "errorDelete": "Ошибка при удалении поставщиков",
+      "searchTitle": "Поиск",
+      "searchPlaceholder": "Поиск по названию..."
     },
     "detail": {
       "cardTitleGeneral": "Общая информация",
+      "cardTitlePriceLists": "Прайс-листы",
       "labelName": "Название",
       "placeholderName": "Введите название поставщика...",
       "labelManufacturers": "ТМ на сайте",
@@ -23,6 +30,10 @@
       "placeholderAlternativeManufacturers": "Выберите альтернативные ТМ...",
       "labelEquipmentTypes": "Тип оборудования",
       "placeholderEquipmentTypes": "Выберите тип оборудования...",
+      "selectedCount": "Выбрано ({count})",
+      "labelUploadPriceList": "Загрузить прайс-лист (xlsx, csv, pdf, xml и т.д.)",
+      "columnFileName": "Название файла",
+      "columnFileSize": "Размер файла",
       "buttonSave": "Сохранить",
       "buttonCancel": "Отменить",
       "successSave": "Поставщик успешно сохранен",

@@ -103,3 +103,14 @@ seo-clean: ## Clear all SEO URLs (use before regenerate)
 	@echo "✅ SEO URLs cleared"
 ###< seo ###
 
+###> supplier ###
+supplier-cleanup-pricelists: ## Cleanup orphaned supplier price lists (dry-run)
+	@echo "🔍 Checking for orphaned price lists..."
+	@docker compose exec web bin/console artiss:supplier:cleanup-orphaned-pricelists --dry-run
+
+supplier-cleanup-pricelists-force: ## Delete orphaned supplier price lists older than 7 days
+	@echo "🗑️  Cleaning up orphaned price lists..."
+	@docker compose exec web bin/console artiss:supplier:cleanup-orphaned-pricelists --no-interaction
+	@echo "✅ Cleanup completed"
+###< supplier ###
+

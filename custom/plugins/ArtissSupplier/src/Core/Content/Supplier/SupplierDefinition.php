@@ -2,6 +2,7 @@
 
 namespace Artiss\Supplier\Core\Content\Supplier;
 
+use Shopware\Core\Content\Media\MediaDefinition;
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\CustomFields;
@@ -11,9 +12,11 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\SearchRanking;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\JsonField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
+use Artiss\Supplier\Core\Content\Supplier\Aggregate\SupplierMedia\SupplierMediaDefinition;
 
 class SupplierDefinition extends EntityDefinition
 {
@@ -59,6 +62,9 @@ class SupplierDefinition extends EntityDefinition
 
             // Products that belong to this supplier
             new OneToManyAssociationField('products', ProductDefinition::class, 'supplier_id', 'id'),
+
+            // Price lists (media files)
+            (new ManyToManyAssociationField('media', MediaDefinition::class, SupplierMediaDefinition::class, 'supplier_id', 'media_id'))->addFlags(new ApiAware()),
         ]);
     }
 }
