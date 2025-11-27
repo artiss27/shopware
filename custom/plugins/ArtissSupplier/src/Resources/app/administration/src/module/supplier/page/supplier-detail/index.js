@@ -409,6 +409,24 @@ Component.register('supplier-detail', {
             }
 
             this.supplier.media.remove(item.id);
+        },
+
+        onDownloadMedia(item) {
+            if (!item || !item.url) {
+                this.createNotificationError({
+                    message: this.$tc('supplier.detail.errorDownload')
+                });
+                return;
+            }
+
+            // Create temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = item.url;
+            link.download = item.fileName || 'download';
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     }
 });

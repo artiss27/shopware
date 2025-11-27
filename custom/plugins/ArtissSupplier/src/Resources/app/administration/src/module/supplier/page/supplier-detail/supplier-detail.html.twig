@@ -154,6 +154,12 @@
 
                                 <template #actions="{ item }">
                                     <sw-context-menu-item
+                                        @click="onDownloadMedia(item)"
+                                    >
+                                        {{ $tc('supplier.detail.buttonDownload') }}
+                                    </sw-context-menu-item>
+
+                                    <sw-context-menu-item
                                         variant="danger"
                                         @click="onRemoveMedia(item)"
                                     >

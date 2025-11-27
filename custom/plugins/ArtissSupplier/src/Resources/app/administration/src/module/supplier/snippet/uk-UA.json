@@ -34,6 +34,8 @@
       "labelUploadPriceList": "Завантажити прайс-лист (xlsx, csv, pdf, xml тощо)",
       "columnFileName": "Назва файлу",
       "columnFileSize": "Розмір файлу",
+      "buttonDownload": "Завантажити",
+      "errorDownload": "Помилка при завантаженні файлу",
       "buttonSave": "Зберегти",
       "buttonCancel": "Скасувати",
       "successSave": "Постачальник успішно збережений",

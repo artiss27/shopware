@@ -34,6 +34,8 @@
       "labelUploadPriceList": "Upload price list (xlsx, csv, pdf, xml, etc.)",
       "columnFileName": "File name",
       "columnFileSize": "File size",
+      "buttonDownload": "Download",
+      "errorDownload": "Error downloading file",
       "buttonSave": "Save",
       "buttonCancel": "Cancel",
       "successSave": "Supplier saved successfully",
