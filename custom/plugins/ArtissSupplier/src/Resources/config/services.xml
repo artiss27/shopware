@@ -12,9 +12,7 @@
             <tag name="shopware.entity.definition" entity="art_supplier_media"/>
         </service>
 
-        <service id="Artiss\Supplier\Core\Content\Product\ProductSupplierExtension">
-            <tag name="shopware.entity.extension"/>
-        </service>
+        <!-- ProductSupplierExtension removed: using customFields instead of DB column -->
 
         <service id="Artiss\Supplier\Service\CustomFieldInstaller">
             <argument type="service" id="custom_field_set.repository"/>

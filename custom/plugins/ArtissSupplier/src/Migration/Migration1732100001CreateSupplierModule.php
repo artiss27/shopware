@@ -15,6 +15,8 @@ class Migration1732100001CreateSupplierModule extends MigrationStep
 
     public function update(Connection $connection): void
     {
+        // Create supplier table
+        // Note: Product-supplier relation stored in product.custom_fields.supplier_id (no DB column needed)
         $sql = <<<SQL
 CREATE TABLE IF NOT EXISTS `art_supplier` (
     `id` BINARY(16) NOT NULL,

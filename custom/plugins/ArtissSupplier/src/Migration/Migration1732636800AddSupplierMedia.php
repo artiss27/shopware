@@ -20,10 +20,14 @@ CREATE TABLE IF NOT EXISTS `art_supplier_media` (
     `media_id` BINARY(16) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`supplier_id`, `media_id`),
+    -- FK on our own table with CASCADE (safe)
     CONSTRAINT `fk.art_supplier_media.supplier_id` FOREIGN KEY (`supplier_id`)
         REFERENCES `art_supplier` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    -- FK on system table: CASCADE safe because media deletion is controlled by Shopware
+    -- Alternative: use RESTRICT to prevent media deletion if used by supplier
     CONSTRAINT `fk.art_supplier_media.media_id` FOREIGN KEY (`media_id`)
-        REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+        REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    KEY `idx.art_supplier_media.media_id` (`media_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 SQL;
 

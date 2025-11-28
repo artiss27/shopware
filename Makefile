@@ -112,6 +112,13 @@ supplier-cleanup-pricelists-force: ## Delete orphaned supplier price lists older
 	@echo "🗑️  Cleaning up orphaned price lists..."
 	@docker compose exec web bin/console artiss:supplier:cleanup-orphaned-pricelists --no-interaction
 	@echo "✅ Cleanup completed"
+
+supplier-rebuild: ## Rebuild supplier plugin (administration)
+	@echo "🔨 Rebuilding supplier plugin..."
+	@docker compose exec -e DATABASE_HOST=database web php bin/console bundle:dump
+	@docker compose exec -e DATABASE_HOST=database web sh -c 'cd /var/www/html && ./bin/build-administration.sh'
+	@docker compose exec web php bin/console cache:clear
+	@echo "✅ Supplier plugin rebuilt"
 ###< supplier ###
 
 ###> media cleanup ###
