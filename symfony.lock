@@ -47,7 +47,7 @@
             "repo": "github.com/shopware/recipes",
             "branch": "main",
             "version": "6.7",
-            "ref": "fabd4e4ee688ea01e100a8fa77cd8be6d256150b"
+            "ref": "295ab85eb3fa1b481e1501a7738e3f1ad0457037"
         },
         "files": [
             "bin/build-administration.sh",
@@ -106,7 +106,7 @@
             "repo": "github.com/shopware/recipes",
             "branch": "main",
             "version": "6.7",
-            "ref": "baad1ead54a517040b0d0134d565a9d56b352187"
+            "ref": "9b8a4205b35f7388acb69308f1135277945d75a4"
         },
         "files": [
             "bin/build-storefront.sh",
@@ -132,7 +132,7 @@
         }
     },
     "symfony/flex": {
-        "version": "2.9",
+        "version": "2.10",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",

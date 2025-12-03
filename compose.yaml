@@ -20,21 +20,21 @@ services:
       - --log_bin_trust_function_creators=1
       - --binlog_cache_size=16M
       - --key_buffer_size=0
-      - --join_buffer_size=256M
+      - --join_buffer_size=1024M
       - --innodb_log_file_size=128M
-      - --innodb_buffer_pool_size=512M
+      - --innodb_buffer_pool_size=1024M
       - --innodb_buffer_pool_instances=1
       - --group_concat_max_len=320000
       - --default-time-zone=+00:00
-      - --max_binlog_size=256M
+      - --max_binlog_size=512M
       - --binlog_expire_logs_seconds=86400
     healthcheck:
       test: [ "CMD", "mariadb-admin" ,"ping", "-h", "localhost", "-proot" ]
-      start_period: 30s
-      start_interval: 5s
-      interval: 10s
-      timeout: 3s
-      retries: 5
+      start_period: 10s
+      start_interval: 3s
+      interval: 5s
+      timeout: 1s
+      retries: 10
 ###< shopware/core ###
 
 ###> shopware/elasticsearch ###
