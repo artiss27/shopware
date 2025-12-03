@@ -4,6 +4,9 @@ namespace Artiss\Supplier\Service;
 
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\OrFilter;
 use Shopware\Core\System\CustomField\CustomFieldTypes;
 
 class CustomFieldInstaller
@@ -16,6 +19,7 @@ class CustomFieldInstaller
     public function install(Context $context): void
     {
         $this->createSupplierFieldSet($context);
+        $this->addProductSupplierField($context);
     }
 
     private function createSupplierFieldSet(Context $context): void
@@ -252,11 +256,95 @@ class CustomFieldInstaller
         ]], $context);
     }
 
+    private function addProductSupplierField(Context $context): void
+    {
+        // Add supplier field to existing 'product_custom_properties' set
+        // Find the existing custom field set
+        $criteria = new Criteria();
+        $criteria->addFilter(
+            new EqualsFilter('name', 'product_custom_properties')
+        );
+
+        $setIds = $this->customFieldSetRepository->searchIds($criteria, $context);
+
+        if ($setIds->getTotal() === 0) {
+            // If set doesn't exist, create it
+            $this->customFieldSetRepository->upsert([[
+                'name' => 'product_custom_properties',
+                'config' => [
+                    'label' => [
+                        'en-GB' => 'Product Properties',
+                        'uk-UA' => 'Властивості товару',
+                    ]
+                ],
+                'customFields' => [
+                    [
+                        'name' => 'product_supplier_id',
+                        'type' => CustomFieldTypes::TEXT,
+                        'config' => [
+                            'componentName' => 'sw-entity-single-select',
+                            'entity' => 'art_supplier',
+                            'customFieldType' => 'entity',
+                            'customFieldPosition' => 1,
+                            'label' => [
+                                'en-GB' => 'Supplier',
+                                'de-DE' => 'Lieferant',
+                                'ru-RU' => 'Поставщик',
+                                'uk-UA' => 'Постачальник',
+                            ],
+                            'placeholder' => [
+                                'en-GB' => 'Select supplier...',
+                                'de-DE' => 'Lieferant auswählen...',
+                                'ru-RU' => 'Выберите поставщика...',
+                                'uk-UA' => 'Оберіть постачальника...',
+                            ]
+                        ]
+                    ],
+                ],
+                'relations' => [
+                    ['entityName' => 'product']
+                ]
+            ]], $context);
+        } else {
+            // If set exists, just add the custom field
+            $setId = $setIds->getIds()[0];
+
+            $this->customFieldSetRepository->upsert([[
+                'id' => $setId,
+                'customFields' => [
+                    [
+                        'name' => 'product_supplier_id',
+                        'type' => CustomFieldTypes::TEXT,
+                        'config' => [
+                            'componentName' => 'sw-entity-single-select',
+                            'entity' => 'art_supplier',
+                            'customFieldType' => 'entity',
+                            'customFieldPosition' => 1,
+                            'label' => [
+                                'en-GB' => 'Supplier',
+                                'de-DE' => 'Lieferant',
+                                'ru-RU' => 'Поставщик',
+                                'uk-UA' => 'Постачальник',
+                            ],
+                            'placeholder' => [
+                                'en-GB' => 'Select supplier...',
+                                'de-DE' => 'Lieferant auswählen...',
+                                'ru-RU' => 'Выберите поставщика...',
+                                'uk-UA' => 'Оберіть постачальника...',
+                            ]
+                        ]
+                    ],
+                ]
+            ]], $context);
+        }
+    }
+
     public function uninstall(Context $context): void
     {
-        $criteria = new \Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria();
+        // Delete supplier_fields custom field set (for supplier entity)
+        $criteria = new Criteria();
         $criteria->addFilter(
-            new \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter('name', 'supplier_fields')
+            new EqualsFilter('name', 'supplier_fields')
         );
 
         $ids = $this->customFieldSetRepository->searchIds($criteria, $context);
@@ -267,5 +355,8 @@ class CustomFieldInstaller
                 $context
             );
         }
+
+        // Note: product_supplier_id field in product_custom_properties set is NOT deleted
+        // to avoid removing other custom fields that may exist in that set
     }
 }

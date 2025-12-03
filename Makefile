@@ -119,6 +119,9 @@ supplier-rebuild: ## Rebuild supplier plugin (administration)
 	@docker compose exec -e DATABASE_HOST=database web sh -c 'cd /var/www/html && ./bin/build-administration.sh'
 	@docker compose exec web php bin/console cache:clear
 	@echo "✅ Supplier plugin rebuilt"
+
+supplier-update:
+	docker compose exec web bin/console plugin:update ArtissSupplier
 ###< supplier ###
 
 ###> media cleanup ###
