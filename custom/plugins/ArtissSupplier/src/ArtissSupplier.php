@@ -16,7 +16,8 @@ class ArtissSupplier extends Plugin
 
         // Install custom fields manually without service container
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
-        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository);
+        $customFieldRepository = $this->container->get('custom_field.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository, $customFieldRepository);
         $customFieldInstaller->install($installContext->getContext());
     }
 
@@ -26,7 +27,8 @@ class ArtissSupplier extends Plugin
 
         // Update custom fields on plugin update
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
-        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository);
+        $customFieldRepository = $this->container->get('custom_field.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository, $customFieldRepository);
         $customFieldInstaller->install($updateContext->getContext());
     }
 
@@ -40,7 +42,8 @@ class ArtissSupplier extends Plugin
 
         // Remove custom fields
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
-        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository);
+        $customFieldRepository = $this->container->get('custom_field.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository, $customFieldRepository);
         $customFieldInstaller->uninstall($uninstallContext->getContext());
 
         // Remove tables

@@ -12,7 +12,8 @@ use Shopware\Core\System\CustomField\CustomFieldTypes;
 class CustomFieldInstaller
 {
     public function __construct(
-        private readonly EntityRepository $customFieldSetRepository
+        private readonly EntityRepository $customFieldSetRepository,
+        private readonly EntityRepository $customFieldRepository
     ) {
     }
 
@@ -24,6 +25,16 @@ class CustomFieldInstaller
 
     private function createSupplierFieldSet(Context $context): void
     {
+        // Check if set already exists
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'supplier_fields'));
+        $existingSet = $this->customFieldSetRepository->search($criteria, $context);
+
+        if ($existingSet->getTotal() > 0) {
+            // Set exists, skip creation
+            return;
+        }
+
         $this->customFieldSetRepository->upsert([[
             'name' => 'supplier_fields',
             'config' => [
@@ -258,6 +269,16 @@ class CustomFieldInstaller
 
     private function addProductSupplierField(Context $context): void
     {
+        // Check if product_supplier_id field already exists
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', 'product_supplier_id'));
+        $existingField = $this->customFieldRepository->search($criteria, $context);
+
+        if ($existingField->getTotal() > 0) {
+            // Field already exists, skip creation
+            return;
+        }
+
         // Add supplier field to existing 'product_custom_properties' set
         // Find the existing custom field set
         $criteria = new Criteria();
