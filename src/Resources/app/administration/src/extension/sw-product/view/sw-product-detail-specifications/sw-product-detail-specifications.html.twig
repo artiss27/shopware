@@ -1,0 +1,19 @@
+{% block sw_product_detail_specifications_custom_fields %}
+    <sw-card
+        class="sw-product-detail-specifications__custom-fields"
+        :title="$tc('sw-product.specifications.cardTitleCustomFields')"
+        :isLoading="isLoading">
+
+        <template v-if="customFieldSets && customFieldSets.length > 0">
+            <artiss-custom-fields-manager
+                :entity="product"
+                :sets="customFieldSets">
+            </artiss-custom-fields-manager>
+        </template>
+
+        <template v-else>
+            <sw-empty-state :title="$tc('sw-product.specifications.customFieldsEmptyTitle')"></sw-empty-state>
+        </template>
+    </sw-card>
+{% endblock %}
+

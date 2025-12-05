@@ -17,4 +17,5 @@ return [
     Shopware\Administration\Administration::class => ['all' => true],
     Shopware\Elasticsearch\Elasticsearch::class => ['all' => true],
     Shopware\Storefront\Storefront::class => ['all' => true],
+    App\App::class => ['all' => true],
 ];

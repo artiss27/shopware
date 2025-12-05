@@ -1,0 +1,13 @@
+{
+  "artiss-custom-fields": {
+    "addProperty": "Eigenschaft hinzufügen",
+    "removeField": "Feld entfernen",
+    "addPropertyModal": {
+      "title": "Benutzerdefiniertes Feld hinzufügen",
+      "searchPlaceholder": "Suche nach Schlüssel oder Bezeichnung...",
+      "noFields": "Keine verfügbaren Felder",
+      "close": "Schließen"
+    }
+  }
+}
+

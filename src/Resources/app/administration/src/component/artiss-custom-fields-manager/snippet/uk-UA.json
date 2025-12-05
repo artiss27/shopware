@@ -1,0 +1,13 @@
+{
+  "artiss-custom-fields": {
+    "addProperty": "Додати властивість",
+    "removeField": "Видалити поле",
+    "addPropertyModal": {
+      "title": "Додати кастомне поле",
+      "searchPlaceholder": "Пошук за ключем або назвою...",
+      "noFields": "Немає доступних полів",
+      "close": "Закрити"
+    }
+  }
+}
+

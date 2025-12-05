@@ -1,0 +1,117 @@
+{% block artiss_custom_fields_manager %}
+    <div class="artiss-custom-fields-manager">
+        {# Show standard renderer if data not loaded yet #}
+        <template v-if="allCustomFields.length === 0">
+            <sw-custom-field-set-renderer
+                :entity="entity"
+                :sets="sets"
+            />
+        </template>
+
+        {# Show smart manager when data is loaded #}
+        <template v-else>
+            {% block artiss_custom_fields_manager_visible_fields %}
+                <div class="artiss-custom-fields-manager__visible-fields">
+                    {% block artiss_custom_fields_manager_visible_fields_list %}
+                        <div v-for="field in visibleFields"
+                             :key="field.name"
+                             class="artiss-custom-fields-manager__field-wrapper">
+
+                            {% block artiss_custom_fields_manager_field_item %}
+                                <div class="artiss-custom-fields-manager__field">
+                                    {% block artiss_custom_fields_manager_field_content %}
+                                        {# Render single field - use complete field object with proper binding #}
+                                        <sw-form-field-renderer
+                                            v-model:value="entity.customFields[field.name]"
+                                            :config="field.config"
+                                            :type="field.type"
+                                            :name="field.name">
+                                        </sw-form-field-renderer>
+                                    {% endblock %}
+
+                                    {% block artiss_custom_fields_manager_field_remove %}
+                                        <sw-button
+                                            class="artiss-custom-fields-manager__remove-button"
+                                            variant="danger"
+                                            size="small"
+                                            square
+                                            @click="removeField(field)"
+                                            :title="$tc('artiss-custom-fields.removeField')">
+                                            <sw-icon name="regular-times-s" small />
+                                        </sw-button>
+                                    {% endblock %}
+                                </div>
+                            {% endblock %}
+                        </div>
+                    {% endblock %}
+                </div>
+            {% endblock %}
+
+            {% block artiss_custom_fields_manager_add_button %}
+                <sw-button
+                    v-if="hiddenFields.length > 0"
+                    class="artiss-custom-fields-manager__add-button"
+                    variant="ghost"
+                    @click="openAddFieldModal">
+                    <sw-icon name="regular-plus-circle" />
+                    {{ $tc('artiss-custom-fields.addProperty') }}
+                </sw-button>
+            {% endblock %}
+        </template>
+
+        {% block artiss_custom_fields_manager_modal %}
+            <sw-modal
+                v-if="showAddFieldModal"
+                :title="$tc('artiss-custom-fields.addPropertyModal.title')"
+                @modal-close="closeAddFieldModal"
+                class="artiss-custom-fields-manager__modal">
+
+                {% block artiss_custom_fields_manager_modal_content %}
+                    <template #default>
+                        <div class="artiss-custom-fields-manager__modal-content">
+                            {% block artiss_custom_fields_manager_modal_search %}
+                                <sw-simple-search-field
+                                    v-model:value="searchTerm"
+                                    :placeholder="$tc('artiss-custom-fields.addPropertyModal.searchPlaceholder')"
+                                    class="artiss-custom-fields-manager__search">
+                                </sw-simple-search-field>
+                            {% endblock %}
+
+                            {% block artiss_custom_fields_manager_modal_list %}
+                                <div class="artiss-custom-fields-manager__field-list">
+                                    <div v-if="filteredHiddenFields.length === 0"
+                                         class="artiss-custom-fields-manager__empty-state">
+                                        {{ $tc('artiss-custom-fields.addPropertyModal.noFields') }}
+                                    </div>
+
+                                <div v-for="field in filteredHiddenFields"
+                                     :key="field.name"
+                                     class="artiss-custom-fields-manager__field-list-item"
+                                     @click.stop="addField(field)">
+
+                                    {% block artiss_custom_fields_manager_field_list_item_content %}
+                                        <div class="artiss-custom-fields-manager__field-list-item-label">
+                                            {{ getFieldLabel(field) }}
+                                        </div>
+                                    {% endblock %}
+                                </div>
+                                </div>
+                            {% endblock %}
+                        </div>
+                    </template>
+                {% endblock %}
+
+                {% block artiss_custom_fields_manager_modal_footer %}
+                    <template #modal-footer>
+                        <sw-button
+                            size="small"
+                            @click="closeAddFieldModal">
+                            {{ $tc('artiss-custom-fields.addPropertyModal.close') }}
+                        </sw-button>
+                    </template>
+                {% endblock %}
+            </sw-modal>
+        {% endblock %}
+    </div>
+{% endblock %}
+

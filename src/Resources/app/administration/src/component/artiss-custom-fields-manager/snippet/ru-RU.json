@@ -1,0 +1,13 @@
+{
+  "artiss-custom-fields": {
+    "addProperty": "Добавить свойство",
+    "removeField": "Удалить поле",
+    "addPropertyModal": {
+      "title": "Добавить кастомное поле",
+      "searchPlaceholder": "Поиск по ключу или названию...",
+      "noFields": "Нет доступных полей",
+      "close": "Закрыть"
+    }
+  }
+}
+

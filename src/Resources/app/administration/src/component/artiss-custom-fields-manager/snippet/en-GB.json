@@ -1,0 +1,13 @@
+{
+  "artiss-custom-fields": {
+    "addProperty": "Add Property",
+    "removeField": "Remove field",
+    "addPropertyModal": {
+      "title": "Add Custom Field",
+      "searchPlaceholder": "Search by key or label...",
+      "noFields": "No available fields",
+      "close": "Close"
+    }
+  }
+}
+
