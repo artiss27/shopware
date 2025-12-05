@@ -15,7 +15,7 @@ stop:
 	docker compose stop
 down:
 	docker compose down
-shell:
+shell: ## Enter PHP container bash shell
 	docker compose exec web bash
 watch-storefront:
 	docker compose exec -e PROXY_URL=http://localhost:9998 web ./bin/watch-storefront.sh
