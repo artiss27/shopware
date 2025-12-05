@@ -196,7 +196,7 @@ Component.register('artiss-custom-fields-manager', {
          */
         hasValue(value) {
             // null and undefined are not filled
-            if (value === null || value === undefined) {
+            if (value === null || value === undefined || value === 0) {
                 return false;
             }
             

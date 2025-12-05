@@ -83,3 +83,4 @@ yarn-error.log
 *.backup
 
 /hlam/
+/.claude/

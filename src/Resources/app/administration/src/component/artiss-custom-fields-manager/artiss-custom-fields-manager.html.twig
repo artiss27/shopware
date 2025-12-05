@@ -22,6 +22,7 @@
                                     {% block artiss_custom_fields_manager_field_content %}
                                         {# Render single field - use complete field object with proper binding #}
                                         <sw-form-field-renderer
+                                            class="artiss-custom-fields-manager__input-field"
                                             v-model:value="entity.customFields[field.name]"
                                             :config="field.config"
                                             :type="field.type"
