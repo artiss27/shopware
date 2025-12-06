@@ -20,7 +20,7 @@ class ConfigService
 
     public function getWebpQuality(): int
     {
-        $quality = (int) $this->get('webpQuality', 80);
+        $quality = (int) $this->get('webpQuality', 85);
         return max(0, min(100, $quality));
     }
 

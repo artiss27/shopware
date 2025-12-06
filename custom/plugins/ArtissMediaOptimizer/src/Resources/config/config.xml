@@ -38,7 +38,7 @@
             <helpText lang="de-DE">Höhere Werte bedeuten bessere Qualität, aber größere Dateigröße. Empfohlen: 75-85</helpText>
             <helpText lang="ru-RU">Большие значения означают лучшее качество, но больший размер файла. Рекомендуется: 75-85</helpText>
             <helpText lang="uk-UA">Більші значення означають кращу якість, але більший розмір файлу. Рекомендується: 75-85</helpText>
-            <defaultValue>80</defaultValue>
+            <defaultValue>85</defaultValue>
         </input-field>
     </card>
 

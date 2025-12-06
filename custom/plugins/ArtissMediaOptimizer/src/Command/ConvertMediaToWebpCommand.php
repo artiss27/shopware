@@ -14,6 +14,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -22,6 +23,76 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Converts existing JPEG/PNG media files to WebP format.
+ *
+ * This command performs bulk conversion of existing media files in the Shopware media library.
+ * It processes files in batches and applies the same optimization rules as the upload interceptor.
+ *
+ * ## What this command does:
+ *
+ * 1. **Finds media to convert**: Searches for all media entities with mimeType 'image/jpeg' or 'image/png'
+ *
+ * 2. **Archives originals** (if keep_original=true):
+ *    - Copies original file to var/artiss_media/original/{hash}/{mediaId}.{ext}
+ *    - Saves relative path in media.customFields['artiss_original_path']
+ *    - Skips archiving if already archived (checks customFields)
+ *
+ * 3. **Resizes** (if enable_resize=true and image exceeds max dimensions):
+ *    - Downscales to fit within max_width x max_height
+ *    - Preserves aspect ratio (no upscaling, no distortion)
+ *
+ * 4. **Converts to WebP**:
+ *    - Uses configured quality (webp_quality setting, default 85)
+ *    - Preserves alpha channel for PNGs
+ *
+ * 5. **Updates filesystem**:
+ *    - Writes new WebP file (e.g., media/aa/bb/image.webp)
+ *    - Deletes old JPEG/PNG file
+ *    - Deletes old thumbnail files
+ *
+ * 6. **Updates database** (media table only):
+ *    - mime_type = 'image/webp'
+ *    - file_extension = 'webp'
+ *    - path = new path with .webp extension
+ *    - file_size = new file size
+ *    - Deletes records from media_thumbnail table
+ *
+ * ## What this command does NOT change:
+ *
+ * - **Entity relations are preserved**: The media.id stays the same, so all relations
+ *   (product_media, category.media_id, cms_media, etc.) remain intact and valid.
+ *   These entities reference media by ID, not by file path.
+ *
+ * - **URLs update automatically**: Since Shopware generates URLs from media.path,
+ *   all URLs will automatically point to the new WebP file.
+ *
+ * ## After running this command:
+ *
+ * Run `bin/console media:generate-thumbnails` to regenerate thumbnails in WebP format.
+ *
+ * ## Usage examples:
+ *
+ * ```bash
+ * # Dry run - see what would be converted without making changes
+ * bin/console artiss:media:convert-to-webp --dry-run
+ *
+ * # Convert all JPEG/PNG files
+ * bin/console artiss:media:convert-to-webp
+ *
+ * # Convert in smaller batches (useful for large media libraries)
+ * bin/console artiss:media:convert-to-webp --limit=50
+ *
+ * # Only convert files that haven't been converted yet
+ * bin/console artiss:media:convert-to-webp --only-not-converted
+ *
+ * # Convert only media from a specific folder (by folder ID)
+ * bin/console artiss:media:convert-to-webp --folder=0188b4a2c3e87a5e9d8c2e3f4a5b6c7d
+ *
+ * # Convert only media from a specific folder (by folder name)
+ * bin/console artiss:media:convert-to-webp --folder-name="Product Media"
+ * ```
+ */
 #[AsCommand(
     name: 'artiss:media:convert-to-webp',
     description: 'Convert existing JPEG/PNG media files to WebP format'
@@ -32,6 +103,7 @@ class ConvertMediaToWebpCommand extends Command
 
     public function __construct(
         private readonly EntityRepository $mediaRepository,
+        private readonly EntityRepository $mediaFolderRepository,
         private readonly FilesystemOperator $filesystemPublic,
         private readonly FilesystemOperator $filesystemPrivate,
         private readonly Connection $connection,
@@ -66,6 +138,18 @@ class ConvertMediaToWebpCommand extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Only process media that is not already WebP'
+            )
+            ->addOption(
+                'folder',
+                'f',
+                InputOption::VALUE_REQUIRED,
+                'Only process media from a specific folder (by folder ID)'
+            )
+            ->addOption(
+                'folder-name',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Only process media from a specific folder (by folder name)'
             );
     }
 
@@ -75,8 +159,20 @@ class ConvertMediaToWebpCommand extends Command
         $limit = (int) $input->getOption('limit');
         $dryRun = (bool) $input->getOption('dry-run');
         $onlyNotConverted = (bool) $input->getOption('only-not-converted');
+        $folderId = $input->getOption('folder');
+        $folderName = $input->getOption('folder-name');
 
         $context = Context::createDefaultContext();
+
+        // Resolve folder name to ID if provided
+        if ($folderName !== null) {
+            $folderId = $this->resolveFolderIdByName($folderName, $context);
+            if ($folderId === null) {
+                $io->error(sprintf('Media folder with name "%s" not found', $folderName));
+                return Command::FAILURE;
+            }
+            $io->text(sprintf('Resolved folder "%s" to ID: %s', $folderName, $folderId));
+        }
 
         if ($dryRun) {
             $io->warning('DRY RUN MODE - No changes will be made');
@@ -88,9 +184,10 @@ class ConvertMediaToWebpCommand extends Command
             sprintf('Resize enabled: %s', $this->configService->isResizeEnabled() ? 'Yes' : 'No'),
             sprintf('Max dimensions: %dx%d', $this->configService->getMaxWidth(), $this->configService->getMaxHeight()),
             sprintf('Keep originals: %s', $this->configService->shouldKeepOriginal() ? 'Yes' : 'No'),
+            sprintf('Folder filter: %s', $folderId ?? 'All folders'),
         ]);
 
-        $totalCount = $this->countMediaToProcess($onlyNotConverted, $context);
+        $totalCount = $this->countMediaToProcess($onlyNotConverted, $folderId, $context);
         $io->text(sprintf('Found %d media items to process', $totalCount));
 
         if ($totalCount === 0) {
@@ -106,7 +203,7 @@ class ConvertMediaToWebpCommand extends Command
         $offset = 0;
 
         while ($offset < $totalCount) {
-            $mediaItems = $this->fetchMediaBatch($onlyNotConverted, $limit, $offset, $context);
+            $mediaItems = $this->fetchMediaBatch($onlyNotConverted, $folderId, $limit, $offset, $context);
 
             foreach ($mediaItems as $media) {
                 $processed++;
@@ -160,7 +257,7 @@ class ConvertMediaToWebpCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function countMediaToProcess(bool $onlyNotConverted, Context $context): int
+    private function countMediaToProcess(bool $onlyNotConverted, ?string $folderId, Context $context): int
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsAnyFilter('mimeType', self::SUPPORTED_MIME_TYPES));
@@ -175,10 +272,14 @@ class ConvertMediaToWebpCommand extends Command
             );
         }
 
+        if ($folderId !== null) {
+            $criteria->addFilter(new EqualsFilter('mediaFolderId', $folderId));
+        }
+
         return $this->mediaRepository->search($criteria, $context)->getTotal();
     }
 
-    private function fetchMediaBatch(bool $onlyNotConverted, int $limit, int $offset, Context $context): iterable
+    private function fetchMediaBatch(bool $onlyNotConverted, ?string $folderId, int $limit, int $offset, Context $context): iterable
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsAnyFilter('mimeType', self::SUPPORTED_MIME_TYPES));
@@ -193,7 +294,26 @@ class ConvertMediaToWebpCommand extends Command
             );
         }
 
+        if ($folderId !== null) {
+            $criteria->addFilter(new EqualsFilter('mediaFolderId', $folderId));
+        }
+
         return $this->mediaRepository->search($criteria, $context)->getEntities();
+    }
+
+    private function resolveFolderIdByName(string $folderName, Context $context): ?string
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', $folderName));
+        $criteria->setLimit(1);
+
+        $result = $this->mediaFolderRepository->searchIds($criteria, $context);
+
+        if ($result->getTotal() === 0) {
+            return null;
+        }
+
+        return $result->firstId();
     }
 
     private function processMediaEntity(MediaEntity $media, Context $context, SymfonyStyle $io): void

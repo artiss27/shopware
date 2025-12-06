@@ -46,6 +46,7 @@
         <!-- Console Command -->
         <service id="Artiss\MediaOptimizer\Command\ConvertMediaToWebpCommand">
             <argument type="service" id="media.repository"/>
+            <argument type="service" id="media_folder.repository"/>
             <argument type="service" id="shopware.filesystem.public"/>
             <argument type="service" id="shopware.filesystem.private"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
