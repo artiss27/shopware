@@ -1,0 +1,45 @@
+.artiss-category-info {
+  p {
+    margin-bottom: 1em;
+  }
+
+  .cms-block-container-row {
+    display: block;
+  }
+
+  .cms-block-container-row > .col-md-6 {
+    float: none;
+    width: auto;
+    max-width: none;
+    flex: none;
+  }
+
+  .cms-block-container-row > .col-md-6:first-child {
+    float: left;
+    margin: 0 16px 8px 0;
+  }
+
+  .cms-block-container-row > .col-md-6:last-child {
+    display: block;
+    overflow: visible;
+  }
+
+  .cms-element-image {
+    display: block;
+  }
+
+  .cms-element-image .cms-image-container {
+    width: 180px;
+    max-width: 180px;
+    min-height: auto !important;
+    height: auto;
+  }
+
+  .cms-element-image .cms-image {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    position: relative !important;
+  }
+}
