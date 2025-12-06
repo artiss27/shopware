@@ -8,7 +8,6 @@
         "shopware/docker-dev": "^0.1.2",
         "shopware/elasticsearch": "6.7.5.0",
         "shopware/storefront": "6.7.5.0",
-        "swag/language-pack": "^5.25",
         "swag/paypal": "10.3.0",
         "symfony/flex": "~2",
         "symfony/redis-messenger": "^7.3"

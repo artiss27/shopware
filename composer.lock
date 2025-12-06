@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91035630fa5a1444b5159a4293f0c1b4",
+    "content-hash": "46767e7da2e2feced4b981c3ec280489",
     "packages": [
         {
             "name": "async-aws/core",
@@ -6257,85 +6257,6 @@
                 "source": "https://github.com/squirrelphp/twig-php-syntax/tree/v1.13"
             },
             "time": "2025-05-03T06:37:30+00:00"
-        },
-        {
-            "name": "swag/language-pack",
-            "version": "5.29.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/shopware/SwagLanguagePack.git",
-                "reference": "f0f4492e68a802e3e799fc8effea963227c7c074"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/shopware/SwagLanguagePack/zipball/f0f4492e68a802e3e799fc8effea963227c7c074",
-                "reference": "f0f4492e68a802e3e799fc8effea963227c7c074",
-                "shasum": ""
-            },
-            "require": {
-                "shopware/administration": "~6.7",
-                "shopware/core": "~6.7",
-                "shopware/storefront": "~6.7"
-            },
-            "conflict": {
-                "swag/i18n-bosnian": "*",
-                "swag/i18n-czech": "*",
-                "swag/i18n-danish": "*",
-                "swag/i18n-dutch": "*",
-                "swag/i18n-french": "*",
-                "swag/i18n-indonesian": "*",
-                "swag/i18n-italian": "*",
-                "swag/i18n-latvian": "*",
-                "swag/i18n-polish": "*",
-                "swag/i18n-portuguese": "*",
-                "swag/i18n-russian": "*",
-                "swag/i18n-spanish": "*",
-                "swag/i18n-swedish": "*"
-            },
-            "suggest": {
-                "shopware/administration": "Allows you to to set up the extension easily",
-                "shopware/storefront": "This extension also offers translations for the Shopware Storefront"
-            },
-            "type": "shopware-platform-plugin",
-            "extra": {
-                "label": {
-                    "de-DE": "Sprachpaket",
-                    "en-GB": "Language pack"
-                },
-                "copyright": "(c) by shopware AG",
-                "description": {
-                    "de-DE": "Das Sprachpaket von Shopware vereint alle Übersetzungen, die von Shopware angeboten werden sowie Länderflaggen für eine Sprachauswahl in der Storefront.",
-                    "en-GB": "The Shopware language pack combines all translations offered by Shopware, as well as associated country flags for a language selection in our storefront."
-                },
-                "supportLink": {
-                    "de-DE": "https://issues.shopware.com/",
-                    "en-GB": "https://issues.shopware.com/"
-                },
-                "manufacturerLink": {
-                    "de-DE": "https://store.shopware.com/shopware-ag.html",
-                    "en-GB": "https://store.shopware.com/en/shopware-ag.html"
-                },
-                "shopware-plugin-class": "Swag\\LanguagePack\\SwagLanguagePack"
-            },
-            "autoload": {
-                "psr-4": {
-                    "Swag\\LanguagePack\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Shopware"
-                }
-            ],
-            "description": "Language pack for Shopware 6",
-            "support": {
-                "source": "https://github.com/shopware/SwagLanguagePack/tree/5.29.0"
-            },
-            "time": "2025-12-05T06:29:08+00:00"
         },
         {
             "name": "swag/paypal",
