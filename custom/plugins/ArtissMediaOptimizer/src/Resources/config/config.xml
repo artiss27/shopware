@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+
+    <card>
+        <title>General Settings</title>
+        <title lang="de-DE">Allgemeine Einstellungen</title>
+        <title lang="ru-RU">Общие настройки</title>
+        <title lang="uk-UA">Загальні налаштування</title>
+
+        <input-field type="bool">
+            <name>enabled</name>
+            <label>Enable automatic WebP conversion</label>
+            <label lang="de-DE">Automatische WebP-Konvertierung aktivieren</label>
+            <label lang="ru-RU">Включить автоматическую конвертацию в WebP</label>
+            <label lang="uk-UA">Увімкнути автоматичну конвертацію в WebP</label>
+            <helpText>When enabled, all uploaded JPEG/PNG images will be automatically converted to WebP format</helpText>
+            <helpText lang="de-DE">Wenn aktiviert, werden alle hochgeladenen JPEG/PNG-Bilder automatisch in das WebP-Format konvertiert</helpText>
+            <helpText lang="ru-RU">При включении все загруженные изображения JPEG/PNG будут автоматически конвертированы в формат WebP</helpText>
+            <helpText lang="uk-UA">При увімкненні всі завантажені зображення JPEG/PNG будуть автоматично конвертовані у формат WebP</helpText>
+            <defaultValue>true</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>WebP Settings</title>
+        <title lang="de-DE">WebP-Einstellungen</title>
+        <title lang="ru-RU">Настройки WebP</title>
+        <title lang="uk-UA">Налаштування WebP</title>
+
+        <input-field type="int">
+            <name>webpQuality</name>
+            <label>WebP Quality (0-100)</label>
+            <label lang="de-DE">WebP-Qualität (0-100)</label>
+            <label lang="ru-RU">Качество WebP (0-100)</label>
+            <label lang="uk-UA">Якість WebP (0-100)</label>
+            <helpText>Higher values mean better quality but larger file size. Recommended: 75-85</helpText>
+            <helpText lang="de-DE">Höhere Werte bedeuten bessere Qualität, aber größere Dateigröße. Empfohlen: 75-85</helpText>
+            <helpText lang="ru-RU">Большие значения означают лучшее качество, но больший размер файла. Рекомендуется: 75-85</helpText>
+            <helpText lang="uk-UA">Більші значення означають кращу якість, але більший розмір файлу. Рекомендується: 75-85</helpText>
+            <defaultValue>80</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Resize Settings</title>
+        <title lang="de-DE">Größenanpassung</title>
+        <title lang="ru-RU">Настройки ресайза</title>
+        <title lang="uk-UA">Налаштування ресайзу</title>
+
+        <input-field type="bool">
+            <name>enableResize</name>
+            <label>Enable automatic resizing</label>
+            <label lang="de-DE">Automatische Größenänderung aktivieren</label>
+            <label lang="ru-RU">Включить автоматический ресайз</label>
+            <label lang="uk-UA">Увімкнути автоматичний ресайз</label>
+            <helpText>Automatically resize images that exceed maximum dimensions</helpText>
+            <helpText lang="de-DE">Bilder, die die maximalen Abmessungen überschreiten, automatisch verkleinern</helpText>
+            <helpText lang="ru-RU">Автоматически уменьшать изображения, превышающие максимальные размеры</helpText>
+            <helpText lang="uk-UA">Автоматично зменшувати зображення, що перевищують максимальні розміри</helpText>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>maxWidth</name>
+            <label>Maximum width (pixels)</label>
+            <label lang="de-DE">Maximale Breite (Pixel)</label>
+            <label lang="ru-RU">Максимальная ширина (пикселей)</label>
+            <label lang="uk-UA">Максимальна ширина (пікселів)</label>
+            <helpText>Images wider than this will be resized (aspect ratio preserved)</helpText>
+            <helpText lang="de-DE">Breitere Bilder werden verkleinert (Seitenverhältnis bleibt erhalten)</helpText>
+            <helpText lang="ru-RU">Изображения шире этого значения будут уменьшены (пропорции сохраняются)</helpText>
+            <helpText lang="uk-UA">Зображення ширші за це значення будуть зменшені (пропорції зберігаються)</helpText>
+            <defaultValue>1600</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>maxHeight</name>
+            <label>Maximum height (pixels)</label>
+            <label lang="de-DE">Maximale Höhe (Pixel)</label>
+            <label lang="ru-RU">Максимальная высота (пикселей)</label>
+            <label lang="uk-UA">Максимальна висота (пікселів)</label>
+            <helpText>Images taller than this will be resized (aspect ratio preserved)</helpText>
+            <helpText lang="de-DE">Höhere Bilder werden verkleinert (Seitenverhältnis bleibt erhalten)</helpText>
+            <helpText lang="ru-RU">Изображения выше этого значения будут уменьшены (пропорции сохраняются)</helpText>
+            <helpText lang="uk-UA">Зображення вищі за це значення будуть зменшені (пропорції зберігаються)</helpText>
+            <defaultValue>1600</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Original Files</title>
+        <title lang="de-DE">Originaldateien</title>
+        <title lang="ru-RU">Оригинальные файлы</title>
+        <title lang="uk-UA">Оригінальні файли</title>
+
+        <input-field type="bool">
+            <name>keepOriginal</name>
+            <label>Keep original files</label>
+            <label lang="de-DE">Originaldateien behalten</label>
+            <label lang="ru-RU">Сохранять оригинальные файлы</label>
+            <label lang="uk-UA">Зберігати оригінальні файли</label>
+            <helpText>Store original JPEG/PNG files in a separate archive folder for potential rollback or re-conversion</helpText>
+            <helpText lang="de-DE">Original JPEG/PNG-Dateien in einem separaten Archivordner für mögliches Rollback oder erneute Konvertierung speichern</helpText>
+            <helpText lang="ru-RU">Сохранять оригинальные файлы JPEG/PNG в отдельной архивной папке для возможного отката или переконвертации</helpText>
+            <helpText lang="uk-UA">Зберігати оригінальні файли JPEG/PNG в окремій архівній папці для можливого відкату або переконвертації</helpText>
+            <defaultValue>true</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>originalStorageDir</name>
+            <label>Original files storage directory</label>
+            <label lang="de-DE">Speicherverzeichnis für Originaldateien</label>
+            <label lang="ru-RU">Директория хранения оригиналов</label>
+            <label lang="uk-UA">Директорія зберігання оригіналів</label>
+            <helpText>Relative path from project root (var/) where original files will be stored</helpText>
+            <helpText lang="de-DE">Relativer Pfad vom Projektstamm (var/), in dem Originaldateien gespeichert werden</helpText>
+            <helpText lang="ru-RU">Относительный путь от корня проекта (var/), где будут храниться оригинальные файлы</helpText>
+            <helpText lang="uk-UA">Відносний шлях від кореня проекту (var/), де зберігатимуться оригінальні файли</helpText>
+            <defaultValue>artiss_media/original</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Error Handling</title>
+        <title lang="de-DE">Fehlerbehandlung</title>
+        <title lang="ru-RU">Обработка ошибок</title>
+        <title lang="uk-UA">Обробка помилок</title>
+
+        <input-field type="single-select">
+            <name>onConvertError</name>
+            <label>On conversion error</label>
+            <label lang="de-DE">Bei Konvertierungsfehler</label>
+            <label lang="ru-RU">При ошибке конвертации</label>
+            <label lang="uk-UA">При помилці конвертації</label>
+            <helpText>What to do when WebP conversion fails</helpText>
+            <helpText lang="de-DE">Was bei fehlgeschlagener WebP-Konvertierung tun</helpText>
+            <helpText lang="ru-RU">Что делать при ошибке конвертации в WebP</helpText>
+            <helpText lang="uk-UA">Що робити при помилці конвертації в WebP</helpText>
+            <defaultValue>fail</defaultValue>
+            <options>
+                <option>
+                    <id>fail</id>
+                    <name>Fail and show error</name>
+                    <name lang="de-DE">Fehlschlagen und Fehler anzeigen</name>
+                    <name lang="ru-RU">Ошибка и показать сообщение</name>
+                    <name lang="uk-UA">Помилка і показати повідомлення</name>
+                </option>
+                <option>
+                    <id>fallback_original</id>
+                    <name>Save original file as fallback</name>
+                    <name lang="de-DE">Originaldatei als Fallback speichern</name>
+                    <name lang="ru-RU">Сохранить оригинал как запасной вариант</name>
+                    <name lang="uk-UA">Зберегти оригінал як запасний варіант</name>
+                </option>
+            </options>
+        </input-field>
+    </card>
+
+</config>

@@ -1,0 +1,39 @@
+{
+    "name": "artiss/media-optimizer",
+    "description": "Automatic WebP conversion and image optimization for Shopware media",
+    "version": "1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Artiss"
+        }
+    ],
+    "require": {
+        "shopware/core": "~6.6.0 || ~6.7.0",
+        "ext-gd": "*"
+    },
+    "suggest": {
+        "ext-imagick": "For better image quality and performance"
+    },
+    "extra": {
+        "shopware-plugin-class": "Artiss\\MediaOptimizer\\ArtissMediaOptimizer",
+        "label": {
+            "en-GB": "Artiss Media Optimizer",
+            "de-DE": "Artiss Media Optimizer",
+            "ru-RU": "Artiss Media Optimizer",
+            "uk-UA": "Artiss Media Optimizer"
+        },
+        "description": {
+            "en-GB": "Automatically converts uploaded images to WebP format with optional resizing",
+            "de-DE": "Konvertiert hochgeladene Bilder automatisch in das WebP-Format mit optionaler Größenänderung",
+            "ru-RU": "Автоматически конвертирует загруженные изображения в формат WebP с опциональным ресайзом",
+            "uk-UA": "Автоматично конвертує завантажені зображення у формат WebP з опціональним ресайзом"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Artiss\\MediaOptimizer\\": "src/"
+        }
+    }
+}
