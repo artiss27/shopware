@@ -1,4 +1,0 @@
-shopware:
-    logger:
-        error_code_log_levels:
-            SWAG_MIGRATION__IS_RUNNING: notice
