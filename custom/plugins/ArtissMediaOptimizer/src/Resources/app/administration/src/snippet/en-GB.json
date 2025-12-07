@@ -1,0 +1,18 @@
+{
+    "artiss-image-cropper": {
+        "modalTitle": "Crop Image",
+        "preview": "Preview",
+        "aspectRatio": "Aspect Ratio",
+        "ratioFree": "Free",
+        "tools": "Tools",
+        "rotateLeft": "Rotate Left",
+        "rotateRight": "Rotate Right",
+        "flipHorizontal": "Flip Horizontal",
+        "flipVertical": "Flip Vertical",
+        "reset": "Reset",
+        "cancel": "Cancel",
+        "skip": "Skip Cropping",
+        "apply": "Apply Crop",
+        "cropperLoadError": "Failed to load image cropper. The image will be uploaded without cropping."
+    }
+}

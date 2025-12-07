@@ -1,0 +1,22 @@
+{% block sw_media_upload_v2 %}
+{% parent %}
+
+{% block artiss_cropper_modal %}
+<sw-modal
+    v-if="artissShowCropper && artissCurrentFile"
+    :title="$tc('artiss-image-cropper.modalTitle')"
+    class="artiss-cropper-modal"
+    variant="large"
+    @modal-close="artissOnCropCancel"
+>
+    <artiss-image-cropper
+        :image-file="artissCurrentFile"
+        :aspect-ratio="artissAspectRatio"
+        @crop-confirm="artissOnCropConfirm"
+        @crop-cancel="artissOnCropCancel"
+        @crop-skip="artissOnCropSkip"
+    ></artiss-image-cropper>
+</sw-modal>
+{% endblock %}
+
+{% endblock %}

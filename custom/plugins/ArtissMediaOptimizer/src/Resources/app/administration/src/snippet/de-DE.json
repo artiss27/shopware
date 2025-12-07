@@ -1,0 +1,18 @@
+{
+    "artiss-image-cropper": {
+        "modalTitle": "Bild zuschneiden",
+        "preview": "Vorschau",
+        "aspectRatio": "Seitenverhältnis",
+        "ratioFree": "Frei",
+        "tools": "Werkzeuge",
+        "rotateLeft": "Links drehen",
+        "rotateRight": "Rechts drehen",
+        "flipHorizontal": "Horizontal spiegeln",
+        "flipVertical": "Vertikal spiegeln",
+        "reset": "Zurücksetzen",
+        "cancel": "Abbrechen",
+        "skip": "Ohne Zuschneiden",
+        "apply": "Zuschneiden anwenden",
+        "cropperLoadError": "Bild-Zuschnitt konnte nicht geladen werden. Das Bild wird ohne Zuschneiden hochgeladen."
+    }
+}

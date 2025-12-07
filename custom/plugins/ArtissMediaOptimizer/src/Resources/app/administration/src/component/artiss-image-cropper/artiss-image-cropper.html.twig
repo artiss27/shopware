@@ -1,0 +1,133 @@
+{% block artiss_image_cropper %}
+<div class="artiss-image-cropper">
+    {% block artiss_image_cropper_content %}
+    <div class="artiss-image-cropper__content">
+        {% block artiss_image_cropper_editor %}
+        <div class="artiss-image-cropper__editor">
+            <div class="artiss-image-cropper__image-container">
+                <img
+                    ref="cropperImage"
+                    :src="imageUrl"
+                    class="artiss-image-cropper__image"
+                    @load="onImageLoad"
+                >
+            </div>
+        </div>
+        {% endblock %}
+
+        {% block artiss_image_cropper_sidebar %}
+        <div class="artiss-image-cropper__sidebar">
+            {% block artiss_image_cropper_preview %}
+            <div class="artiss-image-cropper__preview-section">
+                <h4 class="artiss-image-cropper__section-title">
+                    {{ $tc('artiss-image-cropper.preview') }}
+                </h4>
+                <div class="artiss-image-cropper__preview">
+                    <img
+                        v-if="previewUrl"
+                        :src="previewUrl"
+                        class="artiss-image-cropper__preview-image"
+                    >
+                    <sw-loader v-else size="30px"></sw-loader>
+                </div>
+            </div>
+            {% endblock %}
+
+            {% block artiss_image_cropper_ratio_selector %}
+            <div class="artiss-image-cropper__ratio-section">
+                <h4 class="artiss-image-cropper__section-title">
+                    {{ $tc('artiss-image-cropper.aspectRatio') }}
+                </h4>
+                <div class="artiss-image-cropper__ratio-buttons">
+                    <sw-button
+                        v-for="option in aspectRatioOptions"
+                        :key="option.label"
+                        size="small"
+                        :variant="selectedRatio === option.value ? 'primary' : 'ghost'"
+                        @click="onRatioChange(option.value)"
+                    >
+                        {{ option.label }}
+                    </sw-button>
+                </div>
+            </div>
+            {% endblock %}
+
+            {% block artiss_image_cropper_tools %}
+            <div class="artiss-image-cropper__tools-section">
+                <h4 class="artiss-image-cropper__section-title">
+                    {{ $tc('artiss-image-cropper.tools') }}
+                </h4>
+                <div class="artiss-image-cropper__tool-buttons">
+                    <sw-button
+                        size="small"
+                        variant="ghost"
+                        @click="rotateLeft"
+                        :title="$tc('artiss-image-cropper.rotateLeft')"
+                    >
+                        <sw-icon name="regular-undo" small></sw-icon>
+                    </sw-button>
+                    <sw-button
+                        size="small"
+                        variant="ghost"
+                        @click="rotateRight"
+                        :title="$tc('artiss-image-cropper.rotateRight')"
+                    >
+                        <sw-icon name="regular-redo" small></sw-icon>
+                    </sw-button>
+                    <sw-button
+                        size="small"
+                        variant="ghost"
+                        @click="flipHorizontal"
+                        :title="$tc('artiss-image-cropper.flipHorizontal')"
+                    >
+                        ↔
+                    </sw-button>
+                    <sw-button
+                        size="small"
+                        variant="ghost"
+                        @click="flipVertical"
+                        :title="$tc('artiss-image-cropper.flipVertical')"
+                    >
+                        ↕
+                    </sw-button>
+                    <sw-button
+                        size="small"
+                        variant="ghost"
+                        @click="reset"
+                        :title="$tc('artiss-image-cropper.reset')"
+                    >
+                        <sw-icon name="regular-times-circle" small></sw-icon>
+                    </sw-button>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+        {% endblock %}
+    </div>
+    {% endblock %}
+
+    {% block artiss_image_cropper_footer %}
+    <div class="artiss-image-cropper__footer">
+        <sw-button
+            variant="ghost"
+            @click="onCancel"
+        >
+            {{ $tc('artiss-image-cropper.cancel') }}
+        </sw-button>
+        <sw-button
+            variant="ghost"
+            @click="onSkip"
+        >
+            {{ $tc('artiss-image-cropper.skip') }}
+        </sw-button>
+        <sw-button
+            variant="primary"
+            :isLoading="isLoading"
+            @click="onConfirm"
+        >
+            {{ $tc('artiss-image-cropper.apply') }}
+        </sw-button>
+    </div>
+    {% endblock %}
+</div>
+{% endblock %}
