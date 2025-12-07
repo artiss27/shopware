@@ -78,7 +78,9 @@ services:
 ###> shopware/docker-dev ###
   web:
     container_name: artiss-web
-    image: ghcr.io/shopware/docker-dev:php8.3-node22-caddy
+    build:
+      context: .
+      dockerfile: Dockerfile
     networks:
       - artiss
     ports:

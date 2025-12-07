@@ -60,6 +60,47 @@ class ConfigService
         return $this->getOnConvertError() === 'fallback_original';
     }
 
+    public function isCropperEnabled(): bool
+    {
+        return (bool) $this->get('enableCropper', false);
+    }
+
+    public function getProductImageAspectRatio(): string
+    {
+        $ratio = (string) $this->get('productImageAspectRatio', 'free');
+        $validRatios = ['free', '1:1', '4:3', '3:4', '16:9', 'custom'];
+        return in_array($ratio, $validRatios, true) ? $ratio : 'free';
+    }
+
+    public function getCustomAspectRatioWidth(): int
+    {
+        return max(1, (int) $this->get('customAspectRatioWidth', 1));
+    }
+
+    public function getCustomAspectRatioHeight(): int
+    {
+        return max(1, (int) $this->get('customAspectRatioHeight', 1));
+    }
+
+    /**
+     * Get aspect ratio as a float (width / height).
+     * Returns null for 'free' (no restriction).
+     */
+    public function getAspectRatioValue(): ?float
+    {
+        $ratio = $this->getProductImageAspectRatio();
+
+        return match ($ratio) {
+            'free' => null,
+            '1:1' => 1.0,
+            '4:3' => 4 / 3,
+            '3:4' => 3 / 4,
+            '16:9' => 16 / 9,
+            'custom' => $this->getCustomAspectRatioWidth() / $this->getCustomAspectRatioHeight(),
+            default => null,
+        };
+    }
+
     private function get(string $key, mixed $default = null): mixed
     {
         return $this->systemConfigService->get(self::CONFIG_PREFIX . $key) ?? $default;

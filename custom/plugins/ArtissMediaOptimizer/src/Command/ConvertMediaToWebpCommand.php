@@ -24,14 +24,22 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Converts existing JPEG/PNG media files to WebP format.
+ * Converts existing image media files to WebP format.
  *
  * This command performs bulk conversion of existing media files in the Shopware media library.
  * It processes files in batches and applies the same optimization rules as the upload interceptor.
  *
+ * ## Supported formats:
+ * - JPEG (image/jpeg)
+ * - PNG (image/png)
+ * - GIF (image/gif) - static only, animated GIFs lose animation
+ * - BMP (image/bmp)
+ * - TIFF (image/tiff) - requires Imagick extension
+ * - HEIC/HEIF (image/heic, image/heif) - requires Imagick with libheif
+ *
  * ## What this command does:
  *
- * 1. **Finds media to convert**: Searches for all media entities with mimeType 'image/jpeg' or 'image/png'
+ * 1. **Finds media to convert**: Searches for all media entities with supported image mimeTypes
  *
  * 2. **Archives originals** (if keep_original=true):
  *    - Copies original file to var/artiss_media/original/{hash}/{mediaId}.{ext}
@@ -95,11 +103,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 #[AsCommand(
     name: 'artiss:media:convert-to-webp',
-    description: 'Convert existing JPEG/PNG media files to WebP format'
+    description: 'Convert existing image files (JPEG, PNG, GIF, BMP, TIFF, HEIC) to WebP format'
 )]
 class ConvertMediaToWebpCommand extends Command
 {
-    private const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png'];
 
     public function __construct(
         private readonly EntityRepository $mediaRepository,
@@ -260,7 +267,7 @@ class ConvertMediaToWebpCommand extends Command
     private function countMediaToProcess(bool $onlyNotConverted, ?string $folderId, Context $context): int
     {
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter('mimeType', self::SUPPORTED_MIME_TYPES));
+        $criteria->addFilter(new EqualsAnyFilter('mimeType', ImageFormatConverter::SUPPORTED_MIME_TYPES));
         $criteria->setLimit(1);
         $criteria->setTotalCountMode(Criteria::TOTAL_COUNT_MODE_EXACT);
 
@@ -282,7 +289,7 @@ class ConvertMediaToWebpCommand extends Command
     private function fetchMediaBatch(bool $onlyNotConverted, ?string $folderId, int $limit, int $offset, Context $context): iterable
     {
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter('mimeType', self::SUPPORTED_MIME_TYPES));
+        $criteria->addFilter(new EqualsAnyFilter('mimeType', ImageFormatConverter::SUPPORTED_MIME_TYPES));
         $criteria->setLimit($limit);
         $criteria->setOffset($offset);
 

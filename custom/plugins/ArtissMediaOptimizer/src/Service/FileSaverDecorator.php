@@ -9,11 +9,6 @@ use Shopware\Core\Framework\Context;
 
 class FileSaverDecorator extends FileSaver
 {
-    private const SUPPORTED_MIME_TYPES = [
-        'image/jpeg',
-        'image/png',
-    ];
-
     public function __construct(
         private readonly FileSaver $decorated,
         private readonly ConfigService $configService,
@@ -52,7 +47,7 @@ class FileSaverDecorator extends FileSaver
             return false;
         }
 
-        return in_array($mediaFile->getMimeType(), self::SUPPORTED_MIME_TYPES, true);
+        return $this->imageFormatConverter->supportsConversion($mediaFile->getMimeType());
     }
 
     private function processMediaFile(MediaFile $mediaFile, string $mediaId, Context $context): MediaFile

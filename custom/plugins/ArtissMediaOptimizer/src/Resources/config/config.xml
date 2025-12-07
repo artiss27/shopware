@@ -157,4 +157,107 @@
         </input-field>
     </card>
 
+    <card>
+        <title>Image Cropper</title>
+        <title lang="de-DE">Bild-Zuschnitt</title>
+        <title lang="ru-RU">Обрезка изображений</title>
+        <title lang="uk-UA">Обрізка зображень</title>
+
+        <input-field type="bool">
+            <name>enableCropper</name>
+            <label>Enable image cropper</label>
+            <label lang="de-DE">Bild-Zuschnitt aktivieren</label>
+            <label lang="ru-RU">Включить обрезку изображений</label>
+            <label lang="uk-UA">Увімкнути обрізку зображень</label>
+            <helpText>Show cropper dialog when uploading images in product media</helpText>
+            <helpText lang="de-DE">Zuschneidedialog beim Hochladen von Bildern in Produktmedien anzeigen</helpText>
+            <helpText lang="ru-RU">Показывать диалог обрезки при загрузке изображений в медиа товара</helpText>
+            <helpText lang="uk-UA">Показувати діалог обрізки при завантаженні зображень в медіа товару</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>productImageAspectRatio</name>
+            <label>Product image aspect ratio</label>
+            <label lang="de-DE">Seitenverhältnis für Produktbilder</label>
+            <label lang="ru-RU">Соотношение сторон для изображений товаров</label>
+            <label lang="uk-UA">Співвідношення сторін для зображень товарів</label>
+            <helpText>Default aspect ratio for product images</helpText>
+            <helpText lang="de-DE">Standard-Seitenverhältnis für Produktbilder</helpText>
+            <helpText lang="ru-RU">Соотношение сторон по умолчанию для изображений товаров</helpText>
+            <helpText lang="uk-UA">Співвідношення сторін за замовчуванням для зображень товарів</helpText>
+            <defaultValue>free</defaultValue>
+            <options>
+                <option>
+                    <id>free</id>
+                    <name>Free (no restriction)</name>
+                    <name lang="de-DE">Frei (keine Einschränkung)</name>
+                    <name lang="ru-RU">Свободно (без ограничений)</name>
+                    <name lang="uk-UA">Вільно (без обмежень)</name>
+                </option>
+                <option>
+                    <id>1:1</id>
+                    <name>1:1 (Square)</name>
+                    <name lang="de-DE">1:1 (Quadrat)</name>
+                    <name lang="ru-RU">1:1 (Квадрат)</name>
+                    <name lang="uk-UA">1:1 (Квадрат)</name>
+                </option>
+                <option>
+                    <id>4:3</id>
+                    <name>4:3 (Standard)</name>
+                    <name lang="de-DE">4:3 (Standard)</name>
+                    <name lang="ru-RU">4:3 (Стандарт)</name>
+                    <name lang="uk-UA">4:3 (Стандарт)</name>
+                </option>
+                <option>
+                    <id>3:4</id>
+                    <name>3:4 (Portrait)</name>
+                    <name lang="de-DE">3:4 (Hochformat)</name>
+                    <name lang="ru-RU">3:4 (Портрет)</name>
+                    <name lang="uk-UA">3:4 (Портрет)</name>
+                </option>
+                <option>
+                    <id>16:9</id>
+                    <name>16:9 (Widescreen)</name>
+                    <name lang="de-DE">16:9 (Breitbild)</name>
+                    <name lang="ru-RU">16:9 (Широкий экран)</name>
+                    <name lang="uk-UA">16:9 (Широкий екран)</name>
+                </option>
+                <option>
+                    <id>custom</id>
+                    <name>Custom ratio</name>
+                    <name lang="de-DE">Benutzerdefiniert</name>
+                    <name lang="ru-RU">Произвольное</name>
+                    <name lang="uk-UA">Довільне</name>
+                </option>
+            </options>
+        </input-field>
+
+        <input-field type="int">
+            <name>customAspectRatioWidth</name>
+            <label>Custom aspect ratio - Width</label>
+            <label lang="de-DE">Benutzerdefiniertes Seitenverhältnis - Breite</label>
+            <label lang="ru-RU">Произвольное соотношение - Ширина</label>
+            <label lang="uk-UA">Довільне співвідношення - Ширина</label>
+            <helpText>Width component of custom aspect ratio (e.g., 5 for 5:4)</helpText>
+            <helpText lang="de-DE">Breitenkomponente des benutzerdefinierten Seitenverhältnisses (z.B. 5 für 5:4)</helpText>
+            <helpText lang="ru-RU">Компонент ширины произвольного соотношения (например, 5 для 5:4)</helpText>
+            <helpText lang="uk-UA">Компонент ширини довільного співвідношення (наприклад, 5 для 5:4)</helpText>
+            <defaultValue>1</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>customAspectRatioHeight</name>
+            <label>Custom aspect ratio - Height</label>
+            <label lang="de-DE">Benutzerdefiniertes Seitenverhältnis - Höhe</label>
+            <label lang="ru-RU">Произвольное соотношение - Высота</label>
+            <label lang="uk-UA">Довільне співвідношення - Висота</label>
+            <helpText>Height component of custom aspect ratio (e.g., 4 for 5:4)</helpText>
+            <helpText lang="de-DE">Höhenkomponente des benutzerdefinierten Seitenverhältnisses (z.B. 4 für 5:4)</helpText>
+            <helpText lang="ru-RU">Компонент высоты произвольного соотношения (например, 4 для 5:4)</helpText>
+            <helpText lang="uk-UA">Компонент висоти довільного співвідношення (наприклад, 4 для 5:4)</helpText>
+            <defaultValue>1</defaultValue>
+        </input-field>
+    </card>
+
 </config>
