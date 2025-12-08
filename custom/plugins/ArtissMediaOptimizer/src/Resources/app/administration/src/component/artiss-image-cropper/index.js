@@ -207,6 +207,12 @@ Component.register('artiss-image-cropper', {
                     return;
                 }
 
+                // Preserve original format for transparency support (PNG, GIF, WebP)
+                const originalType = this.imageFile.type;
+                const supportsTransparency = ['image/png', 'image/gif', 'image/webp'].includes(originalType);
+                const outputType = supportsTransparency ? originalType : 'image/jpeg';
+                const quality = outputType === 'image/jpeg' ? 0.92 : undefined;
+
                 canvas.toBlob((blob) => {
                     if (!blob) {
                         resolve(this.imageFile);
@@ -216,11 +222,11 @@ Component.register('artiss-image-cropper', {
                     const croppedFile = new File(
                         [blob],
                         this.imageFile.name,
-                        { type: 'image/jpeg', lastModified: Date.now() }
+                        { type: outputType, lastModified: Date.now() }
                     );
 
                     resolve(croppedFile);
-                }, 'image/jpeg', 0.92);
+                }, outputType, quality);
             });
         },
 

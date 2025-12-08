@@ -13,14 +13,12 @@ Component.override('sw-media-upload-v2', {
             artissCurrentFile: null,
             artissFilesToProcess: [],
             artissAspectRatio: null,
-            artissCropperEnabled: false,
-            artissProcessedFiles: new WeakSet()
+            artissCropperEnabled: false
         };
     },
 
     computed: {
         artissIsProductMedia() {
-            // Check if we're in product media context
             return this.$route?.name?.includes('product') ||
                    this.uploadTag?.includes('product') ||
                    this.defaultFolder === 'product';
@@ -42,20 +40,9 @@ Component.override('sw-media-upload-v2', {
         },
 
         artissShouldShowCropper(file) {
-            // Don't show cropper for already processed files
-            if (this.artissProcessedFiles.has(file)) {
+            if (!this.artissCropperEnabled || !this.artissIsProductMedia) {
                 return false;
             }
-
-            if (!this.artissCropperEnabled) {
-                return false;
-            }
-
-            if (!this.artissIsProductMedia) {
-                return false;
-            }
-
-            // Only show cropper for images
             const imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
             return imageTypes.includes(file.type);
         },
@@ -65,12 +52,10 @@ Component.override('sw-media-upload-v2', {
                 return this.$super('handleFileCheck', files);
             }
 
-            // Filter image files that should show cropper
             const filesToCrop = [];
             const filesToUploadDirectly = [];
 
             for (const file of files) {
-                // First check if file passes validation (size and type)
                 if (!this.checkFileSize(file) || !this.checkFileType(file)) {
                     continue;
                 }
@@ -82,12 +67,10 @@ Component.override('sw-media-upload-v2', {
                 }
             }
 
-            // Upload non-image files directly using parent method
             if (filesToUploadDirectly.length > 0) {
                 this.$super('handleFileCheck', filesToUploadDirectly);
             }
 
-            // Queue image files for cropping
             if (filesToCrop.length > 0) {
                 this.artissFilesToProcess = filesToCrop;
                 this.artissProcessNextFile();
@@ -98,17 +81,29 @@ Component.override('sw-media-upload-v2', {
             if (this.artissFilesToProcess.length === 0) {
                 return;
             }
-
             this.artissCurrentFile = this.artissFilesToProcess.shift();
             this.artissShowCropper = true;
         },
 
         artissOnCropConfirm(croppedFile) {
             this.artissShowCropper = false;
-            // Mark file as processed to avoid showing cropper again
-            this.artissProcessedFiles.add(croppedFile);
-            // Use handleFileCheck to properly handle file replacement
-            this.handleFileCheck([croppedFile]);
+            
+            // Add timestamp suffix to avoid duplicate name conflict
+            // Since existing files are converted to webp, but new file has original extension
+            const originalName = this.artissCurrentFile?.name || croppedFile.name;
+            const nameParts = originalName.split('.');
+            const ext = nameParts.pop();
+            const baseName = nameParts.join('.');
+            const timestamp = Date.now();
+            const newName = `${baseName}_${timestamp}.${ext}`;
+            
+            // Create new file with unique name
+            const renamedFile = new File([croppedFile], newName, {
+                type: croppedFile.type,
+                lastModified: croppedFile.lastModified
+            });
+            
+            this.$super('handleFileCheck', [renamedFile]);
             this.artissProcessNextFile();
         },
 
@@ -120,15 +115,8 @@ Component.override('sw-media-upload-v2', {
 
         artissOnCropSkip(originalFile) {
             this.artissShowCropper = false;
-            // Mark file as processed to avoid showing cropper again
-            this.artissProcessedFiles.add(originalFile);
-            // Use handleFileCheck to properly handle file replacement
-            this.handleFileCheck([originalFile]);
+            this.$super('handleFileCheck', [originalFile]);
             this.artissProcessNextFile();
-        },
-
-        handleUpload(files) {
-            return this.$super('handleUpload', files);
         }
     }
 });
