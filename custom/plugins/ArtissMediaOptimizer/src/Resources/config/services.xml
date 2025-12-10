@@ -43,7 +43,7 @@
             <argument type="service" id="logger"/>
         </service>
 
-        <!-- Console Command -->
+        <!-- Console Commands -->
         <service id="Artiss\MediaOptimizer\Command\ConvertMediaToWebpCommand">
             <argument type="service" id="media.repository"/>
             <argument type="service" id="media_folder.repository"/>
@@ -56,6 +56,15 @@
             <argument type="service" id="Artiss\MediaOptimizer\Service\OriginalMediaArchiver"/>
             <argument type="service" id="logger"/>
             <argument>%kernel.project_dir%</argument>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Artiss\MediaOptimizer\Command\SyncMediaFromFilesCommand">
+            <argument type="service" id="media.repository"/>
+            <argument type="service" id="shopware.filesystem.public"/>
+            <argument type="service" id="shopware.filesystem.private"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="logger"/>
             <tag name="console.command"/>
         </service>
     </services>

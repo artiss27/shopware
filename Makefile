@@ -76,7 +76,7 @@ backup-smart: ## Smart backup (all structures, data without cache/logs) - RECOMM
 	echo "📋 Current backups:"; \
 	ls -lh backups/shopware-smart-*.sql 2>/dev/null | tail -3 || echo "No backups"
 
-restore: ## Restore backup (usage: make restore FILE=backups/shopware-smart-xxx.sql)
+restore: ## Restore backup (usage: make restore FILE=backups/shopware-smart-20251206-164154.sql)
 ifndef FILE
 	@echo "❌ Specify file: make restore FILE=backups/shopware-smart-xxx.sql"
 	@exit 1
