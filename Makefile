@@ -1,3 +1,5 @@
+# bin/console media:delete-unused --folder-entity=product --grace-period-days=0 --dry-run --limit=10
+
 ifndef APP_ENV
     include .env
 endif
@@ -152,3 +154,25 @@ media-cleanup-report: ## Generate report of unused media
 	@echo "✅ Report saved to: unused_media_report.csv"
 ###< media cleanup ###
 
+
+###> shopware/docker-dev ###
+up:
+	@touch .env.local
+	docker compose --env-file .env.local up -d
+stop:
+	docker compose stop
+down:
+	docker compose down
+shell:
+	docker compose exec web bash
+watch-storefront:
+	docker compose exec -e PROXY_URL=http://localhost:9998 web ./bin/watch-storefront.sh
+watch-admin:
+	docker compose exec web ./bin/watch-administration.sh
+build-storefront:
+	docker compose exec web ./bin/build-storefront.sh
+build-administration:
+	docker compose exec web ./bin/build-administration.sh
+setup:
+	docker compose exec web bin/console system:install --basic-setup --create-database --drop-database --force
+###< shopware/docker-dev ###
