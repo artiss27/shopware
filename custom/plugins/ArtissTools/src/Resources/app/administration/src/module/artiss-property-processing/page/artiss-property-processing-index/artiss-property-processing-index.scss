@@ -1,0 +1,38 @@
+.artiss-property-processing-index {
+    .sw-card {
+        margin-bottom: 20px;
+    }
+
+    .sw-button {
+        margin-right: 10px;
+    }
+
+    &__dry-run-notice {
+        margin-bottom: 20px;
+    }
+
+    &__result {
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        ul {
+            list-style: disc;
+            padding-left: 20px;
+            margin-bottom: 15px;
+            
+            li {
+                margin-bottom: 8px;
+                
+                ul {
+                    margin-top: 5px;
+                    margin-left: 20px;
+                    font-size: 0.9em;
+                }
+            }
+        }
+    }
+}

@@ -18,43 +18,22 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Синхронизирует записи медиа в базе данных с реальными файлами на диске.
+ * Description:
+ *   Synchronizes media records in database with actual files on disk.
+ *   Useful after database restore when files were converted to WebP but DB records still reference old formats.
+ *   Updates mime_type, file_extension, path, file_size and removes old thumbnails.
+ *   Run `bin/console media:generate-thumbnails` after synchronization.
  *
- * Эта команда полезна после восстановления базы данных, когда файлы были конвертированы
- * в WebP, но записи в БД остались со старыми форматами (JPEG/PNG).
+ * Usage:
+ *   bin/console artiss:media:sync-from-files [options]
  *
- * ## Что делает команда:
+ * Options:
+ *   --limit=VALUE, -l VALUE    Number of media items to process per batch (default: 200)
+ *   --dry-run                  Only show what would be changed without making changes
+ *   --folder=VALUE, -f VALUE   Only process media from a specific folder (by folder ID)
  *
- * 1. Проходит по всем записям media в базе данных
- * 2. Для каждой записи проверяет, существует ли файл по указанному пути
- * 3. Если файл НЕ существует, проверяет варианты с другими расширениями:
- *    - Если в БД указан JPEG/PNG/GIF/BMP, проверяет существование WebP
- *    - Если в БД указан WebP, проверяет существование JPEG/PNG
- * 4. Если найден файл с другим расширением, обновляет запись в БД:
- *    - Обновляет mime_type
- *    - Обновляет file_extension
- *    - Обновляет path
- *    - Обновляет file_size
- *    - Удаляет старые thumbnails (нужно будет пересоздать)
- *
- * ## Использование:
- *
- * ```bash
- * # Сухой прогон - показать что будет изменено
- * bin/console artiss:media:sync-from-files --dry-run
- *
- * # Синхронизировать все медиа
- * bin/console artiss:media:sync-from-files
- *
- * # Синхронизировать только определенную папку
- * bin/console artiss:media:sync-from-files --folder=0188b4a2c3e87a5e9d8c2e3f4a5b6c7d
- *
- * # Обработать меньшими батчами
- * bin/console artiss:media:sync-from-files --limit=50
- *
- * # После синхронизации пересоздать thumbnails
- * bin/console media:generate-thumbnails
- * ```
+ * Example:
+ *   bin/console artiss:media:sync-from-files --limit=50 --dry-run --folder=0188b4a2c3e87a5e9d8c2e3f4a5b6c7d
  */
 #[AsCommand(
     name: 'artiss:media:sync-from-files',

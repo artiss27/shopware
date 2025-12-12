@@ -1,0 +1,32 @@
+{% block artiss_tools_backups %}
+<sw-page class="artiss-tools-backups">
+    {% block artiss_tools_backups_header %}
+        <template #smart-bar-header>
+            <sw-button :routerLink="{ name: 'artiss.tools.index' }" class="sw-page__back-btn">
+                <sw-icon name="regular-chevron-left" size="16"></sw-icon>
+            </sw-button>
+            <sw-icon name="regular-cog" size="20" class="sw-page__icon"></sw-icon>
+            <h2>{{ $tc('artissTools.backups.title') }}</h2>
+        </template>
+    {% endblock %}
+
+    <template #content>
+        <sw-tabs class="sw-tabs--small" v-model="activeTab" default-item="create">
+            <sw-tabs-item name="create">
+                {{ $tc('artissTools.backups.tabs.create') }}
+            </sw-tabs-item>
+            <sw-tabs-item name="restore">
+                {{ $tc('artissTools.backups.tabs.restore') }}
+            </sw-tabs-item>
+        </sw-tabs>
+
+        <sw-card v-if="activeTab === 'create'" :title="$tc('artissTools.backups.tabs.create')">
+            <p>{{ $tc('artissTools.backups.placeholders.create') }}</p>
+        </sw-card>
+
+        <sw-card v-else :title="$tc('artissTools.backups.tabs.restore')">
+            <p>{{ $tc('artissTools.backups.placeholders.restore') }}</p>
+        </sw-card>
+    </template>
+</sw-page>
+{% endblock %}

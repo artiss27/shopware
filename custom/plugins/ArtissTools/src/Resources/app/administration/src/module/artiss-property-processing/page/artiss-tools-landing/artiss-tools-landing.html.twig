@@ -1,0 +1,26 @@
+{% block artiss_tools_landing %}
+<sw-page class="artiss-tools-landing">
+    <template #smart-bar-header>
+        <h2>{{ $tc('artissTools.general.title') }}</h2>
+    </template>
+
+    <template #content>
+        <sw-card :title="$tc('artissTools.landing.title')" class="artiss-tools-landing__grid">
+            <div class="artiss-tools-landing__actions">
+                <sw-button size="large" @click="goTo('artiss.tools.backups')">
+                    {{ $tc('artissTools.landing.buttons.backups') }}
+                </sw-button>
+                <sw-button size="large" @click="goTo('artiss.tools.properties')">
+                    {{ $tc('artissTools.landing.buttons.properties') }}
+                </sw-button>
+                <sw-button size="large" @click="goTo('artiss.tools.products')">
+                    {{ $tc('artissTools.landing.buttons.products') }}
+                </sw-button>
+                <sw-button size="large" @click="goTo('artiss.tools.images')">
+                    {{ $tc('artissTools.landing.buttons.images') }}
+                </sw-button>
+            </div>
+        </sw-card>
+    </template>
+</sw-page>
+{% endblock %}

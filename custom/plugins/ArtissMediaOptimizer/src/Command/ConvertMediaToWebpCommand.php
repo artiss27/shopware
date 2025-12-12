@@ -24,82 +24,24 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Converts existing image media files to WebP format.
+ * Description:
+ *   Converts existing image media files to WebP format in bulk.
+ *   Supported formats: JPEG, PNG, GIF, BMP, TIFF, HEIC/HEIF.
+ *   Archives originals (if configured), resizes (if configured), updates filesystem and database.
+ *   Run `bin/console media:generate-thumbnails` after conversion to regenerate thumbnails.
  *
- * This command performs bulk conversion of existing media files in the Shopware media library.
- * It processes files in batches and applies the same optimization rules as the upload interceptor.
+ * Usage:
+ *   bin/console artiss:media:convert-to-webp [options]
  *
- * ## Supported formats:
- * - JPEG (image/jpeg)
- * - PNG (image/png)
- * - GIF (image/gif) - static only, animated GIFs lose animation
- * - BMP (image/bmp)
- * - TIFF (image/tiff) - requires Imagick extension
- * - HEIC/HEIF (image/heic, image/heif) - requires Imagick with libheif
+ * Options:
+ *   --limit=VALUE, -l VALUE    Number of media items to process per batch (default: 200)
+ *   --dry-run                  Only log what would be done without making changes
+ *   --only-not-converted       Only process media that is not already WebP
+ *   --folder=VALUE, -f VALUE   Only process media from a specific folder (by folder ID)
+ *   --folder-name=VALUE        Only process media from a specific folder (by folder name)
  *
- * ## What this command does:
- *
- * 1. **Finds media to convert**: Searches for all media entities with supported image mimeTypes
- *
- * 2. **Archives originals** (if keep_original=true):
- *    - Copies original file to var/artiss_media/original/{hash}/{mediaId}.{ext}
- *    - Saves relative path in media.customFields['artiss_original_path']
- *    - Skips archiving if already archived (checks customFields)
- *
- * 3. **Resizes** (if enable_resize=true and image exceeds max dimensions):
- *    - Downscales to fit within max_width x max_height
- *    - Preserves aspect ratio (no upscaling, no distortion)
- *
- * 4. **Converts to WebP**:
- *    - Uses configured quality (webp_quality setting, default 85)
- *    - Preserves alpha channel for PNGs
- *
- * 5. **Updates filesystem**:
- *    - Writes new WebP file (e.g., media/aa/bb/image.webp)
- *    - Deletes old JPEG/PNG file
- *    - Deletes old thumbnail files
- *
- * 6. **Updates database** (media table only):
- *    - mime_type = 'image/webp'
- *    - file_extension = 'webp'
- *    - path = new path with .webp extension
- *    - file_size = new file size
- *    - Deletes records from media_thumbnail table
- *
- * ## What this command does NOT change:
- *
- * - **Entity relations are preserved**: The media.id stays the same, so all relations
- *   (product_media, category.media_id, cms_media, etc.) remain intact and valid.
- *   These entities reference media by ID, not by file path.
- *
- * - **URLs update automatically**: Since Shopware generates URLs from media.path,
- *   all URLs will automatically point to the new WebP file.
- *
- * ## After running this command:
- *
- * Run `bin/console media:generate-thumbnails` to regenerate thumbnails in WebP format.
- *
- * ## Usage examples:
- *
- * ```bash
- * # Dry run - see what would be converted without making changes
- * bin/console artiss:media:convert-to-webp --dry-run
- *
- * # Convert all JPEG/PNG files
- * bin/console artiss:media:convert-to-webp
- *
- * # Convert in smaller batches (useful for large media libraries)
- * bin/console artiss:media:convert-to-webp --limit=50
- *
- * # Only convert files that haven't been converted yet
- * bin/console artiss:media:convert-to-webp --only-not-converted
- *
- * # Convert only media from a specific folder (by folder ID)
- * bin/console artiss:media:convert-to-webp --folder=0188b4a2c3e87a5e9d8c2e3f4a5b6c7d
- *
- * # Convert only media from a specific folder (by folder name)
- * bin/console artiss:media:convert-to-webp --folder-name="Product Media"
- * ```
+ * Example:
+ *   bin/console artiss:media:convert-to-webp --limit=50 --dry-run --only-not-converted --folder=0188b4a2c3e87a5e9d8c2e3f4a5b6c7d --folder-name="Product Media"
  */
 #[AsCommand(
     name: 'artiss:media:convert-to-webp',

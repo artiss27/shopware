@@ -1,0 +1,127 @@
+{
+    "artissTools": {
+        "general": {
+            "title": "ARTiss Tools",
+            "description": "Administrative tools",
+            "mainMenuItem": "ARTiss Tools"
+        },
+        "landing": {
+            "title": "Select a tool",
+            "buttons": {
+                "backups": "Backups",
+                "properties": "Properties",
+                "products": "Products",
+                "images": "Images"
+            }
+        },
+        "products": {
+            "title": "Products",
+            "tabs": {
+                "merge": "Merge"
+            },
+            "placeholders": {
+                "merge": "Merge products placeholder"
+            }
+        },
+        "backups": {
+            "title": "Backups",
+            "tabs": {
+                "create": "Create backup",
+                "restore": "Restore backup"
+            },
+            "placeholders": {
+                "create": "Backup creation placeholder",
+                "restore": "Backup restore placeholder"
+            }
+        },
+        "images": {
+            "title": "Images",
+            "tabs": {
+                "cleanup": "Cleanup",
+                "duplicates": "Duplicates"
+            },
+            "placeholders": {
+                "cleanup": "Image cleanup placeholder",
+                "duplicates": "Image duplicates placeholder"
+            }
+        },
+        "propertyProcessing": {
+            "title": "Property Processing",
+            "description": "Merge property groups and custom field sets",
+            "menuTitle": "Property Processing",
+            "tabs": {
+                "merge": "Merge",
+                "transfer": "Transfer",
+                "cleanup": "Cleanup"
+            },
+            "sections": {
+                "entityType": "Entity Type Selection",
+                "selection": "Group Selection",
+                "actions": "Actions",
+                "result": "Result",
+                "targetFields": "Target custom fields",
+                "sourceFields": "Source custom fields",
+                "error": "Error"
+            },
+            "entityTypes": {
+                "propertyGroups": "Property Groups",
+                "customFieldSets": "Custom Field Sets"
+            },
+            "fields": {
+                "entityType": "Entity Type",
+                "targetGroup": "Target group",
+                "targetCustomFieldSet": "Target custom field set (products)",
+                "sourceGroups": "Source groups (donors)",
+                "sourceCustomFieldSets": "Source custom field sets (products)",
+                "targetCustomFields": "Target custom fields",
+                "sourceCustomFields": "Source custom fields"
+            },
+            "placeholders": {
+                "selectTarget": "Select target group...",
+                "selectTargetCustomField": "Select target custom field set...",
+                "selectSources": "Select source groups...",
+                "selectSourcesCustomFields": "Select source custom field set...",
+                "selectTargetField": "Select target field...",
+                "selectSourceFields": "Select source fields...",
+                "transfer": "Transfer placeholder",
+                "cleanup": "Cleanup placeholder"
+            },
+            "buttons": {
+                "dryRun": "Dry-Run (Simulation)",
+                "execute": "Execute",
+                "cancel": "Cancel"
+            },
+            "confirm": {
+                "title": "Confirm Execution",
+                "message": "Are you sure you want to execute the merge? This action cannot be undone. All source groups will be deleted."
+            },
+            "messages": {
+                "dryRunMode": "DRY-RUN MODE: No changes were made to the database",
+                "executeMode": "Changes have been successfully applied",
+                "dryRunComplete": "Dry-run completed successfully",
+                "mergeSuccess": "Merge completed successfully"
+            },
+            "result": {
+                "target": "Target Group",
+                "sources": "Source Groups",
+                "currentItems": "Current items",
+                "totalItems": "Total items",
+                "toMerge": "To merge (duplicates)",
+                "toMove": "To move",
+                "statistics": "Statistics"
+            },
+            "stats": {
+                "totalSourceItems": "Total source items",
+                "itemsToMerge": "Items to merge",
+                "itemsToMove": "Items to move",
+                "itemsToDelete": "Items to delete",
+                "productPropertyUpdates": "Product property updates",
+                "configuratorSettingUpdates": "Configurator setting updates",
+                "groupsToDelete": "Groups to delete"
+            },
+            "errors": {
+                "loadFailed": "Failed to load data"
+            }
+        }
+    }
+}

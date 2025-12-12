@@ -1,0 +1,125 @@
+{
+    "artissTools": {
+        "general": {
+            "title": "ARTiss Tools",
+            "description": "Административные инструменты",
+            "mainMenuItem": "ARTiss Tools"
+        },
+        "landing": {
+            "title": "Выберите инструмент",
+            "buttons": {
+                "backups": "Бэкапы",
+                "properties": "Свойства",
+                "products": "Товары",
+                "images": "Картинки"
+            }
+        },
+        "products": {
+            "title": "Товары",
+            "tabs": {
+                "merge": "Объединение"
+            },
+            "placeholders": {
+                "merge": "Заглушка объединения товаров"
+            }
+        },
+        "backups": {
+            "title": "Бэкапы",
+            "tabs": {
+                "create": "Создание",
+                "restore": "Восстановление"
+            },
+            "placeholders": {
+                "create": "Заглушка создания бэкапа",
+                "restore": "Заглушка восстановления бэкапа"
+            }
+        },
+        "images": {
+            "title": "Картинки",
+            "tabs": {
+                "cleanup": "Очистка",
+                "duplicates": "Дубли"
+            },
+            "placeholders": {
+                "cleanup": "Заглушка очистки картинок",
+                "duplicates": "Заглушка поиска дублей картинок"
+            }
+        },
+        "propertyProcessing": {
+            "title": "Свойства",
+            "description": "Объединение групп свойств и наборов полей",
+            "menuTitle": "Свойства",
+            "tabs": {
+                "merge": "Объединение",
+                "transfer": "Перенос",
+                "cleanup": "Очистка"
+            },
+            "sections": {
+                "entityType": "Выбор типа сущности",
+                "selection": "Выбор групп",
+                "actions": "Действия",
+                "result": "Результат",
+                "targetFields": "Целевые кастом поля",
+                "sourceFields": "Кастом поля источников",
+                "error": "Ошибка"
+            },
+            "entityTypes": {
+                "propertyGroups": "Группы свойств",
+                "customFieldSets": "Наборы полей"
+            },
+            "fields": {
+                "entityType": "Тип сущности",
+                "targetGroup": "Целевая группа",
+                "targetCustomFieldSet": "Целевой набор кастом полей (товары)",
+                "sourceGroups": "Группы-источники",
+                "sourceCustomFieldSets": "Наборы кастом полей (товары)",
+                "targetCustomFields": "Целевые кастом поля",
+                "sourceCustomFields": "Кастом поля источников"
+            },
+            "placeholders": {
+                "selectTarget": "Выберите целевую группу...",
+                "selectTargetCustomField": "Выберите целевой набор полей...",
+                "selectSources": "Выберите группы-источники...",
+                "selectSourcesCustomFields": "Выберите наборы кастом полей...",
+                "transfer": "Заглушка переноса",
+                "cleanup": "Заглушка очистки"
+            },
+            "buttons": {
+                "dryRun": "Тестовый запуск",
+                "execute": "Выполнить",
+                "cancel": "Отмена"
+            },
+            "confirm": {
+                "title": "Подтверждение",
+                "message": "Вы уверены? Действие необратимо. Источники будут удалены."
+            },
+            "messages": {
+                "dryRunMode": "ТЕСТОВЫЙ РЕЖИМ: изменений в БД нет",
+                "executeMode": "Изменения применены",
+                "dryRunComplete": "Тестовый запуск завершён",
+                "mergeSuccess": "Объединение завершено"
+            },
+            "result": {
+                "target": "Целевая группа",
+                "sources": "Группы-источники",
+                "currentItems": "Текущие элементы",
+                "totalItems": "Всего элементов",
+                "toMerge": "К объединению",
+                "toMove": "К переносу",
+                "statistics": "Статистика"
+            },
+            "stats": {
+                "totalSourceItems": "Всего элементов источников",
+                "itemsToMerge": "К объединению",
+                "itemsToMove": "К переносу",
+                "itemsToDelete": "К удалению",
+                "productPropertyUpdates": "Обновления свойств товаров",
+                "configuratorSettingUpdates": "Обновления конфигуратора",
+                "groupsToDelete": "Группы к удалению"
+            },
+            "errors": {
+                "loadFailed": "Не удалось загрузить данные"
+            }
+        }
+    }
+}

@@ -1,0 +1,25 @@
+{% block artiss_tools_products %}
+<sw-page class="artiss-tools-products">
+    {% block artiss_tools_products_header %}
+        <template #smart-bar-header>
+            <sw-button :routerLink="{ name: 'artiss.tools.index' }" class="sw-page__back-btn">
+                <sw-icon name="regular-chevron-left" size="16"></sw-icon>
+            </sw-button>
+            <sw-icon name="regular-cog" size="20" class="sw-page__icon"></sw-icon>
+            <h2>{{ $tc('artissTools.products.title') }}</h2>
+        </template>
+    {% endblock %}
+
+    <template #content>
+        <sw-tabs class="sw-tabs--small" v-model="activeTab" default-item="merge">
+            <sw-tabs-item name="merge">
+                {{ $tc('artissTools.products.tabs.merge') }}
+            </sw-tabs-item>
+        </sw-tabs>
+
+        <sw-card :title="$tc('artissTools.products.tabs.merge')" :isLoading="false">
+            <p>{{ $tc('artissTools.products.placeholders.merge') }}</p>
+        </sw-card>
+    </template>
+</sw-page>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% block artiss_property_processing_index %}
+    <sw-page class="artiss-property-processing-index">
+        {% block artiss_property_processing_index_header %}
+            <template #smart-bar-header>
+                <sw-button :routerLink="{ name: 'artiss.tools.index' }" class="sw-page__back-btn">
+                    <sw-icon name="regular-chevron-left" size="16"></sw-icon>
+                </sw-button>
+                <sw-icon name="regular-cog" size="20" class="sw-page__icon"></sw-icon>
+                <h2>{{ $tc('artissTools.propertyProcessing.title') }}</h2>
+            </template>
+        {% endblock %}
+
+        {% block artiss_property_processing_index_content %}
+            <template #content>
+                <sw-tabs class="sw-tabs--small" v-model="activeTab" default-item="merge">
+                    <sw-tabs-item name="merge">
+                        {{ $tc('artissTools.propertyProcessing.tabs.merge') }}
+                    </sw-tabs-item>
+                    <sw-tabs-item name="transfer">
+                        {{ $tc('artissTools.propertyProcessing.tabs.transfer') }}
+                    </sw-tabs-item>
+                    <sw-tabs-item name="cleanup">
+                        {{ $tc('artissTools.propertyProcessing.tabs.cleanup') }}
+                    </sw-tabs-item>
+                </sw-tabs>
+
+                <template v-if="activeTab === 'merge'">
+                    <sw-card
+                        :title="$tc('artissTools.propertyProcessing.sections.selection')"
+                        :isLoading="isLoading"
+                    >
+                        <sw-single-select
+                            v-model:value="targetId"
+                            :options="propertyGroups"
+                            :label="$tc('artissTools.propertyProcessing.fields.targetGroup')"
+                            :placeholder="$tc('artissTools.propertyProcessing.placeholders.selectTarget')"
+                            valueProperty="id"
+                            labelProperty="name"
+                        />
+
+                        <sw-multi-select
+                            v-model:value="sourceIds"
+                            :options="availableSourceGroups"
+                            :label="$tc('artissTools.propertyProcessing.fields.sourceGroups')"
+                            :placeholder="$tc('artissTools.propertyProcessing.placeholders.selectSources')"
+                            valueProperty="id"
+                            labelProperty="name"
+                            class="sw-field--last"
+                        />
+                    </sw-card>
+
+                    <sw-card
+                        v-if="canExecute"
+                        :title="$tc('artissTools.propertyProcessing.sections.actions')"
+                        :isLoading="isLoading"
+                    >
+                        <sw-button
+                            variant="primary"
+                            :disabled="isLoading"
+                            @click="executeDryRun"
+                        >
+                            {{ $tc('artissTools.propertyProcessing.buttons.dryRun') }}
+                        </sw-button>
+
+                        <sw-button
+                            variant="danger"
+                            :disabled="isLoading"
+                            @click="executeMerge"
+                        >
+                            {{ $tc('artissTools.propertyProcessing.buttons.execute') }}
+                        </sw-button>
+                    </sw-card>
+
+                    <sw-card
+                        v-if="mergeResult"
+                        :title="$tc('artissTools.propertyProcessing.sections.result')"
+                    >
+                        <div v-if="dryRunMode" class="artiss-property-processing-index__dry-run-notice">
+                            <sw-alert variant="info">
+                                {{ $tc('artissTools.propertyProcessing.messages.dryRunMode') }}
+                            </sw-alert>
+                        </div>
+
+                        <div class="artiss-property-processing-index__result">
+                            <h3>{{ $tc('artissTools.propertyProcessing.result.target') }}</h3>
+                            <p><strong>{{ mergeResult.target.name }}</strong></p>
+                            <p>{{ $tc('artissTools.propertyProcessing.result.currentItems') }}: {{ mergeResult.targetOptionsCount }}</p>
+
+                            <h3>{{ $tc('artissTools.propertyProcessing.result.sources') }}</h3>
+                            <ul>
+                                <li v-for="source in mergeResult.sources" :key="source.id">
+                                    <strong>{{ source.name }}</strong>
+                                    ({{ $tc('artissTools.propertyProcessing.result.totalItems') }}: {{ source.optionCount }})
+                                    <ul>
+                                        <li v-if="source.mergeActions.length > 0">
+                                            {{ $tc('artissTools.propertyProcessing.result.toMerge') }}: {{ source.mergeActions.length }}
+                                        </li>
+                                        <li v-if="source.moveActions.length > 0">
+                                            {{ $tc('artissTools.propertyProcessing.result.toMove') }}: {{ source.moveActions.length }}
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <h3>{{ $tc('artissTools.propertyProcessing.result.statistics') }}</h3>
+                            <sw-description-list>
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.stats.totalSourceItems') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ mergeResult.stats.totalSourceOptions }}
+                                </sw-description-list-description>
+
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.stats.itemsToMerge') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ mergeResult.stats.optionsToMerge }}
+                                </sw-description-list-description>
+
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.stats.itemsToMove') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ mergeResult.stats.optionsToMove }}
+                                </sw-description-list-description>
+
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.stats.itemsToDelete') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ mergeResult.stats.optionsToDelete }}
+                                </sw-description-list-description>
+
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.stats.productPropertyUpdates') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ mergeResult.stats.productPropertyUpdates }}
+                                </sw-description-list-description>
+
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.stats.configuratorSettingUpdates') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ mergeResult.stats.configuratorSettingUpdates }}
+                                </sw-description-list-description>
+
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.stats.groupsToDelete') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ mergeResult.stats.groupsToDelete }}
+                                </sw-description-list-description>
+                            </sw-description-list>
+                        </div>
+                    </sw-card>
+
+                    <sw-modal
+                        v-if="showConfirmModal"
+                        :title="$tc('artissTools.propertyProcessing.confirm.title')"
+                        variant="small"
+                        @modal-close="showConfirmModal = false"
+                    >
+                        <p>{{ $tc('artissTools.propertyProcessing.confirm.message') }}</p>
+
+                        <template #modal-footer>
+                            <sw-button
+                                variant="secondary"
+                                @click="showConfirmModal = false"
+                            >
+                                {{ $tc('artissTools.propertyProcessing.buttons.cancel') }}
+                            </sw-button>
+
+                            <sw-button
+                                variant="primary"
+                                @click="confirmExecute"
+                            >
+                                {{ $tc('artissTools.propertyProcessing.buttons.execute') }}
+                            </sw-button>
+                        </template>
+                    </sw-modal>
+                </template>
+
+                <template v-else-if="activeTab === 'transfer'">
+                    <sw-card :title="$tc('artissTools.propertyProcessing.tabs.transfer')">
+                        <p>{{ $tc('artissTools.propertyProcessing.placeholders.transfer') }}</p>
+                    </sw-card>
+                </template>
+
+                <template v-else>
+                    <sw-card :title="$tc('artissTools.propertyProcessing.tabs.cleanup')">
+                        <p>{{ $tc('artissTools.propertyProcessing.placeholders.cleanup') }}</p>
+                    </sw-card>
+                </template>
+            </template>
+        {% endblock %}
+    </sw-page>
+{% endblock %}

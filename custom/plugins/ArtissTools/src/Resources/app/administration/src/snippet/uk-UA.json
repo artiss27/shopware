@@ -1,0 +1,125 @@
+{
+    "artissTools": {
+        "general": {
+            "title": "ARTiss Tools",
+            "description": "Адміністративні інструменти",
+            "mainMenuItem": "ARTiss Tools"
+        },
+        "landing": {
+            "title": "Оберіть інструмент",
+            "buttons": {
+                "backups": "Бекапи",
+                "properties": "Властивості",
+                "products": "Товари",
+                "images": "Зображення"
+            }
+        },
+        "products": {
+            "title": "Товари",
+            "tabs": {
+                "merge": "Об'єднання"
+            },
+            "placeholders": {
+                "merge": "Заглушка об'єднання товарів"
+            }
+        },
+        "backups": {
+            "title": "Бекапи",
+            "tabs": {
+                "create": "Створення",
+                "restore": "Відновлення"
+            },
+            "placeholders": {
+                "create": "Заглушка створення бекапу",
+                "restore": "Заглушка відновлення бекапу"
+            }
+        },
+        "images": {
+            "title": "Зображення",
+            "tabs": {
+                "cleanup": "Очищення",
+                "duplicates": "Дублікати"
+            },
+            "placeholders": {
+                "cleanup": "Заглушка очищення зображень",
+                "duplicates": "Заглушка пошуку дублікатів зображень"
+            }
+        },
+        "propertyProcessing": {
+            "title": "Обробка властивостей",
+            "description": "Об'єднання груп властивостей та наборів полів",
+            "menuTitle": "Обробка властивостей",
+            "tabs": {
+                "merge": "Об'єднання",
+                "transfer": "Перенесення",
+                "cleanup": "Очищення"
+            },
+            "sections": {
+                "entityType": "Вибір типу сутності",
+                "selection": "Вибір груп",
+                "actions": "Дії",
+                "result": "Результат",
+                "targetFields": "Цільові кастомні поля",
+                "sourceFields": "Кастомні поля джерел",
+                "error": "Помилка"
+            },
+            "entityTypes": {
+                "propertyGroups": "Групи властивостей",
+                "customFieldSets": "Набори полів"
+            },
+            "fields": {
+                "entityType": "Тип сутності",
+                "targetGroup": "Цільова група",
+                "targetCustomFieldSet": "Цільовий набір полів (товари)",
+                "sourceGroups": "Групи-джерела",
+                "sourceCustomFieldSets": "Набори полів (товари)",
+                "targetCustomFields": "Цільові кастомні поля",
+                "sourceCustomFields": "Кастомні поля джерел"
+            },
+            "placeholders": {
+                "selectTarget": "Виберіть цільову групу...",
+                "selectTargetCustomField": "Виберіть цільовий набір полів...",
+                "selectSources": "Виберіть групи-джерела...",
+                "selectSourcesCustomFields": "Виберіть набори полів...",
+                "transfer": "Заглушка перенесення",
+                "cleanup": "Заглушка очищення"
+            },
+            "buttons": {
+                "dryRun": "Тестовий запуск",
+                "execute": "Виконати",
+                "cancel": "Скасувати"
+            },
+            "confirm": {
+                "title": "Підтвердження",
+                "message": "Ви впевнені? Дію не можна скасувати. Джерела будуть видалені."
+            },
+            "messages": {
+                "dryRunMode": "ТЕСТОВИЙ РЕЖИМ: змін у БД немає",
+                "executeMode": "Зміни застосовано",
+                "dryRunComplete": "Тестовий запуск завершено",
+                "mergeSuccess": "Об'єднання завершено"
+            },
+            "result": {
+                "target": "Цільова група",
+                "sources": "Групи-джерела",
+                "currentItems": "Поточні елементи",
+                "totalItems": "Усього елементів",
+                "toMerge": "До об'єднання",
+                "toMove": "До перенесення",
+                "statistics": "Статистика"
+            },
+            "stats": {
+                "totalSourceItems": "Усього елементів джерел",
+                "itemsToMerge": "До об'єднання",
+                "itemsToMove": "До перенесення",
+                "itemsToDelete": "До видалення",
+                "productPropertyUpdates": "Оновлення властивостей товарів",
+                "configuratorSettingUpdates": "Оновлення конфігуратора",
+                "groupsToDelete": "Групи до видалення"
+            },
+            "errors": {
+                "loadFailed": "Не вдалося завантажити дані"
+            }
+        }
+    }
+}

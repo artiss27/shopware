@@ -1,4 +1,5 @@
 # bin/console media:delete-unused --folder-entity=product --grace-period-days=0 --dry-run --limit=10
+# docker compose exec -T web bin/console dal:refresh:index - индексация товаров
 
 ifndef APP_ENV
     include .env
@@ -125,31 +126,3 @@ supplier-rebuild: ## Rebuild supplier plugin (administration)
 supplier-update:
 	docker compose exec web bin/console plugin:update ArtissSupplier
 ###< supplier ###
-
-###> media cleanup ###
-media-cleanup-check: ## Check for unused media files (dry-run, 30 days grace period)
-	@echo "🔍 Checking for unused media files..."
-	@docker compose exec web bin/console media:delete-unused --dry-run --grace-period-days=30
-
-media-cleanup: ## Delete unused media files (30 days grace period)
-	@echo "🗑️  Cleaning up unused media files..."
-	@docker compose exec web bin/console media:delete-unused --grace-period-days=30
-	@echo "✅ Media cleanup completed"
-
-media-cleanup-products: ## Cleanup unused product media only
-	@echo "🗑️  Cleaning up unused product media..."
-	@docker compose exec web bin/console media:delete-unused --folder-entity=product --grace-period-days=30
-
-media-cleanup-categories: ## Cleanup unused category media only
-	@echo "🗑️  Cleaning up unused category media..."
-	@docker compose exec web bin/console media:delete-unused --folder-entity=category --grace-period-days=30
-
-media-cleanup-manufacturers: ## Cleanup unused manufacturer media only
-	@echo "🗑️  Cleaning up unused manufacturer media..."
-	@docker compose exec web bin/console media:delete-unused --folder-entity=product_manufacturer --grace-period-days=30
-
-media-cleanup-report: ## Generate report of unused media
-	@echo "📊 Generating unused media report..."
-	@docker compose exec web bin/console media:delete-unused --dry-run --report > unused_media_report.csv
-	@echo "✅ Report saved to: unused_media_report.csv"
-###< media cleanup ###

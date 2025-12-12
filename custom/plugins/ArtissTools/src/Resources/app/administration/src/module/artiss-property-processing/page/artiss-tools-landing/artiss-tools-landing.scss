@@ -1,0 +1,5 @@
+.artiss-tools-landing__actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 16px;
+}

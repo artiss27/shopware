@@ -12,6 +12,20 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Description:
+ *   Imports suppliers from Bitrix export data file.
+ *   Reads supplier data from JSON and creates corresponding entities.
+ *
+ * Usage:
+ *   bin/console artiss:supplier:import [options]
+ *
+ * Options:
+ *   --limit=VALUE, -l VALUE    Limit number of suppliers to import (for testing)
+ *
+ * Example:
+ *   bin/console artiss:supplier:import --limit=10
+ */
 #[AsCommand(
     name: 'artiss:supplier:import',
     description: 'Import suppliers from Bitrix export data'

@@ -1,0 +1,125 @@
+{
+    "artissTools": {
+        "general": {
+            "title": "ARTiss Tools",
+            "description": "Administrative Werkzeuge",
+            "mainMenuItem": "ARTiss Tools"
+        },
+        "landing": {
+            "title": "Werkzeug wählen",
+            "buttons": {
+                "backups": "Backups",
+                "properties": "Eigenschaften",
+                "products": "Produkte",
+                "images": "Bilder"
+            }
+        },
+        "products": {
+            "title": "Produkte",
+            "tabs": {
+                "merge": "Zusammenführen"
+            },
+            "placeholders": {
+                "merge": "Platzhalter für Produktzusammenführung"
+            }
+        },
+        "backups": {
+            "title": "Backups",
+            "tabs": {
+                "create": "Backup erstellen",
+                "restore": "Backup wiederherstellen"
+            },
+            "placeholders": {
+                "create": "Platzhalter für Backup-Erstellung",
+                "restore": "Platzhalter für Backup-Wiederherstellung"
+            }
+        },
+        "images": {
+            "title": "Bilder",
+            "tabs": {
+                "cleanup": "Bereinigung",
+                "duplicates": "Duplikate"
+            },
+            "placeholders": {
+                "cleanup": "Platzhalter für Bildbereinigung",
+                "duplicates": "Platzhalter für Bildduplikate"
+            }
+        },
+        "propertyProcessing": {
+            "title": "Eigenschaftsverarbeitung",
+            "description": "Eigenschaftsgruppen und Custom Field Sets zusammenführen",
+            "menuTitle": "Eigenschaftsverarbeitung",
+            "tabs": {
+                "merge": "Zusammenführen",
+                "transfer": "Übertragen",
+                "cleanup": "Bereinigen"
+            },
+            "sections": {
+                "entityType": "Entitätstyp wählen",
+                "selection": "Gruppenauswahl",
+                "actions": "Aktionen",
+                "result": "Ergebnis",
+                "targetFields": "Ziel-Custom-Fields",
+                "sourceFields": "Quellen-Custom-Fields",
+                "error": "Fehler"
+            },
+            "entityTypes": {
+                "propertyGroups": "Eigenschaftsgruppen",
+                "customFieldSets": "Custom Field Sets"
+            },
+            "fields": {
+                "entityType": "Entitätstyp",
+                "targetGroup": "Zielgruppe",
+                "targetCustomFieldSet": "Ziel-Custom-Field-Set (Produkte)",
+                "sourceGroups": "Quellen (Spender)",
+                "sourceCustomFieldSets": "Custom-Field-Sets (Produkte)",
+                "targetCustomFields": "Ziel-Custom-Fields",
+                "sourceCustomFields": "Quellen-Custom-Fields"
+            },
+            "placeholders": {
+                "selectTarget": "Zielgruppe auswählen...",
+                "selectTargetCustomField": "Ziel-Custom-Field-Set auswählen...",
+                "selectSources": "Quellen auswählen...",
+                "selectSourcesCustomFields": "Custom-Field-Sets auswählen...",
+                "transfer": "Platzhalter für Übertragung",
+                "cleanup": "Platzhalter für Bereinigung"
+            },
+            "buttons": {
+                "dryRun": "Testlauf",
+                "execute": "Ausführen",
+                "cancel": "Abbrechen"
+            },
+            "confirm": {
+                "title": "Ausführung bestätigen",
+                "message": "Sicher ausführen? Aktion kann nicht rückgängig gemacht werden. Quellen werden gelöscht."
+            },
+            "messages": {
+                "dryRunMode": "TESTLAUF: Keine Änderungen an der Datenbank",
+                "executeMode": "Änderungen wurden angewendet",
+                "dryRunComplete": "Testlauf erfolgreich",
+                "mergeSuccess": "Zusammenführung erfolgreich"
+            },
+            "result": {
+                "target": "Zielgruppe",
+                "sources": "Quellen",
+                "currentItems": "Aktuelle Elemente",
+                "totalItems": "Gesamt",
+                "toMerge": "Zu mergen (Duplikate)",
+                "toMove": "Zu verschieben",
+                "statistics": "Statistiken"
+            },
+            "stats": {
+                "totalSourceItems": "Gesamt Quellen-Elemente",
+                "itemsToMerge": "Zu mergen",
+                "itemsToMove": "Zu verschieben",
+                "itemsToDelete": "Zu löschen",
+                "productPropertyUpdates": "Produkt-Property-Updates",
+                "configuratorSettingUpdates": "Konfigurator-Updates",
+                "groupsToDelete": "Zu löschende Gruppen"
+            },
+            "errors": {
+                "loadFailed": "Daten konnten nicht geladen werden"
+            }
+        }
+    }
+}

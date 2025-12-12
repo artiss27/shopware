@@ -1,0 +1,40 @@
+{
+    "name": "artiss/tools",
+    "description": "Useful administrative tools for Shopware 6",
+    "type": "shopware-platform-plugin",
+    "version": "1.0.0",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Artiss"
+        }
+    ],
+    "require": {
+        "shopware/core": "~6.7.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "ArtissTools\\ArtissTools",
+        "label": {
+            "de-DE": "Artiss Tools",
+            "en-GB": "Artiss Tools",
+            "ru-RU": "Artiss Tools",
+            "uk-UA": "Artiss Tools"
+        },
+        "description": {
+            "de-DE": "Administrative tools for Shopware 6",
+            "en-GB": "Administrative tools for Shopware 6",
+            "ru-RU": "Administrative tools for Shopware 6",
+            "uk-UA": "Administrative tools for Shopware 6"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "ArtissTools\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ArtissTools\\Tests\\": "tests/"
+        }
+    }
+}

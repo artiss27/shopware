@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <!-- Services -->
+        <service id="ArtissTools\Service\PropertyGroupMergeService">
+            <argument type="service" id="property_group.repository"/>
+            <argument type="service" id="property_group_option.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
+        <service id="ArtissTools\Service\CustomFieldSetMergeService">
+            <argument type="service" id="custom_field_set.repository"/>
+            <argument type="service" id="custom_field.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
+        <!-- API Controllers -->
+        <service id="ArtissTools\Controller\Api\PropertyMergeController" public="true">
+            <argument type="service" id="ArtissTools\Service\PropertyGroupMergeService"/>
+            <argument type="service" id="ArtissTools\Service\CustomFieldSetMergeService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <!-- Property Group Commands -->
+        <service id="ArtissTools\Command\PropertyGroupMergeCommand">
+            <argument type="service" id="property_group.repository"/>
+            <argument type="service" id="property_group_option.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="console.command"/>
+        </service>
+
+        <!-- Custom Field Commands -->
+        <service id="ArtissTools\Command\CustomFieldSetMergeCommand">
+            <argument type="service" id="custom_field_set.repository"/>
+            <argument type="service" id="custom_field.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="console.command"/>
+        </service>
+
+    </services>
+</container>

@@ -15,6 +15,21 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Description:
+ *   Cleans up orphaned price list files from Suppliers Prices media folder.
+ *   Deletes files older than specified days that are not linked to any supplier.
+ *
+ * Usage:
+ *   bin/console artiss:supplier:cleanup-orphaned-pricelists [options]
+ *
+ * Options:
+ *   --days=VALUE, -d VALUE    Delete files older than X days that are not linked to any supplier (default: 7)
+ *   --dry-run                 Show what would be deleted without actually deleting
+ *
+ * Example:
+ *   bin/console artiss:supplier:cleanup-orphaned-pricelists --days=7 --dry-run
+ */
 #[AsCommand(
     name: 'artiss:supplier:cleanup-orphaned-pricelists',
     description: 'Cleans up orphaned price list files from Suppliers Prices folder'

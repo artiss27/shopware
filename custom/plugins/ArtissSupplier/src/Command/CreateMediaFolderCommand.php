@@ -15,6 +15,20 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Description:
+ *   Creates the "Suppliers Prices" media folder for storing supplier price lists.
+ *   Checks if folder already exists before creating.
+ *
+ * Usage:
+ *   bin/console artiss:supplier:create-media-folder
+ *
+ * Options:
+ *   (none)
+ *
+ * Example:
+ *   bin/console artiss:supplier:create-media-folder
+ */
 #[AsCommand(
     name: 'artiss:supplier:create-media-folder',
     description: 'Creates the Suppliers Prices media folder'
