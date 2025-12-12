@@ -35,4 +35,96 @@
             }
         }
     }
+
+    .sw-description-list {
+        display: grid;
+        grid-template-columns: max-content max-content !important;
+        column-gap: 16px;
+        row-gap: 8px;
+        align-items: baseline;
+        justify-content: start;
+        .sw-description-list-term,
+        .sw-description-list-description {
+            margin: 0;
+        }
+
+        .sw-description-list-description {
+            text-align: left;
+            white-space: nowrap;
+        }
+    }
+
+    // Cleanup tab styles
+    .artiss-cleanup-group {
+        padding: 16px;
+        margin-bottom: 20px;
+        border: 1px solid #d1d9e0;
+        border-radius: 4px;
+        background-color: #f9fafb;
+
+        h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #52667a;
+
+            small {
+                font-size: 11px;
+                color: #758ca3;
+                font-weight: normal;
+                margin-left: 8px;
+            }
+
+            .relations {
+                font-size: 11px;
+                color: #3498db;
+                font-weight: normal;
+                margin-left: 8px;
+            }
+
+            .empty-badge {
+                display: inline-block;
+                padding: 2px 8px;
+                margin-left: 8px;
+                font-size: 10px;
+                font-weight: 600;
+                color: #fff;
+                background-color: #e74c3c;
+                border-radius: 3px;
+            }
+        }
+
+        .sw-checkbox-select-all {
+            margin-bottom: 12px;
+            padding: 8px;
+            background-color: #fff;
+            border: 1px solid #d1d9e0;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .artiss-cleanup-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+            background-color: #fff;
+            border: 1px solid #d1d9e0;
+            border-radius: 3px;
+
+            .sw-field {
+                margin-bottom: 0;
+            }
+        }
+
+        .sw-checkbox-delete-set {
+            margin-top: 12px;
+            padding: 8px;
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #856404;
+        }
+    }
 }

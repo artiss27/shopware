@@ -83,8 +83,46 @@
                 "selectSourcesCustomFields": "Select source custom field set...",
                 "selectTargetField": "Select target field...",
                 "selectSourceFields": "Select source fields...",
-                "transfer": "Transfer placeholder",
-                "cleanup": "Cleanup placeholder"
+                "transfer": "Transfer placeholder"
+            },
+            "cleanup": {
+                "scanSettings": "Scan Settings",
+                "includeCustomFields": "Include custom fields",
+                "deleteEmptyGroups": "Delete empty property groups",
+                "propertyGroupsTitle": "Unused Property Options",
+                "customFieldsTitle": "Unused Custom Fields",
+                "selectAll": "Select all",
+                "emptySet": "EMPTY",
+                "deleteSet": "Delete set",
+                "statistics": "Statistics",
+                "buttons": {
+                    "scan": "Scan",
+                    "deleteSelected": "Delete selected",
+                    "reset": "Reset",
+                    "confirmDelete": "Confirm deletion"
+                },
+                "messages": {
+                    "scanComplete": "Scan completed",
+                    "deleteSuccess": "Deletion completed successfully",
+                    "noUnused": "No unused elements found!",
+                    "nothingSelected": "Nothing selected for deletion",
+                    "deletedOptions": "Deleted options: {count}",
+                    "deletedGroups": "Deleted groups: {count}",
+                    "deletedFields": "Deleted fields: {count}",
+                    "deletedSets": "Deleted sets: {count}"
+                },
+                "stats": {
+                    "totalUnusedOptions": "Total unused options",
+                    "totalPropertyGroups": "Total groups with unused options",
+                    "totalUnusedFields": "Total unused fields",
+                    "totalCustomFieldSets": "Total sets with unused fields",
+                    "totalEmptySets": "Total empty sets",
+                    "selectedForDeletion": "Selected for deletion"
+                },
+                "confirm": {
+                    "title": "Confirm Deletion",
+                    "message": "Are you sure you want to delete {count} items? This action cannot be undone!"
+                }
             },
             "buttons": {
                 "dryRun": "Dry-Run (Simulation)",

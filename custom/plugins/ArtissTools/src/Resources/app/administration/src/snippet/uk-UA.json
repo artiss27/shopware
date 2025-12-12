@@ -81,8 +81,46 @@
                 "selectTargetCustomField": "Виберіть цільовий набір полів...",
                 "selectSources": "Виберіть групи-джерела...",
                 "selectSourcesCustomFields": "Виберіть набори полів...",
-                "transfer": "Заглушка перенесення",
-                "cleanup": "Заглушка очищення"
+                "transfer": "Заглушка перенесення"
+            },
+            "cleanup": {
+                "scanSettings": "Налаштування сканування",
+                "includeCustomFields": "Включити custom fields",
+                "deleteEmptyGroups": "Видаляти пусті групи властивостей",
+                "propertyGroupsTitle": "Невикористовувані опції груп властивостей",
+                "customFieldsTitle": "Невикористовувані custom fields",
+                "selectAll": "Вибрати всі",
+                "emptySet": "ПУСТИЙ",
+                "deleteSet": "Видалити набір",
+                "statistics": "Статистика",
+                "buttons": {
+                    "scan": "Сканувати",
+                    "deleteSelected": "Видалити вибране",
+                    "reset": "Скинути",
+                    "confirmDelete": "Підтвердити видалення"
+                },
+                "messages": {
+                    "scanComplete": "Сканування завершено",
+                    "deleteSuccess": "Видалення завершено успішно",
+                    "noUnused": "Невикористовуваних елементів не знайдено!",
+                    "nothingSelected": "Нічого не вибрано для видалення",
+                    "deletedOptions": "Видалено опцій: {count}",
+                    "deletedGroups": "Видалено груп: {count}",
+                    "deletedFields": "Видалено полів: {count}",
+                    "deletedSets": "Видалено наборів: {count}"
+                },
+                "stats": {
+                    "totalUnusedOptions": "Всього невикористовуваних опцій",
+                    "totalPropertyGroups": "Всього груп з невикористовуваними опціями",
+                    "totalUnusedFields": "Всього невикористовуваних полів",
+                    "totalCustomFieldSets": "Всього наборів з невикористовуваними полями",
+                    "totalEmptySets": "Всього пустих наборів",
+                    "selectedForDeletion": "Вибрано для видалення"
+                },
+                "confirm": {
+                    "title": "Підтвердження видалення",
+                    "message": "Ви впевнені, що хочете видалити {count} елементів? Цю дію неможливо скасувати!"
+                }
             },
             "buttons": {
                 "dryRun": "Тестовий запуск",

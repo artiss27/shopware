@@ -81,8 +81,46 @@
                 "selectTargetCustomField": "Ziel-Custom-Field-Set auswählen...",
                 "selectSources": "Quellen auswählen...",
                 "selectSourcesCustomFields": "Custom-Field-Sets auswählen...",
-                "transfer": "Platzhalter für Übertragung",
-                "cleanup": "Platzhalter für Bereinigung"
+                "transfer": "Platzhalter für Übertragung"
+            },
+            "cleanup": {
+                "scanSettings": "Scan-Einstellungen",
+                "includeCustomFields": "Custom Fields einschließen",
+                "deleteEmptyGroups": "Leere Eigenschaftsgruppen löschen",
+                "propertyGroupsTitle": "Ungenutzte Eigenschaftsoptionen",
+                "customFieldsTitle": "Ungenutzte Custom Fields",
+                "selectAll": "Alle auswählen",
+                "emptySet": "LEER",
+                "deleteSet": "Set löschen",
+                "statistics": "Statistiken",
+                "buttons": {
+                    "scan": "Scannen",
+                    "deleteSelected": "Ausgewählte löschen",
+                    "reset": "Zurücksetzen",
+                    "confirmDelete": "Löschen bestätigen"
+                },
+                "messages": {
+                    "scanComplete": "Scan abgeschlossen",
+                    "deleteSuccess": "Löschen erfolgreich abgeschlossen",
+                    "noUnused": "Keine ungenutzten Elemente gefunden!",
+                    "nothingSelected": "Nichts zum Löschen ausgewählt",
+                    "deletedOptions": "Gelöschte Optionen: {count}",
+                    "deletedGroups": "Gelöschte Gruppen: {count}",
+                    "deletedFields": "Gelöschte Felder: {count}",
+                    "deletedSets": "Gelöschte Sets: {count}"
+                },
+                "stats": {
+                    "totalUnusedOptions": "Gesamtzahl ungenutzter Optionen",
+                    "totalPropertyGroups": "Gesamtzahl Gruppen mit ungenutzten Optionen",
+                    "totalUnusedFields": "Gesamtzahl ungenutzter Felder",
+                    "totalCustomFieldSets": "Gesamtzahl Sets mit ungenutzten Feldern",
+                    "totalEmptySets": "Gesamtzahl leerer Sets",
+                    "selectedForDeletion": "Zum Löschen ausgewählt"
+                },
+                "confirm": {
+                    "title": "Löschen bestätigen",
+                    "message": "Sind Sie sicher, dass Sie {count} Elemente löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden!"
+                }
             },
             "buttons": {
                 "dryRun": "Testlauf",

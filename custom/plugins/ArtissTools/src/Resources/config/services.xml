@@ -19,10 +19,25 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
         </service>
 
+        <service id="ArtissTools\Service\PropertyCleanupService">
+            <argument type="service" id="property_group.repository"/>
+            <argument type="service" id="property_group_option.repository"/>
+            <argument type="service" id="custom_field_set.repository"/>
+            <argument type="service" id="custom_field.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
         <!-- API Controllers -->
         <service id="ArtissTools\Controller\Api\PropertyMergeController" public="true">
             <argument type="service" id="ArtissTools\Service\PropertyGroupMergeService"/>
             <argument type="service" id="ArtissTools\Service\CustomFieldSetMergeService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="ArtissTools\Controller\Api\PropertyCleanupController" public="true">
+            <argument type="service" id="ArtissTools\Service\PropertyCleanupService"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
@@ -41,6 +56,12 @@
             <argument type="service" id="custom_field_set.repository"/>
             <argument type="service" id="custom_field.repository"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="console.command"/>
+        </service>
+
+        <!-- Property Cleanup Command -->
+        <service id="ArtissTools\Command\PropertyCleanupCommand">
+            <argument type="service" id="ArtissTools\Service\PropertyCleanupService"/>
             <tag name="console.command"/>
         </service>
 

@@ -81,8 +81,46 @@
                 "selectTargetCustomField": "Выберите целевой набор полей...",
                 "selectSources": "Выберите группы-источники...",
                 "selectSourcesCustomFields": "Выберите наборы кастом полей...",
-                "transfer": "Заглушка переноса",
-                "cleanup": "Заглушка очистки"
+                "transfer": "Заглушка переноса"
+            },
+            "cleanup": {
+                "scanSettings": "Настройки сканирования",
+                "includeCustomFields": "Включить custom fields",
+                "deleteEmptyGroups": "Удалять пустые группы свойств",
+                "propertyGroupsTitle": "Неиспользуемые опции групп свойств",
+                "customFieldsTitle": "Неиспользуемые custom fields",
+                "selectAll": "Выбрать все",
+                "emptySet": "ПУСТОЙ",
+                "deleteSet": "Удалить набор",
+                "statistics": "Статистика",
+                "buttons": {
+                    "scan": "Сканировать",
+                    "deleteSelected": "Удалить выбранное",
+                    "reset": "Сбросить",
+                    "confirmDelete": "Подтвердить удаление"
+                },
+                "messages": {
+                    "scanComplete": "Сканирование завершено",
+                    "deleteSuccess": "Удаление завершено успешно",
+                    "noUnused": "Неиспользуемых элементов не найдено!",
+                    "nothingSelected": "Ничего не выбрано для удаления",
+                    "deletedOptions": "Удалено опций: {count}",
+                    "deletedGroups": "Удалено групп: {count}",
+                    "deletedFields": "Удалено полей: {count}",
+                    "deletedSets": "Удалено наборов: {count}"
+                },
+                "stats": {
+                    "totalUnusedOptions": "Всего неиспользуемых опций",
+                    "totalPropertyGroups": "Всего групп с неиспользуемыми опциями",
+                    "totalUnusedFields": "Всего неиспользуемых полей",
+                    "totalCustomFieldSets": "Всего наборов с неиспользуемыми полями",
+                    "totalEmptySets": "Всего пустых наборов",
+                    "selectedForDeletion": "Выбрано для удаления"
+                },
+                "confirm": {
+                    "title": "Подтверждение удаления",
+                    "message": "Вы уверены, что хотите удалить {count} элементов? Это действие нельзя отменить!"
+                }
             },
             "buttons": {
                 "dryRun": "Тестовый запуск",

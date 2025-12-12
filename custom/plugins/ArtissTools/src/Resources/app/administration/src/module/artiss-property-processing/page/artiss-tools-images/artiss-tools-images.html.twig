@@ -1,0 +1,36 @@
+{% block artiss_tools_images %}
+<sw-page class="artiss-tools-images">
+    {% block artiss_tools_images_header %}
+        <template #smart-bar-header>
+            <sw-button :routerLink="{ name: 'artiss.tools.index' }" class="sw-page__back-btn">
+                <sw-icon name="regular-chevron-left" size="16"></sw-icon>
+            </sw-button>
+            <sw-icon name="regular-cog" size="20" class="sw-page__icon"></sw-icon>
+            <h2>{{ $tc('artissTools.images.title') }}</h2>
+        </template>
+    {% endblock %}
+
+    <template #content>
+        <sw-tabs class="sw-tabs--small" v-model="activeTab" default-item="cleanup">
+            <sw-tabs-item name="cleanup">
+                {{ $tc('artissTools.images.tabs.cleanup') }}
+            </sw-tabs-item>
+            <sw-tabs-item name="duplicates">
+                {{ $tc('artissTools.images.tabs.duplicates') }}
+            </sw-tabs-item>
+        </sw-tabs>
+
+        <template v-if="activeTab === 'cleanup'">
+            <sw-card :title="$tc('artissTools.images.tabs.cleanup')">
+                <p>{{ $tc('artissTools.images.placeholders.cleanup') }}</p>
+            </sw-card>
+        </template>
+
+        <template v-else>
+            <sw-card :title="$tc('artissTools.images.tabs.duplicates')">
+                <p>{{ $tc('artissTools.images.placeholders.duplicates') }}</p>
+            </sw-card>
+        </template>
+    </template>
+</sw-page>
+{% endblock %}
