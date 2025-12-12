@@ -51,6 +51,7 @@
             "menuTitle": "Свойства",
             "tabs": {
                 "merge": "Объединение",
+                "split": "Разделение",
                 "transfer": "Перенос",
                 "cleanup": "Очистка"
             },
@@ -157,6 +158,54 @@
             },
             "errors": {
                 "loadFailed": "Не удалось загрузить данные"
+            },
+            "split": {
+                "selectSourceGroup": "Выбор группы свойств",
+                "sourceGroup": "Группа свойств",
+                "optionsList": "Список опций",
+                "selectAll": "Выбрать все",
+                "selectedCount": "Выбрано",
+                "productCount": "товаров",
+                "newGroupSettings": "Настройки новой группы",
+                "newGroupName": {
+                    "uk": "Название группы (Украинский)",
+                    "de": "Название группы (Немецкий)",
+                    "ru": "Название группы (Русский)",
+                    "en": "Название группы (Английский)"
+                },
+                "placeholders": {
+                    "selectGroup": "Выберите группу свойств...",
+                    "enterName": "Введите название..."
+                },
+                "buttons": {
+                    "preview": "Предпросмотр",
+                    "split": "Разделить",
+                    "confirmSplit": "Подтвердить разделение"
+                },
+                "result": {
+                    "title": "Результат",
+                    "sourceGroup": "Исходная группа",
+                    "groupName": "Название группы",
+                    "totalOptions": "Всего опций",
+                    "remainingOptions": "Осталось опций",
+                    "newGroup": "Новая группа",
+                    "optionsToMove": "Опций к переносу",
+                    "affectedProducts": "Товаров затронуто",
+                    "affectedVariants": "Вариантов затронуто",
+                    "totalAffected": "Всего затронуто",
+                    "successMessage": "Разделение выполнено успешно!",
+                    "newGroupId": "ID новой группы"
+                },
+                "confirm": {
+                    "title": "Подтверждение разделения",
+                    "message": "Вы уверены, что хотите разделить группу свойств?",
+                    "optionsToMove": "Опций к переносу",
+                    "newGroupName": "Название новой группы"
+                },
+                "messages": {
+                    "previewComplete": "Предпросмотр завершен",
+                    "splitSuccess": "Разделение выполнено успешно"
+                }
             }
         }
     }

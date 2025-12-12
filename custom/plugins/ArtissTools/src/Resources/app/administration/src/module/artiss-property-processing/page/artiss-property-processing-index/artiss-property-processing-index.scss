@@ -127,4 +127,42 @@
             color: #856404;
         }
     }
+
+    // Split/Transfer tab styles
+    .artiss-split-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        background-color: #fff;
+        border: 1px solid #d1d9e0;
+        border-radius: 3px;
+        margin-bottom: 12px;
+
+        .sw-field {
+            margin-bottom: 0;
+        }
+    }
+
+    .artiss-split-selected-count {
+        padding: 8px 12px;
+        background-color: #e7f3ff;
+        border: 1px solid #3498db;
+        border-radius: 3px;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+
+    .artiss-split-result {
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .artiss-split-success {
+            margin-top: 20px;
+        }
+    }
 }

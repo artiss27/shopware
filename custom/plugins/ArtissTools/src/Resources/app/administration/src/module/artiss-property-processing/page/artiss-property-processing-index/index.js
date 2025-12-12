@@ -27,7 +27,19 @@ Component.register('artiss-property-processing-index', {
             selectedCustomFields: {},
             selectedCustomFieldSets: [],
             showCleanupConfirmModal: false,
-            deleteEmptyGroups: true
+            deleteEmptyGroups: true,
+            // Split/Transfer tab data
+            selectedSourceGroupId: null,
+            sourceGroupOptions: [],
+            selectedOptionIds: [],
+            newGroupNames: {
+                'uk-UA': '',
+                'de-DE': '',
+                'ru-RU': '',
+                'en-GB': ''
+            },
+            splitResult: null,
+            showSplitConfirmModal: false
         };
     },
 
@@ -45,6 +57,19 @@ Component.register('artiss-property-processing-index', {
 
         canExecute() {
             return this.targetId && this.sourceIds.length > 0;
+        },
+
+        canExecuteSplit() {
+            return this.selectedSourceGroupId &&
+                   this.selectedOptionIds.length > 0 &&
+                   this.newGroupNames['uk-UA'].trim() !== '';
+        },
+
+        isAllOptionsSelected() {
+            if (!this.sourceGroupOptions || this.sourceGroupOptions.length === 0) {
+                return false;
+            }
+            return this.selectedOptionIds.length === this.sourceGroupOptions.length;
         }
     },
 
@@ -365,6 +390,147 @@ Component.register('artiss-property-processing-index', {
             this.selectedCustomFields = {};
             this.selectedCustomFieldSets = [];
             this.includeCustomFields = false;
+        },
+
+        // Split/Transfer tab methods
+        async loadGroupOptions() {
+            if (!this.selectedSourceGroupId) {
+                this.sourceGroupOptions = [];
+                this.selectedOptionIds = [];
+                this.splitResult = null;
+                return;
+            }
+
+            this.isLoading = true;
+            this.selectedOptionIds = [];
+            this.splitResult = null;
+
+            try {
+                const response = await this.httpClient.post(
+                    '/_action/artiss-tools/split/load-group',
+                    {
+                        groupId: this.selectedSourceGroupId
+                    },
+                    {
+                        headers: this.getAuthHeaders()
+                    }
+                );
+
+                if (response.data.success) {
+                    this.sourceGroupOptions = response.data.data.options || [];
+                } else {
+                    throw new Error(response.data.error);
+                }
+            } catch (error) {
+                this.createNotificationError({
+                    message: error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                });
+                this.sourceGroupOptions = [];
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        toggleAllOptions(checked) {
+            if (checked) {
+                this.selectedOptionIds = this.sourceGroupOptions.map(opt => opt.id);
+            } else {
+                this.selectedOptionIds = [];
+            }
+        },
+
+        async previewSplit() {
+            if (!this.canExecuteSplit) {
+                return;
+            }
+
+            this.isLoading = true;
+
+            try {
+                const response = await this.httpClient.post(
+                    '/_action/artiss-tools/split/preview',
+                    {
+                        sourceGroupId: this.selectedSourceGroupId,
+                        optionIds: this.selectedOptionIds,
+                        newGroupNames: this.newGroupNames
+                    },
+                    {
+                        headers: this.getAuthHeaders()
+                    }
+                );
+
+                if (response.data.success) {
+                    this.splitResult = response.data.data;
+                    this.createNotificationSuccess({
+                        message: this.$tc('artissTools.propertyProcessing.split.messages.previewComplete')
+                    });
+                } else {
+                    throw new Error(response.data.error);
+                }
+            } catch (error) {
+                this.createNotificationError({
+                    message: error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                });
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        executeSplit() {
+            if (!this.canExecuteSplit) {
+                return;
+            }
+
+            this.showSplitConfirmModal = true;
+        },
+
+        async confirmSplit() {
+            this.showSplitConfirmModal = false;
+            this.isLoading = true;
+
+            try {
+                const response = await this.httpClient.post(
+                    '/_action/artiss-tools/split/execute',
+                    {
+                        sourceGroupId: this.selectedSourceGroupId,
+                        optionIds: this.selectedOptionIds,
+                        newGroupNames: this.newGroupNames
+                    },
+                    {
+                        headers: this.getAuthHeaders()
+                    }
+                );
+
+                if (response.data.success) {
+                    this.splitResult = response.data.data;
+                    this.createNotificationSuccess({
+                        message: this.$tc('artissTools.propertyProcessing.split.messages.splitSuccess')
+                    });
+                    await this.loadPropertyGroups();
+                    this.resetSplitForm();
+                } else {
+                    throw new Error(response.data.error);
+                }
+            } catch (error) {
+                this.createNotificationError({
+                    message: error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                });
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        resetSplitForm() {
+            this.selectedSourceGroupId = null;
+            this.sourceGroupOptions = [];
+            this.selectedOptionIds = [];
+            this.newGroupNames = {
+                'uk-UA': '',
+                'de-DE': '',
+                'ru-RU': '',
+                'en-GB': ''
+            };
+            this.splitResult = null;
         }
     },
 
@@ -373,6 +539,16 @@ Component.register('artiss-property-processing-index', {
             // Remove target from sourceIds if it was selected there
             if (newVal && this.sourceIds.includes(newVal)) {
                 this.sourceIds = this.sourceIds.filter(id => id !== newVal);
+            }
+        },
+
+        selectedSourceGroupId(newVal) {
+            if (newVal) {
+                this.loadGroupOptions();
+            } else {
+                this.sourceGroupOptions = [];
+                this.selectedOptionIds = [];
+                this.splitResult = null;
             }
         }
     }

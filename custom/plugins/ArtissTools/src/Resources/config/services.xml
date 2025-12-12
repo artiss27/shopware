@@ -27,6 +27,12 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
         </service>
 
+        <service id="ArtissTools\Service\PropertySplitService">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="property_group.repository"/>
+            <argument type="service" id="property_group_option.repository"/>
+        </service>
+
         <!-- API Controllers -->
         <service id="ArtissTools\Controller\Api\PropertyMergeController" public="true">
             <argument type="service" id="ArtissTools\Service\PropertyGroupMergeService"/>
@@ -38,6 +44,13 @@
 
         <service id="ArtissTools\Controller\Api\PropertyCleanupController" public="true">
             <argument type="service" id="ArtissTools\Service\PropertyCleanupService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="ArtissTools\Controller\Api\PropertySplitController" public="true">
+            <argument type="service" id="ArtissTools\Service\PropertySplitService"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>

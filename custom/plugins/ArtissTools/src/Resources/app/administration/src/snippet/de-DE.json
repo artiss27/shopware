@@ -51,6 +51,7 @@
             "menuTitle": "Eigenschaftsverarbeitung",
             "tabs": {
                 "merge": "Zusammenführen",
+                "split": "Aufteilen",
                 "transfer": "Übertragen",
                 "cleanup": "Bereinigen"
             },
@@ -157,6 +158,54 @@
             },
             "errors": {
                 "loadFailed": "Daten konnten nicht geladen werden"
+            },
+            "split": {
+                "selectSourceGroup": "Eigenschaftsgruppe auswählen",
+                "sourceGroup": "Eigenschaftsgruppe",
+                "optionsList": "Optionsliste",
+                "selectAll": "Alle auswählen",
+                "selectedCount": "Ausgewählt",
+                "productCount": "Produkte",
+                "newGroupSettings": "Einstellungen für neue Gruppe",
+                "newGroupName": {
+                    "uk": "Gruppenname (Ukrainisch)",
+                    "de": "Gruppenname (Deutsch)",
+                    "ru": "Gruppenname (Russisch)",
+                    "en": "Gruppenname (Englisch)"
+                },
+                "placeholders": {
+                    "selectGroup": "Eigenschaftsgruppe auswählen...",
+                    "enterName": "Name eingeben..."
+                },
+                "buttons": {
+                    "preview": "Vorschau",
+                    "split": "Aufteilen",
+                    "confirmSplit": "Aufteilung bestätigen"
+                },
+                "result": {
+                    "title": "Ergebnis",
+                    "sourceGroup": "Quellgruppe",
+                    "groupName": "Gruppenname",
+                    "totalOptions": "Gesamtoptionen",
+                    "remainingOptions": "Verbleibende Optionen",
+                    "newGroup": "Neue Gruppe",
+                    "optionsToMove": "Zu verschiebende Optionen",
+                    "affectedProducts": "Betroffene Produkte",
+                    "affectedVariants": "Betroffene Varianten",
+                    "totalAffected": "Gesamt betroffen",
+                    "successMessage": "Aufteilung erfolgreich durchgeführt!",
+                    "newGroupId": "ID der neuen Gruppe"
+                },
+                "confirm": {
+                    "title": "Aufteilung bestätigen",
+                    "message": "Sind Sie sicher, dass Sie die Eigenschaftsgruppe aufteilen möchten?",
+                    "optionsToMove": "Zu verschiebende Optionen",
+                    "newGroupName": "Name der neuen Gruppe"
+                },
+                "messages": {
+                    "previewComplete": "Vorschau abgeschlossen",
+                    "splitSuccess": "Aufteilung erfolgreich durchgeführt"
+                }
             }
         }
     }
