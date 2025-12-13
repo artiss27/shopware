@@ -162,22 +162,17 @@
                 "loadFailed": "Failed to load data"
             },
             "split": {
-                "selectSourceGroup": "Select property group",
-                "sourceGroup": "Property group",
+                "selectSourceGroup": "Select source group",
+                "sourceGroup": "Source group",
+                "selectTargetGroup": "Select target group",
+                "targetGroup": "Target group",
                 "optionsList": "Options list",
                 "selectAll": "Select all",
                 "selectedCount": "Selected",
                 "productCount": "products",
-                "newGroupSettings": "New group settings",
-                "newGroupName": {
-                    "uk": "Group name (Ukrainian)",
-                    "de": "Group name (German)",
-                    "ru": "Group name (Russian)",
-                    "en": "Group name (English)"
-                },
                 "placeholders": {
-                    "selectGroup": "Select property group...",
-                    "enterName": "Enter name..."
+                    "selectGroup": "Select source group...",
+                    "selectTargetGroup": "Select target group..."
                 },
                 "buttons": {
                     "preview": "Preview",
@@ -187,22 +182,23 @@
                 "result": {
                     "title": "Result",
                     "sourceGroup": "Source group",
+                    "targetGroup": "Target group",
                     "groupName": "Group name",
                     "totalOptions": "Total options",
                     "remainingOptions": "Remaining options",
-                    "newGroup": "New group",
+                    "currentOptions": "Current options",
                     "optionsToMove": "Options to move",
+                    "totalAfterMove": "Total after move",
+                    "affectedEntitiesTitle": "Affected entities",
                     "affectedProducts": "Affected products",
                     "affectedVariants": "Affected variants",
                     "totalAffected": "Total affected",
-                    "successMessage": "Split completed successfully!",
-                    "newGroupId": "New group ID"
+                    "successMessage": "Transfer completed successfully!"
                 },
                 "confirm": {
-                    "title": "Confirm split",
-                    "message": "Are you sure you want to split the property group?",
-                    "optionsToMove": "Options to move",
-                    "newGroupName": "New group name"
+                    "title": "Confirm transfer",
+                    "message": "Are you sure you want to transfer selected options to another group?",
+                    "optionsToMove": "Options to move"
                 },
                 "messages": {
                     "previewComplete": "Preview completed",

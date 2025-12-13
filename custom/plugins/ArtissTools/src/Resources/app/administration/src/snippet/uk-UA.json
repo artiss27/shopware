@@ -160,22 +160,17 @@
                 "loadFailed": "Не вдалося завантажити дані"
             },
             "split": {
-                "selectSourceGroup": "Вибір групи властивостей",
-                "sourceGroup": "Група властивостей",
+                "selectSourceGroup": "Вибір вихідної групи",
+                "sourceGroup": "Вихідна група",
+                "selectTargetGroup": "Вибір цільової групи",
+                "targetGroup": "Цільова група",
                 "optionsList": "Список опцій",
                 "selectAll": "Вибрати всі",
                 "selectedCount": "Вибрано",
                 "productCount": "товарів",
-                "newGroupSettings": "Налаштування нової групи",
-                "newGroupName": {
-                    "uk": "Назва групи (Українська)",
-                    "de": "Назва групи (Німецька)",
-                    "ru": "Назва групи (Російська)",
-                    "en": "Назва групи (Англійська)"
-                },
                 "placeholders": {
-                    "selectGroup": "Виберіть групу властивостей...",
-                    "enterName": "Введіть назву..."
+                    "selectGroup": "Виберіть вихідну групу...",
+                    "selectTargetGroup": "Виберіть цільову групу..."
                 },
                 "buttons": {
                     "preview": "Попередній перегляд",
@@ -185,22 +180,23 @@
                 "result": {
                     "title": "Результат",
                     "sourceGroup": "Вихідна група",
+                    "targetGroup": "Цільова група",
                     "groupName": "Назва групи",
                     "totalOptions": "Всього опцій",
                     "remainingOptions": "Залишилось опцій",
-                    "newGroup": "Нова група",
+                    "currentOptions": "Поточна кількість опцій",
                     "optionsToMove": "Опцій до перенесення",
+                    "totalAfterMove": "Всього після перенесення",
+                    "affectedEntitiesTitle": "Затронуті сутності",
                     "affectedProducts": "Товарів затронуто",
                     "affectedVariants": "Варіантів затронуто",
                     "totalAffected": "Всього затронуто",
-                    "successMessage": "Розділення виконано успішно!",
-                    "newGroupId": "ID нової групи"
+                    "successMessage": "Перенесення виконано успішно!"
                 },
                 "confirm": {
-                    "title": "Підтвердження розділення",
-                    "message": "Ви впевнені, що хочете розділити групу властивостей?",
-                    "optionsToMove": "Опцій до перенесення",
-                    "newGroupName": "Назва нової групи"
+                    "title": "Підтвердження перенесення",
+                    "message": "Ви впевнені, що хочете перенести вибрані опції до іншої групи?",
+                    "optionsToMove": "Опцій до перенесення"
                 },
                 "messages": {
                     "previewComplete": "Попередній перегляд завершено",

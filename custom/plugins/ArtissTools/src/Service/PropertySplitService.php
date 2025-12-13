@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Artiss\ArtissTools\Service;
+namespace ArtissTools\Service;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -84,7 +85,7 @@ class PropertySplitService
     /**
      * Preview split operation (dry-run)
      */
-    public function previewSplit(string $sourceGroupId, array $optionIds, array $newGroupNames, Context $context): array
+    public function previewSplit(string $sourceGroupId, string $targetGroupId, array $optionIds, Context $context): array
     {
         // Validate source group exists
         $sourceGroup = $this->loadPropertyGroupWithOptions($sourceGroupId, $context);
@@ -92,17 +93,23 @@ class PropertySplitService
             throw new \InvalidArgumentException('Source property group not found');
         }
 
-        // Validate all options belong to this group
+        // Validate target group exists
+        $targetGroup = $this->loadPropertyGroupWithOptions($targetGroupId, $context);
+        if (!$targetGroup) {
+            throw new \InvalidArgumentException('Target property group not found');
+        }
+
+        // Validate source and target are different
+        if ($sourceGroupId === $targetGroupId) {
+            throw new \InvalidArgumentException('Source and target groups must be different');
+        }
+
+        // Validate all options belong to source group
         $this->validateOptionsBelongToGroup($optionIds, $sourceGroupId);
 
         // Validate at least one option selected
         if (empty($optionIds)) {
             throw new \InvalidArgumentException('No options selected for transfer');
-        }
-
-        // Validate new group names
-        if (empty($newGroupNames) || !isset($newGroupNames['uk-UA'])) {
-            throw new \InvalidArgumentException('New group name is required (at least uk-UA locale)');
         }
 
         // Count affected products/variants
@@ -120,9 +127,12 @@ class PropertySplitService
                 'totalOptions' => count($sourceGroup['options']),
                 'remainingOptions' => count($sourceGroup['options']) - count($optionIds)
             ],
-            'newGroup' => [
-                'names' => $newGroupNames,
-                'optionsToMove' => count($optionIds)
+            'targetGroup' => [
+                'id' => $targetGroup['id'],
+                'name' => $targetGroup['name'],
+                'currentOptions' => count($targetGroup['options']),
+                'optionsToMove' => count($optionIds),
+                'totalAfterMove' => count($targetGroup['options']) + count($optionIds)
             ],
             'selectedOptions' => array_values($selectedOptions),
             'affectedEntities' => $affectedStats
@@ -132,52 +142,25 @@ class PropertySplitService
     /**
      * Execute split operation
      */
-    public function executeSplit(string $sourceGroupId, array $optionIds, array $newGroupNames, Context $context): array
+    public function executeSplit(string $sourceGroupId, string $targetGroupId, array $optionIds, Context $context): array
     {
         // First run preview to validate
-        $preview = $this->previewSplit($sourceGroupId, $optionIds, $newGroupNames, $context);
-
-        // Load source group to copy technical fields
-        $sourceGroup = $this->loadPropertyGroupWithOptions($sourceGroupId, $context);
+        $preview = $this->previewSplit($sourceGroupId, $targetGroupId, $optionIds, $context);
 
         $this->connection->beginTransaction();
 
         try {
-            // Create new property group
-            $newGroupId = Uuid::randomHex();
-
-            $groupData = [
-                'id' => $newGroupId,
-                'displayType' => $sourceGroup['displayType'] ?? 'text',
-                'sortingType' => $sourceGroup['sortingType'] ?? 'alphanumeric',
-                'position' => $sourceGroup['position'] ?? 1,
-                'translations' => []
-            ];
-
-            // Add translations for new group
-            foreach ($newGroupNames as $locale => $name) {
-                $languageId = $this->getLanguageIdByLocale($locale);
-                if ($languageId) {
-                    $groupData['translations'][$languageId] = [
-                        'name' => $name
-                    ];
-                }
-            }
-
-            $this->propertyGroupRepository->create([$groupData], $context);
-
-            // Move options to new group
-            $movedCount = $this->moveOptionsToGroup($optionIds, $newGroupId);
+            // Move options to target group
+            $movedCount = $this->moveOptionsToGroup($optionIds, $targetGroupId);
 
             $this->connection->commit();
 
             return [
                 'success' => true,
-                'newGroupId' => $newGroupId,
-                'newGroupNames' => $newGroupNames,
                 'movedOptions' => $movedCount,
                 'affectedEntities' => $preview['affectedEntities'],
-                'sourceGroup' => $preview['sourceGroup']
+                'sourceGroup' => $preview['sourceGroup'],
+                'targetGroup' => $preview['targetGroup']
             ];
 
         } catch (\Exception $e) {
@@ -197,7 +180,7 @@ class PropertySplitService
             ->from('property_group_option')
             ->where('id IN (:optionIds)')
             ->andWhere('property_group_id != :groupId')
-            ->setParameter('optionIds', Uuid::fromHexToBytesList($optionIds), Connection::PARAM_STR_ARRAY)
+            ->setParameter('optionIds', Uuid::fromHexToBytesList($optionIds), ArrayParameterType::STRING)
             ->setParameter('groupId', Uuid::fromHexToBytes($groupId))
             ->executeQuery()
             ->fetchAllAssociative();
@@ -261,37 +244,19 @@ class PropertySplitService
     }
 
     /**
-     * Move options to new group
+     * Move options to target group
      */
-    private function moveOptionsToGroup(array $optionIds, string $newGroupId): int
+    private function moveOptionsToGroup(array $optionIds, string $targetGroupId): int
     {
         $qb = $this->connection->createQueryBuilder();
         $affected = $qb
             ->update('property_group_option')
-            ->set('property_group_id', ':newGroupId')
+            ->set('property_group_id', ':targetGroupId')
             ->where('id IN (:optionIds)')
-            ->setParameter('newGroupId', Uuid::fromHexToBytes($newGroupId))
-            ->setParameter('optionIds', Uuid::fromHexToBytesList($optionIds), Connection::PARAM_STR_ARRAY)
+            ->setParameter('targetGroupId', Uuid::fromHexToBytes($targetGroupId))
+            ->setParameter('optionIds', Uuid::fromHexToBytesList($optionIds), ArrayParameterType::STRING)
             ->executeStatement();
 
         return $affected;
-    }
-
-    /**
-     * Get language ID by locale code
-     */
-    private function getLanguageIdByLocale(string $locale): ?string
-    {
-        $qb = $this->connection->createQueryBuilder();
-        $languageId = $qb
-            ->select('language.id')
-            ->from('language')
-            ->innerJoin('language', 'locale', 'locale', 'language.locale_id = locale.id')
-            ->where('locale.code = :locale')
-            ->setParameter('locale', $locale)
-            ->executeQuery()
-            ->fetchOne();
-
-        return $languageId ? Uuid::fromBytesToHex($languageId) : null;
     }
 }

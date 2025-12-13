@@ -160,22 +160,17 @@
                 "loadFailed": "Не удалось загрузить данные"
             },
             "split": {
-                "selectSourceGroup": "Выбор группы свойств",
-                "sourceGroup": "Группа свойств",
+                "selectSourceGroup": "Выбор исходной группы",
+                "sourceGroup": "Исходная группа",
+                "selectTargetGroup": "Выбор целевой группы",
+                "targetGroup": "Целевая группа",
                 "optionsList": "Список опций",
                 "selectAll": "Выбрать все",
                 "selectedCount": "Выбрано",
                 "productCount": "товаров",
-                "newGroupSettings": "Настройки новой группы",
-                "newGroupName": {
-                    "uk": "Название группы (Украинский)",
-                    "de": "Название группы (Немецкий)",
-                    "ru": "Название группы (Русский)",
-                    "en": "Название группы (Английский)"
-                },
                 "placeholders": {
-                    "selectGroup": "Выберите группу свойств...",
-                    "enterName": "Введите название..."
+                    "selectGroup": "Выберите исходную группу...",
+                    "selectTargetGroup": "Выберите целевую группу..."
                 },
                 "buttons": {
                     "preview": "Предпросмотр",
@@ -185,22 +180,23 @@
                 "result": {
                     "title": "Результат",
                     "sourceGroup": "Исходная группа",
+                    "targetGroup": "Целевая группа",
                     "groupName": "Название группы",
                     "totalOptions": "Всего опций",
                     "remainingOptions": "Осталось опций",
-                    "newGroup": "Новая группа",
+                    "currentOptions": "Текущее количество опций",
                     "optionsToMove": "Опций к переносу",
+                    "totalAfterMove": "Всего после переноса",
+                    "affectedEntitiesTitle": "Затронутые сущности",
                     "affectedProducts": "Товаров затронуто",
                     "affectedVariants": "Вариантов затронуто",
                     "totalAffected": "Всего затронуто",
-                    "successMessage": "Разделение выполнено успешно!",
-                    "newGroupId": "ID новой группы"
+                    "successMessage": "Перенос выполнен успешно!"
                 },
                 "confirm": {
-                    "title": "Подтверждение разделения",
-                    "message": "Вы уверены, что хотите разделить группу свойств?",
-                    "optionsToMove": "Опций к переносу",
-                    "newGroupName": "Название новой группы"
+                    "title": "Подтверждение переноса",
+                    "message": "Вы уверены, что хотите перенести выбранные опции в другую группу?",
+                    "optionsToMove": "Опций к переносу"
                 },
                 "messages": {
                     "previewComplete": "Предпросмотр завершен",

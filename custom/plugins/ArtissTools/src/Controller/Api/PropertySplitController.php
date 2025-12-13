@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Artiss\ArtissTools\Controller\Api;
+namespace ArtissTools\Controller\Api;
 
-use Artiss\ArtissTools\Service\PropertySplitService;
+use ArtissTools\Service\PropertySplitService;
 use Shopware\Core\Framework\Context;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,17 +12,16 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route(defaults: ['_routeScope' => ['api']])]
 class PropertySplitController extends AbstractController
 {
-    private PropertySplitService $splitService;
-
-    public function __construct(PropertySplitService $splitService)
-    {
-        $this->splitService = $splitService;
+    public function __construct(
+        private readonly PropertySplitService $propertySplitService
+    ) {
     }
 
-    /**
-     * Load property group with all options
-     */
-    #[Route(path: '/api/_action/artiss-tools/split/load-group', name: 'api.action.artiss-tools.split.load-group', methods: ['POST'])]
+    #[Route(
+        path: '/api/_action/artiss-tools/split/load-group',
+        name: 'api.action.artiss_tools.split.load_group',
+        methods: ['POST']
+    )]
     public function loadGroup(Request $request, Context $context): JsonResponse
     {
         try {
@@ -32,120 +31,100 @@ class PropertySplitController extends AbstractController
             if (!$groupId) {
                 return new JsonResponse([
                     'success' => false,
-                    'error' => 'Group ID is required'
+                    'error' => 'Missing required parameter: groupId',
                 ], 400);
             }
 
-            $result = $this->splitService->loadPropertyGroupWithOptions($groupId, $context);
-
-            if (!$result) {
-                return new JsonResponse([
-                    'success' => false,
-                    'error' => 'Property group not found'
-                ], 404);
-            }
+            $result = $this->propertySplitService->loadPropertyGroupWithOptions($groupId, $context);
 
             return new JsonResponse([
                 'success' => true,
-                'data' => $result
+                'data' => $result,
             ]);
-
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Preview split operation (dry-run)
-     */
-    #[Route(path: '/api/_action/artiss-tools/split/preview', name: 'api.action.artiss-tools.split.preview', methods: ['POST'])]
+    #[Route(
+        path: '/api/_action/artiss-tools/split/preview',
+        name: 'api.action.artiss_tools.split.preview',
+        methods: ['POST']
+    )]
     public function preview(Request $request, Context $context): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
 
             $sourceGroupId = $data['sourceGroupId'] ?? null;
+            $targetGroupId = $data['targetGroupId'] ?? null;
             $optionIds = $data['optionIds'] ?? [];
-            $newGroupNames = $data['newGroupNames'] ?? [];
 
-            if (!$sourceGroupId) {
+            if (!$sourceGroupId || !$targetGroupId || empty($optionIds)) {
                 return new JsonResponse([
                     'success' => false,
-                    'error' => 'Source group ID is required'
+                    'error' => 'Missing required parameters: sourceGroupId, targetGroupId, optionIds',
                 ], 400);
             }
 
-            $result = $this->splitService->previewSplit(
+            $result = $this->propertySplitService->previewSplit(
                 $sourceGroupId,
+                $targetGroupId,
                 $optionIds,
-                $newGroupNames,
                 $context
             );
 
             return new JsonResponse([
                 'success' => true,
-                'data' => $result
+                'data' => $result,
             ]);
-
-        } catch (\InvalidArgumentException $e) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 400);
-
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Execute split operation
-     */
-    #[Route(path: '/api/_action/artiss-tools/split/execute', name: 'api.action.artiss-tools.split.execute', methods: ['POST'])]
+    #[Route(
+        path: '/api/_action/artiss-tools/split/execute',
+        name: 'api.action.artiss_tools.split.execute',
+        methods: ['POST']
+    )]
     public function execute(Request $request, Context $context): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
 
             $sourceGroupId = $data['sourceGroupId'] ?? null;
+            $targetGroupId = $data['targetGroupId'] ?? null;
             $optionIds = $data['optionIds'] ?? [];
-            $newGroupNames = $data['newGroupNames'] ?? [];
 
-            if (!$sourceGroupId) {
+            if (!$sourceGroupId || !$targetGroupId || empty($optionIds)) {
                 return new JsonResponse([
                     'success' => false,
-                    'error' => 'Source group ID is required'
+                    'error' => 'Missing required parameters: sourceGroupId, targetGroupId, optionIds',
                 ], 400);
             }
 
-            $result = $this->splitService->executeSplit(
+            $result = $this->propertySplitService->executeSplit(
                 $sourceGroupId,
+                $targetGroupId,
                 $optionIds,
-                $newGroupNames,
                 $context
             );
 
             return new JsonResponse([
                 'success' => true,
-                'data' => $result
+                'data' => $result,
             ]);
-
-        } catch (\InvalidArgumentException $e) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 400);
-
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -30,14 +30,9 @@ Component.register('artiss-property-processing-index', {
             deleteEmptyGroups: true,
             // Split/Transfer tab data
             selectedSourceGroupId: null,
+            selectedTargetGroupId: null,
             sourceGroupOptions: [],
             selectedOptionIds: [],
-            newGroupNames: {
-                'uk-UA': '',
-                'de-DE': '',
-                'ru-RU': '',
-                'en-GB': ''
-            },
             splitResult: null,
             showSplitConfirmModal: false
         };
@@ -61,8 +56,16 @@ Component.register('artiss-property-processing-index', {
 
         canExecuteSplit() {
             return this.selectedSourceGroupId &&
-                   this.selectedOptionIds.length > 0 &&
-                   this.newGroupNames['uk-UA'].trim() !== '';
+                   this.selectedTargetGroupId &&
+                   this.selectedSourceGroupId !== this.selectedTargetGroupId &&
+                   this.selectedOptionIds.length > 0;
+        },
+
+        availableTargetGroups() {
+            if (!this.selectedSourceGroupId) {
+                return this.propertyGroups;
+            }
+            return this.propertyGroups.filter(group => group.id !== this.selectedSourceGroupId);
         },
 
         isAllOptionsSelected() {
@@ -451,8 +454,8 @@ Component.register('artiss-property-processing-index', {
                     '/_action/artiss-tools/split/preview',
                     {
                         sourceGroupId: this.selectedSourceGroupId,
-                        optionIds: this.selectedOptionIds,
-                        newGroupNames: this.newGroupNames
+                        targetGroupId: this.selectedTargetGroupId,
+                        optionIds: this.selectedOptionIds
                     },
                     {
                         headers: this.getAuthHeaders()
@@ -493,8 +496,8 @@ Component.register('artiss-property-processing-index', {
                     '/_action/artiss-tools/split/execute',
                     {
                         sourceGroupId: this.selectedSourceGroupId,
-                        optionIds: this.selectedOptionIds,
-                        newGroupNames: this.newGroupNames
+                        targetGroupId: this.selectedTargetGroupId,
+                        optionIds: this.selectedOptionIds
                     },
                     {
                         headers: this.getAuthHeaders()
@@ -522,14 +525,9 @@ Component.register('artiss-property-processing-index', {
 
         resetSplitForm() {
             this.selectedSourceGroupId = null;
+            this.selectedTargetGroupId = null;
             this.sourceGroupOptions = [];
             this.selectedOptionIds = [];
-            this.newGroupNames = {
-                'uk-UA': '',
-                'de-DE': '',
-                'ru-RU': '',
-                'en-GB': ''
-            };
             this.splitResult = null;
         }
     },

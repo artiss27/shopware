@@ -240,35 +240,19 @@
                         </div>
                     </sw-card>
 
-                    {# New group names #}
+                    {# Target group selection #}
                     <sw-card
                         v-if="selectedOptionIds.length > 0"
-                        :title="$tc('artissTools.propertyProcessing.split.newGroupSettings')"
+                        :title="$tc('artissTools.propertyProcessing.split.selectTargetGroup')"
                         :isLoading="isLoading"
                     >
-                        <sw-text-field
-                            v-model="newGroupNames['uk-UA']"
-                            :label="$tc('artissTools.propertyProcessing.split.newGroupName.uk')"
-                            :placeholder="$tc('artissTools.propertyProcessing.split.placeholders.enterName')"
-                            required
-                        />
-
-                        <sw-text-field
-                            v-model="newGroupNames['de-DE']"
-                            :label="$tc('artissTools.propertyProcessing.split.newGroupName.de')"
-                            :placeholder="$tc('artissTools.propertyProcessing.split.placeholders.enterName')"
-                        />
-
-                        <sw-text-field
-                            v-model="newGroupNames['ru-RU']"
-                            :label="$tc('artissTools.propertyProcessing.split.newGroupName.ru')"
-                            :placeholder="$tc('artissTools.propertyProcessing.split.placeholders.enterName')"
-                        />
-
-                        <sw-text-field
-                            v-model="newGroupNames['en-GB']"
-                            :label="$tc('artissTools.propertyProcessing.split.newGroupName.en')"
-                            :placeholder="$tc('artissTools.propertyProcessing.split.placeholders.enterName')"
+                        <sw-single-select
+                            v-model:value="selectedTargetGroupId"
+                            :options="availableTargetGroups"
+                            :label="$tc('artissTools.propertyProcessing.split.targetGroup')"
+                            :placeholder="$tc('artissTools.propertyProcessing.split.placeholders.selectTargetGroup')"
+                            valueProperty="id"
+                            labelProperty="name"
                         />
                     </sw-card>
 
@@ -325,15 +309,39 @@
                                 </sw-description-list-description>
                             </sw-description-list>
 
-                            <h3>{{ $tc('artissTools.propertyProcessing.split.result.newGroup') }}</h3>
+                            <h3>{{ $tc('artissTools.propertyProcessing.split.result.targetGroup') }}</h3>
                             <sw-description-list>
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.split.result.groupName') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ splitResult.targetGroup.name }}
+                                </sw-description-list-description>
+
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.split.result.currentOptions') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ splitResult.targetGroup.currentOptions }}
+                                </sw-description-list-description>
+
                                 <sw-description-list-term>
                                     {{ $tc('artissTools.propertyProcessing.split.result.optionsToMove') }}
                                 </sw-description-list-term>
                                 <sw-description-list-description>
-                                    {{ splitResult.newGroup.optionsToMove }}
+                                    {{ splitResult.targetGroup.optionsToMove }}
                                 </sw-description-list-description>
 
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.split.result.totalAfterMove') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    <strong>{{ splitResult.targetGroup.totalAfterMove }}</strong>
+                                </sw-description-list-description>
+                            </sw-description-list>
+
+                            <h3>{{ $tc('artissTools.propertyProcessing.split.result.affectedEntitiesTitle') }}</h3>
+                            <sw-description-list>
                                 <sw-description-list-term>
                                     {{ $tc('artissTools.propertyProcessing.split.result.affectedProducts') }}
                                 </sw-description-list-term>
@@ -356,11 +364,9 @@
                                 </sw-description-list-description>
                             </sw-description-list>
 
-                            <div v-if="splitResult.newGroupId" class="artiss-split-success">
+                            <div v-if="splitResult.success" class="artiss-split-success">
                                 <sw-alert variant="success">
                                     {{ $tc('artissTools.propertyProcessing.split.result.successMessage') }}
-                                    <br>
-                                    <strong>{{ $tc('artissTools.propertyProcessing.split.result.newGroupId') }}:</strong> {{ splitResult.newGroupId }}
                                 </sw-alert>
                             </div>
                         </div>
@@ -375,8 +381,7 @@
                     >
                         <p>{{ $tc('artissTools.propertyProcessing.split.confirm.message') }}</p>
                         <p>
-                            <strong>{{ $tc('artissTools.propertyProcessing.split.confirm.optionsToMove') }}:</strong> {{ selectedOptionIds.length }}<br>
-                            <strong>{{ $tc('artissTools.propertyProcessing.split.confirm.newGroupName') }}:</strong> {{ newGroupNames['uk-UA'] }}
+                            <strong>{{ $tc('artissTools.propertyProcessing.split.confirm.optionsToMove') }}:</strong> {{ selectedOptionIds.length }}
                         </p>
 
                         <template #modal-footer>

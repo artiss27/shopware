@@ -160,22 +160,17 @@
                 "loadFailed": "Daten konnten nicht geladen werden"
             },
             "split": {
-                "selectSourceGroup": "Eigenschaftsgruppe auswählen",
-                "sourceGroup": "Eigenschaftsgruppe",
+                "selectSourceGroup": "Quellgruppe auswählen",
+                "sourceGroup": "Quellgruppe",
+                "selectTargetGroup": "Zielgruppe auswählen",
+                "targetGroup": "Zielgruppe",
                 "optionsList": "Optionsliste",
                 "selectAll": "Alle auswählen",
                 "selectedCount": "Ausgewählt",
                 "productCount": "Produkte",
-                "newGroupSettings": "Einstellungen für neue Gruppe",
-                "newGroupName": {
-                    "uk": "Gruppenname (Ukrainisch)",
-                    "de": "Gruppenname (Deutsch)",
-                    "ru": "Gruppenname (Russisch)",
-                    "en": "Gruppenname (Englisch)"
-                },
                 "placeholders": {
-                    "selectGroup": "Eigenschaftsgruppe auswählen...",
-                    "enterName": "Name eingeben..."
+                    "selectGroup": "Quellgruppe auswählen...",
+                    "selectTargetGroup": "Zielgruppe auswählen..."
                 },
                 "buttons": {
                     "preview": "Vorschau",
@@ -185,22 +180,23 @@
                 "result": {
                     "title": "Ergebnis",
                     "sourceGroup": "Quellgruppe",
+                    "targetGroup": "Zielgruppe",
                     "groupName": "Gruppenname",
                     "totalOptions": "Gesamtoptionen",
                     "remainingOptions": "Verbleibende Optionen",
-                    "newGroup": "Neue Gruppe",
+                    "currentOptions": "Aktuelle Optionen",
                     "optionsToMove": "Zu verschiebende Optionen",
+                    "totalAfterMove": "Gesamt nach Verschiebung",
+                    "affectedEntitiesTitle": "Betroffene Entitäten",
                     "affectedProducts": "Betroffene Produkte",
                     "affectedVariants": "Betroffene Varianten",
                     "totalAffected": "Gesamt betroffen",
-                    "successMessage": "Aufteilung erfolgreich durchgeführt!",
-                    "newGroupId": "ID der neuen Gruppe"
+                    "successMessage": "Verschiebung erfolgreich durchgeführt!"
                 },
                 "confirm": {
-                    "title": "Aufteilung bestätigen",
-                    "message": "Sind Sie sicher, dass Sie die Eigenschaftsgruppe aufteilen möchten?",
-                    "optionsToMove": "Zu verschiebende Optionen",
-                    "newGroupName": "Name der neuen Gruppe"
+                    "title": "Verschiebung bestätigen",
+                    "message": "Sind Sie sicher, dass Sie die ausgewählten Optionen in eine andere Gruppe verschieben möchten?",
+                    "optionsToMove": "Zu verschiebende Optionen"
                 },
                 "messages": {
                     "previewComplete": "Vorschau abgeschlossen",
