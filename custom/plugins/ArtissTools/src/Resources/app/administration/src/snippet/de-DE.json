@@ -202,6 +202,50 @@
                     "previewComplete": "Vorschau abgeschlossen",
                     "splitSuccess": "Aufteilung erfolgreich durchgeführt"
                 }
+            },
+            "transfer": {
+                "title": "Eigenschaftsübertragung",
+                "mode": {
+                    "label": "Übertragungsmodus"
+                },
+                "modes": {
+                    "propertyToCustomField": "Property → Custom field",
+                    "propertyToProperty": "Property → Property",
+                    "customFieldToProperty": "Custom field → Property",
+                    "customFieldToCustomField": "Custom field → Custom field"
+                },
+                "source": "Quelle",
+                "target": "Ziel",
+                "propertyGroup": "Eigenschaftsgruppe",
+                "sourcePropertyGroup": "Quell-Eigenschaftsgruppe",
+                "targetPropertyGroup": "Ziel-Eigenschaftsgruppe",
+                "customFieldSet": "Custom-Field-Set",
+                "sourceCustomFieldSet": "Quell-Custom-Field-Set",
+                "targetCustomFieldSet": "Ziel-Custom-Field-Set",
+                "customField": "Custom Field",
+                "sourceCustomField": "Quell-Custom-Field",
+                "targetCustomField": "Ziel-Custom-Field",
+                "options": "Optionen",
+                "moveOption": "Verschieben (Quelle leeren)",
+                "deleteEmptyOption": "Leere Quellen löschen",
+                "buttons": {
+                    "preview": "Vorschau",
+                    "execute": "Ausführen",
+                    "confirmExecute": "Ausführung bestätigen"
+                },
+                "result": {
+                    "affectedProducts": "Betroffene Produkte",
+                    "valuesRead": "Gelesene Werte",
+                    "optionsCreated": "Erstellte Optionen"
+                },
+                "confirm": {
+                    "title": "Übertragung bestätigen",
+                    "message": "Sind Sie sicher, dass Sie die Übertragung ausführen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+                },
+                "messages": {
+                    "previewComplete": "Vorschau abgeschlossen",
+                    "executeSuccess": "Übertragung erfolgreich ausgeführt"
+                }
             }
         }
     }

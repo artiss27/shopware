@@ -202,6 +202,50 @@
                     "previewComplete": "Попередній перегляд завершено",
                     "splitSuccess": "Розділення виконано успішно"
                 }
+            },
+            "transfer": {
+                "title": "Перенесення властивостей",
+                "mode": {
+                    "label": "Режим перенесення"
+                },
+                "modes": {
+                    "propertyToCustomField": "Property → Custom field",
+                    "propertyToProperty": "Property → Property",
+                    "customFieldToProperty": "Custom field → Property",
+                    "customFieldToCustomField": "Custom field → Custom field"
+                },
+                "source": "Джерело",
+                "target": "Ціль",
+                "propertyGroup": "Група властивостей",
+                "sourcePropertyGroup": "Вихідна група властивостей",
+                "targetPropertyGroup": "Цільова група властивостей",
+                "customFieldSet": "Набір custom fields",
+                "sourceCustomFieldSet": "Вихідний набір custom fields",
+                "targetCustomFieldSet": "Цільовий набір custom fields",
+                "customField": "Custom field",
+                "sourceCustomField": "Вихідне custom field",
+                "targetCustomField": "Цільове custom field",
+                "options": "Опції",
+                "moveOption": "Перенесення (очистити джерело)",
+                "deleteEmptyOption": "Видаляти пусті джерела",
+                "buttons": {
+                    "preview": "Попередній перегляд",
+                    "execute": "Виконати",
+                    "confirmExecute": "Підтвердити виконання"
+                },
+                "result": {
+                    "affectedProducts": "Затронуто товарів",
+                    "valuesRead": "Прочитано значень",
+                    "optionsCreated": "Створено опцій"
+                },
+                "confirm": {
+                    "title": "Підтвердження переносу",
+                    "message": "Ви впевнені, що хочете виконати перенесення? Цю дію не можна скасувати."
+                },
+                "messages": {
+                    "previewComplete": "Попередній перегляд завершено",
+                    "executeSuccess": "Перенесення виконано успішно"
+                }
             }
         }
     }

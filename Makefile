@@ -1,5 +1,6 @@
 # bin/console media:delete-unused --folder-entity=product --grace-period-days=0 --dry-run --limit=10
 # docker compose exec -T web bin/console dal:refresh:index - индексация товаров
+# bin/console media:generate-thumbnails
 
 ifndef APP_ENV
     include .env

@@ -202,6 +202,50 @@
                     "previewComplete": "Предпросмотр завершен",
                     "splitSuccess": "Разделение выполнено успешно"
                 }
+            },
+            "transfer": {
+                "title": "Перенос свойств",
+                "mode": {
+                    "label": "Режим переноса"
+                },
+                "modes": {
+                    "propertyToCustomField": "Property → Custom field",
+                    "propertyToProperty": "Property → Property",
+                    "customFieldToProperty": "Custom field → Property",
+                    "customFieldToCustomField": "Custom field → Custom field"
+                },
+                "source": "Источник",
+                "target": "Цель",
+                "propertyGroup": "Группа свойств",
+                "sourcePropertyGroup": "Исходная группа свойств",
+                "targetPropertyGroup": "Целевая группа свойств",
+                "customFieldSet": "Набор custom fields",
+                "sourceCustomFieldSet": "Исходный набор custom fields",
+                "targetCustomFieldSet": "Целевой набор custom fields",
+                "customField": "Custom field",
+                "sourceCustomField": "Исходное custom field",
+                "targetCustomField": "Целевое custom field",
+                "options": "Опции",
+                "moveOption": "Перенос (очистить источник)",
+                "deleteEmptyOption": "Удалять пустые источники",
+                "buttons": {
+                    "preview": "Предпросмотр",
+                    "execute": "Выполнить",
+                    "confirmExecute": "Подтвердить выполнение"
+                },
+                "result": {
+                    "affectedProducts": "Затронуто товаров",
+                    "valuesRead": "Прочитано значений",
+                    "optionsCreated": "Создано опций"
+                },
+                "confirm": {
+                    "title": "Подтверждение переноса",
+                    "message": "Вы уверены, что хотите выполнить перенос? Это действие нельзя отменить."
+                },
+                "messages": {
+                    "previewComplete": "Предпросмотр завершен",
+                    "executeSuccess": "Перенос выполнен успешно"
+                }
             }
         }
     }

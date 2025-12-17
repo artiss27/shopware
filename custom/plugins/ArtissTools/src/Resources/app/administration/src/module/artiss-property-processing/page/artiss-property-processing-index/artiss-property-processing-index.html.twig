@@ -403,9 +403,281 @@
                 </template>
 
                 <template v-else-if="activeTab === 'transfer'">
-                    <sw-card :title="$tc('artissTools.propertyProcessing.tabs.transfer')">
-                        <p>{{ $tc('artissTools.propertyProcessing.placeholders.transfer') }}</p>
+                    {# Transfer tab #}
+                    <sw-card :title="$tc('artissTools.propertyProcessing.transfer.title')">
+                        <sw-select-field
+                            v-model="transferMode"
+                            :label="$tc('artissTools.propertyProcessing.transfer.mode.label')"
+                            :options="[
+                                { value: 'property_to_custom_field', label: $tc('artissTools.propertyProcessing.transfer.modes.propertyToCustomField') },
+                                { value: 'property_to_property', label: $tc('artissTools.propertyProcessing.transfer.modes.propertyToProperty') },
+                                { value: 'custom_field_to_property', label: $tc('artissTools.propertyProcessing.transfer.modes.customFieldToProperty') },
+                                { value: 'custom_field_to_custom_field', label: $tc('artissTools.propertyProcessing.transfer.modes.customFieldToCustomField') }
+                            ]"
+                        />
                     </sw-card>
+
+                    {# Mode 1: Property → Custom field #}
+                    <template v-if="transferMode === 'property_to_custom_field'">
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.source')">
+                            <sw-single-select
+                                v-model:value="transferPropertyGroupId"
+                                :options="propertyGroups"
+                                :label="$tc('artissTools.propertyProcessing.transfer.propertyGroup')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+
+                            <div v-if="transferPropertyOptions.length > 0" class="transfer-options-list">
+                                <sw-checkbox-field
+                                    :value="transferSelectedOptions.length === transferPropertyOptions.length"
+                                    @change="toggleAllTransferOptions"
+                                    :label="$tc('artissTools.propertyProcessing.split.selectAll')"
+                                />
+                                <sw-checkbox-field
+                                    v-for="option in transferPropertyOptions"
+                                    :key="option.id"
+                                    :value="transferSelectedOptions.includes(option.id)"
+                                    @change="(checked) => {
+                                        if (checked) {
+                                            transferSelectedOptions.push(option.id);
+                                        } else {
+                                            const idx = transferSelectedOptions.indexOf(option.id);
+                                            if (idx > -1) transferSelectedOptions.splice(idx, 1);
+                                        }
+                                    }"
+                                    :label="option.name"
+                                />
+                            </div>
+                        </sw-card>
+
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.target')">
+                            <sw-single-select
+                                v-model:value="transferTargetSetId"
+                                :options="customFieldSets"
+                                :label="$tc('artissTools.propertyProcessing.transfer.customFieldSet')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+
+                            <sw-single-select
+                                v-if="transferTargetFields.length > 0"
+                                v-model:value="transferTargetFieldName"
+                                :options="transferTargetFields"
+                                :label="$tc('artissTools.propertyProcessing.transfer.customField')"
+                                valueProperty="name"
+                                labelProperty="label"
+                            />
+                        </sw-card>
+                    </template>
+
+                    {# Mode 2: Property → Property #}
+                    <template v-if="transferMode === 'property_to_property'">
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.source')">
+                            <sw-single-select
+                                v-model:value="transferSourceGroupId"
+                                :options="propertyGroups"
+                                :label="$tc('artissTools.propertyProcessing.transfer.sourcePropertyGroup')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+
+                            <div v-if="transferSourceOptions.length > 0" class="transfer-options-list">
+                                <sw-checkbox-field
+                                    :value="transferSourceSelectedOptions.length === transferSourceOptions.length"
+                                    @change="toggleAllTransferOptions"
+                                    :label="$tc('artissTools.propertyProcessing.split.selectAll')"
+                                />
+                                <sw-checkbox-field
+                                    v-for="option in transferSourceOptions"
+                                    :key="option.id"
+                                    :value="transferSourceSelectedOptions.includes(option.id)"
+                                    @change="(checked) => {
+                                        if (checked) {
+                                            transferSourceSelectedOptions.push(option.id);
+                                        } else {
+                                            const idx = transferSourceSelectedOptions.indexOf(option.id);
+                                            if (idx > -1) transferSourceSelectedOptions.splice(idx, 1);
+                                        }
+                                    }"
+                                    :label="option.name"
+                                />
+                            </div>
+                        </sw-card>
+
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.target')">
+                            <sw-single-select
+                                v-model:value="transferTargetGroupId"
+                                :options="propertyGroups.filter(g => g.id !== transferSourceGroupId)"
+                                :label="$tc('artissTools.propertyProcessing.transfer.targetPropertyGroup')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+                        </sw-card>
+                    </template>
+
+                    {# Mode 3: Custom field → Property #}
+                    <template v-if="transferMode === 'custom_field_to_property'">
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.source')">
+                            <sw-single-select
+                                v-model:value="transferCFSourceSetId"
+                                :options="customFieldSets"
+                                :label="$tc('artissTools.propertyProcessing.transfer.customFieldSet')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+
+                            <sw-single-select
+                                v-if="transferCFSourceFields.length > 0"
+                                v-model:value="transferCFSourceFieldName"
+                                :options="transferCFSourceFields"
+                                :label="$tc('artissTools.propertyProcessing.transfer.customField')"
+                                valueProperty="name"
+                                labelProperty="label"
+                            />
+                        </sw-card>
+
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.target')">
+                            <sw-single-select
+                                v-model:value="transferCFTargetGroupId"
+                                :options="propertyGroups"
+                                :label="$tc('artissTools.propertyProcessing.transfer.propertyGroup')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+                        </sw-card>
+                    </template>
+
+                    {# Mode 4: Custom field → Custom field #}
+                    <template v-if="transferMode === 'custom_field_to_custom_field'">
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.source')">
+                            <sw-single-select
+                                v-model:value="transferCF2SourceSetId"
+                                :options="customFieldSets"
+                                :label="$tc('artissTools.propertyProcessing.transfer.sourceCustomFieldSet')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+
+                            <sw-single-select
+                                v-if="transferCF2SourceFields.length > 0"
+                                v-model:value="transferCF2SourceFieldName"
+                                :options="transferCF2SourceFields"
+                                :label="$tc('artissTools.propertyProcessing.transfer.sourceCustomField')"
+                                valueProperty="name"
+                                labelProperty="label"
+                            />
+                        </sw-card>
+
+                        <sw-card :title="$tc('artissTools.propertyProcessing.transfer.target')">
+                            <sw-single-select
+                                v-model:value="transferCF2TargetSetId"
+                                :options="customFieldSets.filter(s => s.id !== transferCF2SourceSetId)"
+                                :label="$tc('artissTools.propertyProcessing.transfer.targetCustomFieldSet')"
+                                valueProperty="id"
+                                labelProperty="name"
+                            />
+
+                            <sw-single-select
+                                v-if="transferCF2TargetFields.length > 0"
+                                v-model:value="transferCF2TargetFieldName"
+                                :options="transferCF2TargetFields"
+                                :label="$tc('artissTools.propertyProcessing.transfer.targetCustomField')"
+                                valueProperty="name"
+                                labelProperty="label"
+                            />
+                        </sw-card>
+                    </template>
+
+                    {# Common options #}
+                    <sw-card :title="$tc('artissTools.propertyProcessing.transfer.options')">
+                        <sw-switch-field
+                            v-model="transferMove"
+                            :label="$tc('artissTools.propertyProcessing.transfer.moveOption')"
+                        />
+                        <sw-switch-field
+                            v-model="transferDeleteEmpty"
+                            :label="$tc('artissTools.propertyProcessing.transfer.deleteEmptyOption')"
+                        />
+                    </sw-card>
+
+                    {# Actions #}
+                    <sw-card :title="$tc('artissTools.propertyProcessing.sections.actions')">
+                        <sw-button
+                            variant="primary"
+                            @click="previewTransfer"
+                            :disabled="isLoading"
+                        >
+                            {{ $tc('artissTools.propertyProcessing.transfer.buttons.preview') }}
+                        </sw-button>
+
+                        <sw-button
+                            variant="danger"
+                            @click="executeTransfer"
+                            :disabled="isLoading"
+                        >
+                            {{ $tc('artissTools.propertyProcessing.transfer.buttons.execute') }}
+                        </sw-button>
+                    </sw-card>
+
+                    {# Results #}
+                    <sw-card
+                        v-if="transferResult"
+                        :title="$tc('artissTools.propertyProcessing.sections.result')"
+                    >
+                        <div class="transfer-result">
+                            <sw-description-list>
+                                <sw-description-list-term>
+                                    {{ $tc('artissTools.propertyProcessing.transfer.result.affectedProducts') }}
+                                </sw-description-list-term>
+                                <sw-description-list-description>
+                                    {{ transferResult.stats.affectedProducts || 0 }}
+                                </sw-description-list-description>
+
+                                <template v-if="transferResult.stats.valuesRead !== undefined">
+                                    <sw-description-list-term>
+                                        {{ $tc('artissTools.propertyProcessing.transfer.result.valuesRead') }}
+                                    </sw-description-list-term>
+                                    <sw-description-list-description>
+                                        {{ transferResult.stats.valuesRead }}
+                                    </sw-description-list-description>
+                                </template>
+
+                                <template v-if="transferResult.stats.optionsCreated !== undefined">
+                                    <sw-description-list-term>
+                                        {{ $tc('artissTools.propertyProcessing.transfer.result.optionsCreated') }}
+                                    </sw-description-list-term>
+                                    <sw-description-list-description>
+                                        {{ transferResult.stats.optionsCreated }}
+                                    </sw-description-list-description>
+                                </template>
+                            </sw-description-list>
+                        </div>
+                    </sw-card>
+
+                    {# Confirmation modal #}
+                    <sw-modal
+                        v-if="showTransferConfirm"
+                        :title="$tc('artissTools.propertyProcessing.transfer.confirm.title')"
+                        @modal-close="showTransferConfirm = false"
+                    >
+                        <p>{{ $tc('artissTools.propertyProcessing.transfer.confirm.message') }}</p>
+
+                        <template #modal-footer>
+                            <sw-button
+                                variant="secondary"
+                                @click="showTransferConfirm = false"
+                            >
+                                {{ $tc('artissTools.propertyProcessing.buttons.cancel') }}
+                            </sw-button>
+                            <sw-button
+                                variant="primary"
+                                @click="confirmTransfer"
+                            >
+                                {{ $tc('artissTools.propertyProcessing.transfer.buttons.confirmExecute') }}
+                            </sw-button>
+                        </template>
+                    </sw-modal>
                 </template>
 
                 <template v-else>

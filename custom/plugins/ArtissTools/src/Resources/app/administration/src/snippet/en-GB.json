@@ -204,6 +204,50 @@
                     "previewComplete": "Preview completed",
                     "splitSuccess": "Split completed successfully"
                 }
+            },
+            "transfer": {
+                "title": "Property Transfer",
+                "mode": {
+                    "label": "Transfer mode"
+                },
+                "modes": {
+                    "propertyToCustomField": "Property → Custom field",
+                    "propertyToProperty": "Property → Property",
+                    "customFieldToProperty": "Custom field → Property",
+                    "customFieldToCustomField": "Custom field → Custom field"
+                },
+                "source": "Source",
+                "target": "Target",
+                "propertyGroup": "Property group",
+                "sourcePropertyGroup": "Source property group",
+                "targetPropertyGroup": "Target property group",
+                "customFieldSet": "Custom field set",
+                "sourceCustomFieldSet": "Source custom field set",
+                "targetCustomFieldSet": "Target custom field set",
+                "customField": "Custom field",
+                "sourceCustomField": "Source custom field",
+                "targetCustomField": "Target custom field",
+                "options": "Options",
+                "moveOption": "Move (clear source)",
+                "deleteEmptyOption": "Delete empty sources",
+                "buttons": {
+                    "preview": "Preview",
+                    "execute": "Execute",
+                    "confirmExecute": "Confirm execution"
+                },
+                "result": {
+                    "affectedProducts": "Affected products",
+                    "valuesRead": "Values read",
+                    "optionsCreated": "Options created"
+                },
+                "confirm": {
+                    "title": "Confirm transfer",
+                    "message": "Are you sure you want to execute the transfer? This action cannot be undone."
+                },
+                "messages": {
+                    "previewComplete": "Preview completed",
+                    "executeSuccess": "Transfer executed successfully"
+                }
             }
         }
     }
