@@ -314,7 +314,7 @@ class PropertyCleanupService
             // Delete empty sets
             foreach ($setIds as $setId) {
                 $remainingFields = (int) $this->connection->fetchOne(
-                    'SELECT COUNT(*) FROM custom_field WHERE custom_field_set_id = :setId',
+                    'SELECT COUNT(*) FROM custom_field WHERE set_id = :setId',
                     ['setId' => hex2bin($setId)]
                 );
 

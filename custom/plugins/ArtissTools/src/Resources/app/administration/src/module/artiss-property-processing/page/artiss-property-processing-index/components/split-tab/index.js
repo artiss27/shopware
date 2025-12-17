@@ -207,12 +207,25 @@ Component.register('artiss-property-processing-split-tab', {
     },
 
     watch: {
-        selectedSourceGroupId(newVal) {
+        selectedSourceGroupId(newVal, oldVal) {
             if (newVal) {
                 this.loadGroupOptions();
             } else {
                 this.sourceGroupOptions = [];
                 this.selectedOptionIds = [];
+                this.splitResult = null;
+            }
+            if (newVal !== oldVal && oldVal !== undefined) {
+                this.splitResult = null;
+            }
+        },
+        selectedTargetGroupId(newVal, oldVal) {
+            if (newVal !== oldVal && oldVal !== undefined) {
+                this.splitResult = null;
+            }
+        },
+        selectedOptionIds(newVal, oldVal) {
+            if (JSON.stringify(newVal) !== JSON.stringify(oldVal) && oldVal !== undefined) {
                 this.splitResult = null;
             }
         }

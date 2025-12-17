@@ -138,6 +138,18 @@ class PropertyTransferController extends AbstractController
                 ], 400);
             }
 
+            // Normalize setId - ensure it's a string UUID
+            if (is_array($setId)) {
+                $setId = $setId['id'] ?? $setId['value'] ?? null;
+            }
+            
+            if (!$setId || !is_string($setId)) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Invalid setId format',
+                ], 400);
+            }
+
             $fields = $this->getCustomFieldsForSet($setId);
 
             return new JsonResponse([
@@ -182,21 +194,48 @@ class PropertyTransferController extends AbstractController
         $connection = $this->container->get('Doctrine\DBAL\Connection');
         $qb = $connection->createQueryBuilder();
 
+        // Normalize UUID format (remove dashes if present)
+        $normalizedSetId = str_replace('-', '', $setId);
+        
+        // Validate UUID format (should be 32 hex characters)
+        if (strlen($normalizedSetId) !== 32 || !ctype_xdigit($normalizedSetId)) {
+            throw new \InvalidArgumentException('Invalid setId format: ' . $setId);
+        }
+
         $results = $qb
-            ->select('cf.id, cf.name, cf_translation.label')
+            ->select('cf.id, cf.name, cf.config')
             ->from('custom_field', 'cf')
-            ->leftJoin('cf', 'custom_field_translation', 'cf_translation', 'cf.id = cf_translation.custom_field_id')
-            ->where('cf.custom_field_set_id = :setId')
-            ->setParameter('setId', hex2bin(str_replace('-', '', $setId)))
+            ->where('cf.set_id = :setId')
+            ->setParameter('setId', hex2bin($normalizedSetId))
             ->executeQuery()
             ->fetchAllAssociative();
 
         $fields = [];
         foreach ($results as $result) {
+            $label = $result['name'];
+            
+            // Extract label from config JSON
+            if ($result['config']) {
+                $config = json_decode($result['config'], true);
+                if (isset($config['label'])) {
+                    // Handle translated labels (object with locale keys)
+                    if (is_array($config['label'])) {
+                        // Try to get label in order: uk-UA, ru-RU, en-GB, or first available
+                        $label = $config['label']['uk-UA'] 
+                            ?? $config['label']['ru-RU'] 
+                            ?? $config['label']['en-GB'] 
+                            ?? reset($config['label'])
+                            ?? $result['name'];
+                    } else {
+                        $label = $config['label'];
+                    }
+                }
+            }
+            
             $fields[] = [
                 'id' => bin2hex($result['id']),
                 'name' => $result['name'],
-                'label' => $result['label'] ?? $result['name']
+                'label' => $label
             ];
         }
 

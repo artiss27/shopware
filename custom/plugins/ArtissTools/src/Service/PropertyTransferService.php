@@ -92,7 +92,7 @@ class PropertyTransferService
 
                 if (!$dryRun) {
                     // Write to custom field
-                    $this->writeProductCustomField($productId, $targetFieldName, $optionNames);
+                    $this->writeProductCustomField($productId, $targetFieldName, $optionNames, $context);
                     $stats['valuesWritten']++;
 
                     // Remove property associations if move=true
@@ -170,18 +170,25 @@ class PropertyTransferService
                     // Find or create target option
                     $targetOptionId = $targetOptions[$optionName] ?? null;
 
-                    if (!$targetOptionId && !$dryRun) {
-                        // Create new option in target group
-                        $targetOptionId = $this->createPropertyOption(
-                            $targetGroupId,
-                            $sourceOption,
-                            $context
-                        );
-                        $targetOptions[$optionName] = $targetOptionId;
+                    if (!$targetOptionId) {
+                        // Count options that will be created (even in dry run)
                         $stats['optionsCreated']++;
+                        if (!$dryRun) {
+                            // Create new option in target group
+                            $targetOptionId = $this->createPropertyOption(
+                                $targetGroupId,
+                                $sourceOption,
+                                $context
+                            );
+                            $targetOptions[$optionName] = $targetOptionId;
+                        } else {
+                            // In dry run, mark this option name to avoid counting duplicates
+                            $targetOptions[$optionName] = 'dry-run-placeholder';
+                        }
                     }
 
-                    if ($targetOptionId && !$dryRun) {
+                    // Only create associations in non-dry-run mode
+                    if (!$dryRun && $targetOptionId && $targetOptionId !== 'dry-run-placeholder') {
                         // Add association to target option
                         $this->addProductPropertyAssociation($productId, $targetOptionId);
                         $stats['optionsMapped']++;
@@ -240,12 +247,21 @@ class PropertyTransferService
         }
 
         try {
-            $products = $this->getProductsWithCustomField($sourceFieldName);
+            $products = $this->getProductsWithCustomField($sourceFieldName, $context);
             $targetOptions = $this->getGroupOptionsMap($targetGroupId);
 
             foreach ($products as $product) {
                 $productId = Uuid::fromBytesToHex($product['id']);
-                $customFields = json_decode($product['custom_fields'] ?? '{}', true);
+                
+                // Load product with custom fields using repository
+                $criteria = new Criteria([$productId]);
+                $productEntity = $this->productRepository->search($criteria, $context)->getEntities()->first();
+                
+                if (!$productEntity) {
+                    continue;
+                }
+                
+                $customFields = $productEntity->getCustomFields() ?? [];
                 $sourceValue = $customFields[$sourceFieldName] ?? null;
 
                 if ($sourceValue === null) {
@@ -260,17 +276,23 @@ class PropertyTransferService
                     $value = (string) $value;
                     $targetOptionId = $targetOptions[$value] ?? null;
 
-                    if (!$targetOptionId && !$dryRun) {
-                        $targetOptionId = $this->createPropertyOptionByName(
-                            $targetGroupId,
-                            $value,
-                            $context
-                        );
-                        $targetOptions[$value] = $targetOptionId;
+                    if (!$targetOptionId) {
+                        // Count options that will be created (even in dry run)
                         $stats['optionsCreated']++;
+                        if (!$dryRun) {
+                            $targetOptionId = $this->createPropertyOptionByName(
+                                $targetGroupId,
+                                $value,
+                                $context
+                            );
+                            $targetOptions[$value] = $targetOptionId;
+                        } else {
+                            // In dry run, mark this option name to avoid counting duplicates
+                            $targetOptions[$value] = 'dry-run-placeholder';
+                        }
                     }
 
-                    if ($targetOptionId && !$dryRun) {
+                    if (!$dryRun && $targetOptionId && $targetOptionId !== 'dry-run-placeholder') {
                         $this->addProductPropertyAssociation($productId, $targetOptionId);
                         $stats['associationsCreated']++;
                     }
@@ -278,7 +300,7 @@ class PropertyTransferService
 
                 if ($move && !$dryRun) {
                     unset($customFields[$sourceFieldName]);
-                    $this->updateProductCustomFields($productId, $customFields);
+                    $this->updateProductCustomFields($productId, $customFields, $context);
                 }
             }
 
@@ -322,11 +344,20 @@ class PropertyTransferService
         }
 
         try {
-            $products = $this->getProductsWithCustomField($sourceFieldName);
+            $products = $this->getProductsWithCustomField($sourceFieldName, $context);
 
             foreach ($products as $product) {
                 $productId = Uuid::fromBytesToHex($product['id']);
-                $customFields = json_decode($product['custom_fields'] ?? '{}', true);
+                
+                // Load product with custom fields using repository
+                $criteria = new Criteria([$productId]);
+                $productEntity = $this->productRepository->search($criteria, $context)->getEntities()->first();
+                
+                if (!$productEntity) {
+                    continue;
+                }
+                
+                $customFields = $productEntity->getCustomFields() ?? [];
                 $sourceValue = $customFields[$sourceFieldName] ?? null;
 
                 if ($sourceValue === null) {
@@ -343,7 +374,7 @@ class PropertyTransferService
                         unset($customFields[$sourceFieldName]);
                     }
 
-                    $this->updateProductCustomFields($productId, $customFields);
+                    $this->updateProductCustomFields($productId, $customFields, $context);
                 }
             }
 
@@ -372,29 +403,36 @@ class PropertyTransferService
     {
         $qb = $this->connection->createQueryBuilder();
         return $qb
-            ->select('DISTINCT product.id, product.custom_fields')
+            ->select('DISTINCT product.id')
             ->from('product')
             ->innerJoin('product', 'product_property', 'pp', 'product.id = pp.product_id')
             ->where('pp.property_group_option_id IN (:optionIds)')
-            ->andWhere('product.version_id = :versionId')
             ->setParameter('optionIds', Uuid::fromHexToBytesList($optionIds), ArrayParameterType::STRING)
-            ->setParameter('versionId', Uuid::fromHexToBytes(Uuid::randomHex()))
             ->executeQuery()
             ->fetchAllAssociative();
     }
 
-    private function getProductsWithCustomField(string $fieldName): array
+    private function getProductsWithCustomField(string $fieldName, Context $context): array
     {
-        $qb = $this->connection->createQueryBuilder();
-        return $qb
-            ->select('id, custom_fields')
-            ->from('product')
-            ->where('JSON_EXTRACT(custom_fields, :path) IS NOT NULL')
-            ->andWhere('version_id = :versionId')
-            ->setParameter('path', '$.' . $fieldName)
-            ->setParameter('versionId', Uuid::fromHexToBytes(Uuid::randomHex()))
-            ->executeQuery()
-            ->fetchAllAssociative();
+        // Use repository to find products with the custom field
+        // Filter for products where custom field is not null
+        $criteria = new Criteria();
+        $criteria->addFilter(
+            new \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter(
+                \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter::CONNECTION_AND,
+                [new EqualsFilter('customFields.' . $fieldName, null)]
+            )
+        );
+        $criteria->setLimit(10000); // Set a reasonable limit
+        
+        $products = $this->productRepository->search($criteria, $context);
+        
+        $result = [];
+        foreach ($products->getIds() as $productId) {
+            $result[] = ['id' => Uuid::fromHexToBytes($productId)];
+        }
+        
+        return $result;
     }
 
     private function getProductOptionNames(string $productId, array $optionIds): array
@@ -450,38 +488,37 @@ class PropertyTransferService
         return $map;
     }
 
-    private function writeProductCustomField(string $productId, string $fieldName, array $values): void
+    private function writeProductCustomField(string $productId, string $fieldName, array $values, Context $context): void
     {
-        $qb = $this->connection->createQueryBuilder();
-        $currentFields = $qb
-            ->select('custom_fields')
-            ->from('product')
-            ->where('id = :productId')
-            ->setParameter('productId', Uuid::fromHexToBytes($productId))
-            ->executeQuery()
-            ->fetchOne();
-
-        $customFields = json_decode($currentFields ?? '{}', true);
+        // Load product to get current custom fields
+        $criteria = new Criteria([$productId]);
+        $productEntity = $this->productRepository->search($criteria, $context)->getEntities()->first();
+        
+        if (!$productEntity) {
+            return;
+        }
+        
+        $customFields = $productEntity->getCustomFields() ?? [];
         $customFields[$fieldName] = $values;
-
-        $this->connection->createQueryBuilder()
-            ->update('product')
-            ->set('custom_fields', ':customFields')
-            ->where('id = :productId')
-            ->setParameter('customFields', json_encode($customFields))
-            ->setParameter('productId', Uuid::fromHexToBytes($productId))
-            ->executeStatement();
+        
+        // Update product using repository
+        $this->productRepository->update([
+            [
+                'id' => $productId,
+                'customFields' => $customFields,
+            ]
+        ], $context);
     }
 
-    private function updateProductCustomFields(string $productId, array $customFields): void
+    private function updateProductCustomFields(string $productId, array $customFields, Context $context): void
     {
-        $this->connection->createQueryBuilder()
-            ->update('product')
-            ->set('custom_fields', ':customFields')
-            ->where('id = :productId')
-            ->setParameter('customFields', json_encode($customFields))
-            ->setParameter('productId', Uuid::fromHexToBytes($productId))
-            ->executeStatement();
+        // Update product custom fields using repository
+        $this->productRepository->update([
+            [
+                'id' => $productId,
+                'customFields' => $customFields,
+            ]
+        ], $context);
     }
 
     private function removeProductPropertyAssociations(string $productId, array $optionIds): void

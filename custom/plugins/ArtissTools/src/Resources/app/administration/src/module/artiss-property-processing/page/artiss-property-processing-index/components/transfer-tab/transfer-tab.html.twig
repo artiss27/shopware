@@ -167,7 +167,7 @@
     <sw-card :title="$tc('artissTools.propertyProcessing.transfer.target')">
         <sw-single-select
             v-model:value="transferCF2TargetSetId"
-            :options="customFieldSets.filter(s => s.id !== transferCF2SourceSetId)"
+            :options="customFieldSets"
             :label="$tc('artissTools.propertyProcessing.transfer.targetCustomFieldSet')"
             valueProperty="id"
             labelProperty="name"
@@ -197,7 +197,10 @@
 </sw-card>
 
 {# Actions #}
-<sw-card :title="$tc('artissTools.propertyProcessing.sections.actions')">
+<sw-card 
+    :title="$tc('artissTools.propertyProcessing.sections.actions')"
+    :isLoading="isLoading"
+>
     <sw-button
         variant="primary"
         @click="previewTransfer"
@@ -220,6 +223,12 @@
     v-if="transferResult"
     :title="$tc('artissTools.propertyProcessing.sections.result')"
 >
+    <div v-if="dryRunMode" class="artiss-property-processing-index__dry-run-notice">
+        <sw-alert variant="info">
+            {{ $tc('artissTools.propertyProcessing.messages.dryRunMode') }}
+        </sw-alert>
+    </div>
+
     <div class="transfer-result">
         <sw-description-list>
             <sw-description-list-term>

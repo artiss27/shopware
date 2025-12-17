@@ -152,9 +152,17 @@ Component.register('artiss-property-processing-merge-tab', {
     },
 
     watch: {
-        targetId(newVal) {
+        targetId(newVal, oldVal) {
             if (newVal && this.sourceIds.includes(newVal)) {
                 this.sourceIds = this.sourceIds.filter(id => id !== newVal);
+            }
+            if (newVal !== oldVal && oldVal !== undefined) {
+                this.mergeResult = null;
+            }
+        },
+        sourceIds(newVal, oldVal) {
+            if (JSON.stringify(newVal) !== JSON.stringify(oldVal) && oldVal !== undefined) {
+                this.mergeResult = null;
             }
         }
     }

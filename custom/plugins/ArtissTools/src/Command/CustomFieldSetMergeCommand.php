@@ -537,7 +537,7 @@ EOF
         $targetSetIdBin = hex2bin($targetSetId);
 
         $this->connection->executeStatement(
-            'UPDATE custom_field SET custom_field_set_id = :setId WHERE id = :fieldId',
+            'UPDATE custom_field SET set_id = :setId WHERE id = :fieldId',
             [
                 'setId' => $targetSetIdBin,
                 'fieldId' => $fieldIdBin,
