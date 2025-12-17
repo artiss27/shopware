@@ -94,7 +94,7 @@
                 "itemsToMove": "К переносу",
                 "itemsToDelete": "К удалению",
                 "productPropertyUpdates": "Обновления свойств товаров",
-                "configuratorSettingUpdates": "Обновления конфигуратора",
+                "configuratorSettingUpdates": "Обновления вариантов товаров",
                 "groupsToDelete": "Группы к удалению"
             },
             "errors": {
