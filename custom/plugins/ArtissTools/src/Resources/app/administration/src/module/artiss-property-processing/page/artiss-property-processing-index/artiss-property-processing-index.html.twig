@@ -20,6 +20,9 @@
                     <sw-tabs-item name="merge">
                         {{ $tc('artissTools.propertyProcessing.tabs.merge') }}
                     </sw-tabs-item>
+                    <sw-tabs-item name="merge-options">
+                        {{ $tc('artissTools.propertyProcessing.tabs.mergeOptions') }}
+                    </sw-tabs-item>
                     <sw-tabs-item name="split">
                         {{ $tc('artissTools.propertyProcessing.tabs.split') }}
                     </sw-tabs-item>
@@ -33,6 +36,15 @@
 
                 <artiss-property-processing-merge-tab
                     v-if="activeTab === 'merge'"
+                    :property-groups="propertyGroups"
+                    :http-client="httpClient"
+                    :get-auth-headers="getAuthHeaders"
+                    :load-property-groups="loadPropertyGroups"
+                    @property-groups-changed="onPropertyGroupsChanged"
+                />
+
+                <artiss-property-processing-merge-options-tab
+                    v-else-if="activeTab === 'merge-options'"
                     :property-groups="propertyGroups"
                     :http-client="httpClient"
                     :get-auth-headers="getAuthHeaders"

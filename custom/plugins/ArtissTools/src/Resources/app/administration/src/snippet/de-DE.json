@@ -51,6 +51,7 @@
             "menuTitle": "Eigenschaftsverarbeitung",
             "tabs": {
                 "merge": "Zusammenführen",
+                "mergeOptions": "Optionen zusammenführen",
                 "split": "Aufteilen",
                 "transfer": "Übertragen",
                 "cleanup": "Bereinigen"
@@ -153,7 +154,7 @@
                 "itemsToMove": "Zu verschieben",
                 "itemsToDelete": "Zu löschen",
                 "productPropertyUpdates": "Produkt-Property-Updates",
-                "configuratorSettingUpdates": "Konfigurator-Updates",
+                "configuratorSettingUpdates": "Produktvarianten-Updates",
                 "groupsToDelete": "Zu löschende Gruppen"
             },
             "errors": {
@@ -245,6 +246,59 @@
                 "messages": {
                     "previewComplete": "Vorschau abgeschlossen",
                     "executeSuccess": "Übertragung erfolgreich ausgeführt"
+                }
+            },
+            "mergeOptions": {
+                "selectGroup": "Eigenschaftsgruppe auswählen",
+                "propertyGroup": "Eigenschaftsgruppe",
+                "selectOptions": "Optionen auswählen",
+                "targetOption": "Zieloption",
+                "sourceOptions": "Quelloptionen",
+                "optionsInfo": "Optionsinformationen",
+                "productCount": "Produkte",
+                "variantCount": "Varianten",
+                "placeholders": {
+                    "selectGroup": "Eigenschaftsgruppe auswählen...",
+                    "selectTarget": "Zieloption auswählen...",
+                    "selectSources": "Quelloptionen auswählen..."
+                },
+                "buttons": {
+                    "simulate": "Simulieren",
+                    "merge": "Zusammenführen",
+                    "confirmMerge": "Zusammenführung bestätigen"
+                },
+                "result": {
+                    "target": "Zieloption",
+                    "sources": "Quelloptionen",
+                    "statistics": "Statistiken",
+                    "name": "Name",
+                    "productPropertyUpdates": "Produkt-Property-Updates",
+                    "configuratorSettingUpdates": "Produktvarianten-Updates",
+                    "deletedOptions": "Gelöschte Optionen"
+                },
+                "confirm": {
+                    "title": "Zusammenführung bestätigen",
+                    "message": "Sind Sie sicher, dass Sie die Optionen zusammenführen möchten? Alle Verknüpfungen zu Quelloptionen werden auf die Zieloption übertragen, und die Quelloptionen werden gelöscht.",
+                    "target": "Zieloption",
+                    "sources": "Quelloptionen",
+                    "affectedProducts": "Betroffene Produkte",
+                    "affectedVariants": "Betroffene Varianten"
+                },
+                "messages": {
+                    "scanComplete": "Simulation abgeschlossen",
+                    "mergeSuccess": "Zusammenführung erfolgreich durchgeführt"
+                },
+                "errors": {
+                    "missingGroup": "Wählen Sie eine Eigenschaftsgruppe aus",
+                    "missingTarget": "Wählen Sie eine Zieloption aus",
+                    "missingSources": "Wählen Sie mindestens eine Quelloption aus",
+                    "targetInSources": "Zieloption darf nicht in der Quellliste sein"
+                },
+                "table": {
+                    "type": "Typ",
+                    "name": "Name",
+                    "productCount": "Produkte",
+                    "variantCount": "Varianten"
                 }
             }
         }

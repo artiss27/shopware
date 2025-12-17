@@ -1,6 +1,7 @@
 import template from './artiss-property-processing-index.html.twig';
 import './artiss-property-processing-index.scss';
 import './components/merge-tab';
+import './components/merge-options-tab';
 import './components/split-tab';
 import './components/transfer-tab';
 import './components/cleanup-tab';

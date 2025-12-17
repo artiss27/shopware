@@ -51,6 +51,7 @@
             "menuTitle": "Обробка властивостей",
             "tabs": {
                 "merge": "Об'єднання",
+                "mergeOptions": "Об'єднання опції",
                 "split": "Розділення",
                 "transfer": "Перенесення",
                 "cleanup": "Очищення"
@@ -153,7 +154,7 @@
                 "itemsToMove": "До перенесення",
                 "itemsToDelete": "До видалення",
                 "productPropertyUpdates": "Оновлення властивостей товарів",
-                "configuratorSettingUpdates": "Оновлення конфігуратора",
+                "configuratorSettingUpdates": "Оновлення варіантів товарів",
                 "groupsToDelete": "Групи до видалення"
             },
             "errors": {
@@ -245,6 +246,59 @@
                 "messages": {
                     "previewComplete": "Попередній перегляд завершено",
                     "executeSuccess": "Перенесення виконано успішно"
+                }
+            },
+            "mergeOptions": {
+                "selectGroup": "Вибір групи властивостей",
+                "propertyGroup": "Група властивостей",
+                "selectOptions": "Вибір опцій",
+                "targetOption": "Цільова опція",
+                "sourceOptions": "Опції-джерела",
+                "optionsInfo": "Інформація про опції",
+                "productCount": "Товарів",
+                "variantCount": "Варіантів",
+                "placeholders": {
+                    "selectGroup": "Виберіть групу властивостей...",
+                    "selectTarget": "Виберіть цільову опцію...",
+                    "selectSources": "Виберіть опції-джерела..."
+                },
+                "buttons": {
+                    "simulate": "Симуляція",
+                    "merge": "Об'єднати",
+                    "confirmMerge": "Підтвердити об'єднання"
+                },
+                "result": {
+                    "target": "Цільова опція",
+                    "sources": "Опції-джерела",
+                    "statistics": "Статистика",
+                    "name": "Назва",
+                    "productPropertyUpdates": "Оновлення властивостей товарів",
+                    "configuratorSettingUpdates": "Оновлення варіантів товарів",
+                    "deletedOptions": "Видалено опцій"
+                },
+                "confirm": {
+                    "title": "Підтвердження об'єднання",
+                    "message": "Ви впевнені, що хочете об'єднати опції? Всі зв'язки з донорськими опціями будуть перенесені на цільову, а донорські опції будуть видалені.",
+                    "target": "Цільова опція",
+                    "sources": "Опції-джерела",
+                    "affectedProducts": "Затронуто товарів",
+                    "affectedVariants": "Затронуто варіантів"
+                },
+                "messages": {
+                    "scanComplete": "Симуляція завершена",
+                    "mergeSuccess": "Об'єднання виконано успішно"
+                },
+                "errors": {
+                    "missingGroup": "Виберіть групу властивостей",
+                    "missingTarget": "Виберіть цільову опцію",
+                    "missingSources": "Виберіть принаймні одну опцію-джерело",
+                    "targetInSources": "Цільова опція не може бути в списку джерел"
+                },
+                "table": {
+                    "type": "Тип",
+                    "name": "Назва",
+                    "productCount": "Товарів",
+                    "variantCount": "Варіантів"
                 }
             }
         }

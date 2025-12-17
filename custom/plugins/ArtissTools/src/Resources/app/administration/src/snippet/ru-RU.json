@@ -51,6 +51,7 @@
             "menuTitle": "Свойства",
             "tabs": {
                 "merge": "Объединение",
+                "mergeOptions": "Объединение опции",
                 "split": "Разделение",
                 "transfer": "Перенос",
                 "cleanup": "Очистка"
@@ -153,7 +154,7 @@
                 "itemsToMove": "К переносу",
                 "itemsToDelete": "К удалению",
                 "productPropertyUpdates": "Обновления свойств товаров",
-                "configuratorSettingUpdates": "Обновления конфигуратора",
+                "configuratorSettingUpdates": "Обновления вариантов товаров",
                 "groupsToDelete": "Группы к удалению"
             },
             "errors": {
@@ -245,6 +246,59 @@
                 "messages": {
                     "previewComplete": "Предпросмотр завершен",
                     "executeSuccess": "Перенос выполнен успешно"
+                }
+            },
+            "mergeOptions": {
+                "selectGroup": "Выбор группы свойств",
+                "propertyGroup": "Группа свойств",
+                "selectOptions": "Выбор опций",
+                "targetOption": "Целевая опция",
+                "sourceOptions": "Опции-источники",
+                "optionsInfo": "Информация об опциях",
+                "productCount": "Товаров",
+                "variantCount": "Вариантов",
+                "placeholders": {
+                    "selectGroup": "Выберите группу свойств...",
+                    "selectTarget": "Выберите целевую опцию...",
+                    "selectSources": "Выберите опции-источники..."
+                },
+                "buttons": {
+                    "simulate": "Симуляция",
+                    "merge": "Объединить",
+                    "confirmMerge": "Подтвердить объединение"
+                },
+                "result": {
+                    "target": "Целевая опция",
+                    "sources": "Опции-источники",
+                    "statistics": "Статистика",
+                    "name": "Название",
+                    "productPropertyUpdates": "Обновления свойств товаров",
+                    "configuratorSettingUpdates": "Обновления вариантов товаров",
+                    "deletedOptions": "Удалено опций"
+                },
+                "confirm": {
+                    "title": "Подтверждение объединения",
+                    "message": "Вы уверены, что хотите объединить опции? Все связи с донорскими опциями будут перенесены на целевую, а донорские опции будут удалены.",
+                    "target": "Целевая опция",
+                    "sources": "Опции-источники",
+                    "affectedProducts": "Затронуто товаров",
+                    "affectedVariants": "Затронуто вариантов"
+                },
+                "messages": {
+                    "scanComplete": "Симуляция завершена",
+                    "mergeSuccess": "Объединение выполнено успешно"
+                },
+                "errors": {
+                    "missingGroup": "Выберите группу свойств",
+                    "missingTarget": "Выберите целевую опцию",
+                    "missingSources": "Выберите хотя бы одну опцию-источник",
+                    "targetInSources": "Целевая опция не может быть в списке источников"
+                },
+                "table": {
+                    "type": "Тип",
+                    "name": "Название",
+                    "productCount": "Товаров",
+                    "variantCount": "Вариантов"
                 }
             }
         }

@@ -51,6 +51,7 @@
             "menuTitle": "Property Processing",
             "tabs": {
                 "merge": "Merge",
+                "mergeOptions": "Merge Options",
                 "split": "Split",
                 "transfer": "Transfer",
                 "cleanup": "Cleanup"
@@ -155,7 +156,7 @@
                 "itemsToMove": "Items to move",
                 "itemsToDelete": "Items to delete",
                 "productPropertyUpdates": "Product property updates",
-                "configuratorSettingUpdates": "Configurator setting updates",
+                "configuratorSettingUpdates": "Product variant updates",
                 "groupsToDelete": "Groups to delete"
             },
             "errors": {
@@ -247,6 +248,59 @@
                 "messages": {
                     "previewComplete": "Preview completed",
                     "executeSuccess": "Transfer executed successfully"
+                }
+            },
+            "mergeOptions": {
+                "selectGroup": "Select Property Group",
+                "propertyGroup": "Property Group",
+                "selectOptions": "Select Options",
+                "targetOption": "Target Option",
+                "sourceOptions": "Source Options",
+                "optionsInfo": "Options Information",
+                "productCount": "Products",
+                "variantCount": "Variants",
+                "placeholders": {
+                    "selectGroup": "Select property group...",
+                    "selectTarget": "Select target option...",
+                    "selectSources": "Select source options..."
+                },
+                "buttons": {
+                    "simulate": "Simulate",
+                    "merge": "Merge",
+                    "confirmMerge": "Confirm Merge"
+                },
+                "result": {
+                    "target": "Target Option",
+                    "sources": "Source Options",
+                    "statistics": "Statistics",
+                    "name": "Name",
+                    "productPropertyUpdates": "Product Property Updates",
+                    "configuratorSettingUpdates": "Product Variant Updates",
+                    "deletedOptions": "Deleted Options"
+                },
+                "confirm": {
+                    "title": "Confirm Merge",
+                    "message": "Are you sure you want to merge options? All links to source options will be transferred to the target, and source options will be deleted.",
+                    "target": "Target Option",
+                    "sources": "Source Options",
+                    "affectedProducts": "Affected Products",
+                    "affectedVariants": "Affected Variants"
+                },
+                "messages": {
+                    "scanComplete": "Simulation completed",
+                    "mergeSuccess": "Merge completed successfully"
+                },
+                "errors": {
+                    "missingGroup": "Select a property group",
+                    "missingTarget": "Select a target option",
+                    "missingSources": "Select at least one source option",
+                    "targetInSources": "Target option cannot be in sources list"
+                },
+                "table": {
+                    "type": "Type",
+                    "name": "Name",
+                    "productCount": "Products",
+                    "variantCount": "Variants"
                 }
             }
         }

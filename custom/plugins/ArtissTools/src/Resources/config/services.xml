@@ -41,6 +41,12 @@
             <argument type="service" id="product.repository"/>
         </service>
 
+        <service id="ArtissTools\Service\PropertyOptionMergeService">
+            <argument type="service" id="property_group.repository"/>
+            <argument type="service" id="property_group_option.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
         <!-- API Controllers -->
         <service id="ArtissTools\Controller\Api\PropertyMergeController" public="true">
             <argument type="service" id="ArtissTools\Service\PropertyGroupMergeService"/>
@@ -66,6 +72,13 @@
 
         <service id="ArtissTools\Controller\Api\PropertyTransferController" public="true">
             <argument type="service" id="ArtissTools\Service\PropertyTransferService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="ArtissTools\Controller\Api\PropertyOptionMergeController" public="true">
+            <argument type="service" id="ArtissTools\Service\PropertyOptionMergeService"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
