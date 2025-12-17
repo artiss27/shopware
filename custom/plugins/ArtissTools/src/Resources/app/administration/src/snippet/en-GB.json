@@ -237,7 +237,7 @@
                 },
                 "result": {
                     "affectedProducts": "Affected products",
-                    "valuesRead": "Values read",
+                    "valuesRead": "Total values to process",
                     "optionsCreated": "Options created"
                 },
                 "confirm": {

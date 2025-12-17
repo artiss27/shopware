@@ -235,7 +235,7 @@
                 },
                 "result": {
                     "affectedProducts": "Betroffene Produkte",
-                    "valuesRead": "Gelesene Werte",
+                    "valuesRead": "Gesamtwerte zur Verarbeitung",
                     "optionsCreated": "Erstellte Optionen"
                 },
                 "confirm": {

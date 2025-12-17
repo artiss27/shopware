@@ -235,7 +235,7 @@
                 },
                 "result": {
                     "affectedProducts": "Затронуто товарів",
-                    "valuesRead": "Прочитано значень",
+                    "valuesRead": "Всього значень для обробки",
                     "optionsCreated": "Створено опцій"
                 },
                 "confirm": {

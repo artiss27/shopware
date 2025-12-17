@@ -235,7 +235,7 @@
                 },
                 "result": {
                     "affectedProducts": "Затронуто товаров",
-                    "valuesRead": "Прочитано значений",
+                    "valuesRead": "Всего значений для обработки",
                     "optionsCreated": "Создано опций"
                 },
                 "confirm": {

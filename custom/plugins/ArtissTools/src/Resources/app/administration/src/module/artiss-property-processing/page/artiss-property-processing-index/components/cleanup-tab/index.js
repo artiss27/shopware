@@ -1,4 +1,5 @@
 import template from './cleanup-tab.html.twig';
+import sharedErrorHandler from '../shared-error-handler';
 
 const { Component, Mixin } = Shopware;
 
@@ -8,7 +9,8 @@ Component.register('artiss-property-processing-cleanup-tab', {
     inject: ['repositoryFactory'],
 
     mixins: [
-        Mixin.getByName('notification')
+        Mixin.getByName('notification'),
+        sharedErrorHandler
     ],
 
     props: {
@@ -74,8 +76,9 @@ Component.register('artiss-property-processing-cleanup-tab', {
                     throw new Error(response.data.error);
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;
@@ -199,8 +202,9 @@ Component.register('artiss-property-processing-cleanup-tab', {
                     throw new Error(response.data.error);
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;

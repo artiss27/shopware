@@ -1,4 +1,5 @@
 import template from './transfer-tab.html.twig';
+import sharedErrorHandler from '../shared-error-handler';
 
 const { Component, Mixin } = Shopware;
 
@@ -8,7 +9,8 @@ Component.register('artiss-property-processing-transfer-tab', {
     inject: ['repositoryFactory'],
 
     mixins: [
-        Mixin.getByName('notification')
+        Mixin.getByName('notification'),
+        sharedErrorHandler
     ],
 
     props: {
@@ -132,8 +134,9 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Failed to load property options');
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;
@@ -164,8 +167,9 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Failed to load source options');
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;
@@ -197,8 +201,9 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Failed to load custom fields');
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;
@@ -229,8 +234,9 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Failed to load custom fields');
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;
@@ -261,8 +267,9 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Failed to load custom fields');
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;
@@ -293,8 +300,9 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Failed to load custom fields');
                 }
             } catch (error) {
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
-                    message: error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed')
+                    message: errorMessage
                 });
             } finally {
                 this.isLoading = false;
@@ -335,7 +343,7 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Unknown error');
                 }
             } catch (error) {
-                const errorMessage = error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed');
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
                     message: errorMessage
                 });
@@ -379,7 +387,7 @@ Component.register('artiss-property-processing-transfer-tab', {
                     throw new Error(response.data.error || 'Unknown error');
                 }
             } catch (error) {
-                const errorMessage = error.response?.data?.error || error.message || this.$tc('artissTools.propertyProcessing.errors.loadFailed');
+                const errorMessage = this.handleApiError(error);
                 this.createNotificationError({
                     message: errorMessage
                 });

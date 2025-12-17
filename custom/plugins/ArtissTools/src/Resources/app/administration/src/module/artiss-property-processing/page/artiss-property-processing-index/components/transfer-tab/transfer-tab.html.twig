@@ -235,10 +235,10 @@
                 {{ $tc('artissTools.propertyProcessing.transfer.result.affectedProducts') }}
             </sw-description-list-term>
             <sw-description-list-description>
-                {{ transferResult.stats.affectedProducts || 0 }}
+                <strong>{{ transferResult.stats.affectedProducts || 0 }}</strong>
             </sw-description-list-description>
 
-            <template v-if="transferResult.stats.valuesRead !== undefined">
+            <template v-if="transferResult.stats.valuesRead !== undefined && transferResult.stats.valuesRead > 0">
                 <sw-description-list-term>
                     {{ $tc('artissTools.propertyProcessing.transfer.result.valuesRead') }}
                 </sw-description-list-term>
@@ -247,12 +247,75 @@
                 </sw-description-list-description>
             </template>
 
-            <template v-if="transferResult.stats.optionsCreated !== undefined">
+            <template v-if="transferResult.stats.valuesWritten !== undefined && transferResult.stats.valuesWritten > 0">
+                <sw-description-list-term>
+                    {{ $tc('artissTools.propertyProcessing.transfer.result.valuesWritten') }}
+                </sw-description-list-term>
+                <sw-description-list-description>
+                    {{ transferResult.stats.valuesWritten }}
+                </sw-description-list-description>
+            </template>
+
+            <template v-if="transferResult.stats.valuesTransferred !== undefined && transferResult.stats.valuesTransferred > 0">
+                <sw-description-list-term>
+                    {{ $tc('artissTools.propertyProcessing.transfer.result.valuesTransferred') }}
+                </sw-description-list-term>
+                <sw-description-list-description>
+                    {{ transferResult.stats.valuesTransferred }}
+                </sw-description-list-description>
+            </template>
+
+            <template v-if="transferResult.stats.optionsCreated !== undefined && transferResult.stats.optionsCreated > 0">
                 <sw-description-list-term>
                     {{ $tc('artissTools.propertyProcessing.transfer.result.optionsCreated') }}
                 </sw-description-list-term>
                 <sw-description-list-description>
                     {{ transferResult.stats.optionsCreated }}
+                </sw-description-list-description>
+            </template>
+
+            <template v-if="transferResult.stats.optionsMapped !== undefined && transferResult.stats.optionsMapped > 0">
+                <sw-description-list-term>
+                    {{ $tc('artissTools.propertyProcessing.transfer.result.optionsMapped') }}
+                </sw-description-list-term>
+                <sw-description-list-description>
+                    {{ transferResult.stats.optionsMapped }}
+                </sw-description-list-description>
+            </template>
+
+            <template v-if="transferResult.stats.associationsCreated !== undefined && transferResult.stats.associationsCreated > 0">
+                <sw-description-list-term>
+                    {{ $tc('artissTools.propertyProcessing.transfer.result.associationsCreated') }}
+                </sw-description-list-term>
+                <sw-description-list-description>
+                    {{ transferResult.stats.associationsCreated }}
+                </sw-description-list-description>
+            </template>
+
+            <template v-if="transferResult.stats.optionsDeleted !== undefined && transferResult.stats.optionsDeleted > 0">
+                <sw-description-list-term>
+                    {{ $tc('artissTools.propertyProcessing.transfer.result.optionsDeleted') }}
+                </sw-description-list-term>
+                <sw-description-list-description>
+                    {{ transferResult.stats.optionsDeleted }}
+                </sw-description-list-description>
+            </template>
+
+            <template v-if="transferResult.stats.groupsDeleted !== undefined && transferResult.stats.groupsDeleted > 0">
+                <sw-description-list-term>
+                    {{ $tc('artissTools.propertyProcessing.transfer.result.groupsDeleted') }}
+                </sw-description-list-term>
+                <sw-description-list-description>
+                    {{ transferResult.stats.groupsDeleted }}
+                </sw-description-list-description>
+            </template>
+
+            <template v-if="transferResult.stats.fieldsDeleted !== undefined && transferResult.stats.fieldsDeleted > 0">
+                <sw-description-list-term>
+                    {{ $tc('artissTools.propertyProcessing.transfer.result.fieldsDeleted') }}
+                </sw-description-list-term>
+                <sw-description-list-description>
+                    {{ transferResult.stats.fieldsDeleted }}
                 </sw-description-list-description>
             </template>
         </sw-description-list>

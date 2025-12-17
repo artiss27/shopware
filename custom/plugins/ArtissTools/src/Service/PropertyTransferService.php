@@ -247,20 +247,12 @@ class PropertyTransferService
         }
 
         try {
-            $products = $this->getProductsWithCustomField($sourceFieldName, $context);
+            // Load all products at once (optimized batch loading)
+            $productEntities = $this->getProductsWithCustomFieldBatch($sourceFieldName, $context);
             $targetOptions = $this->getGroupOptionsMap($targetGroupId);
 
-            foreach ($products as $product) {
-                $productId = Uuid::fromBytesToHex($product['id']);
-                
-                // Load product with custom fields using repository
-                $criteria = new Criteria([$productId]);
-                $productEntity = $this->productRepository->search($criteria, $context)->getEntities()->first();
-                
-                if (!$productEntity) {
-                    continue;
-                }
-                
+            foreach ($productEntities as $productEntity) {
+                $productId = $productEntity->getId();
                 $customFields = $productEntity->getCustomFields() ?? [];
                 $sourceValue = $customFields[$sourceFieldName] ?? null;
 
@@ -344,19 +336,11 @@ class PropertyTransferService
         }
 
         try {
-            $products = $this->getProductsWithCustomField($sourceFieldName, $context);
+            // Load all products at once (optimized batch loading)
+            $productEntities = $this->getProductsWithCustomFieldBatch($sourceFieldName, $context);
 
-            foreach ($products as $product) {
-                $productId = Uuid::fromBytesToHex($product['id']);
-                
-                // Load product with custom fields using repository
-                $criteria = new Criteria([$productId]);
-                $productEntity = $this->productRepository->search($criteria, $context)->getEntities()->first();
-                
-                if (!$productEntity) {
-                    continue;
-                }
-                
+            foreach ($productEntities as $productEntity) {
+                $productId = $productEntity->getId();
                 $customFields = $productEntity->getCustomFields() ?? [];
                 $sourceValue = $customFields[$sourceFieldName] ?? null;
 
@@ -433,6 +417,28 @@ class PropertyTransferService
         }
         
         return $result;
+    }
+
+    /**
+     * Get products with custom field and load all at once (optimized version)
+     * Returns array of product entities for batch processing
+     */
+    private function getProductsWithCustomFieldBatch(string $fieldName, Context $context): array
+    {
+        // Use repository to find products with the custom field
+        $criteria = new Criteria();
+        $criteria->addFilter(
+            new \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter(
+                \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter::CONNECTION_AND,
+                [new EqualsFilter('customFields.' . $fieldName, null)]
+            )
+        );
+        $criteria->setLimit(10000);
+        
+        $products = $this->productRepository->search($criteria, $context);
+        
+        // Return all products at once for batch processing
+        return array_values($products->getElements());
     }
 
     private function getProductOptionNames(string $productId, array $optionIds): array
