@@ -1,8 +1,41 @@
-const { Mixin } = Shopware;
+import template from './transfer-tab.html.twig';
 
-export default Mixin.register('artiss-transfer-methods', {
+const { Component, Mixin } = Shopware;
+
+Component.register('artiss-property-processing-transfer-tab', {
+    template,
+
+    inject: ['repositoryFactory'],
+
+    mixins: [
+        Mixin.getByName('notification')
+    ],
+
+    props: {
+        propertyGroups: {
+            type: Array,
+            required: true,
+            default: () => []
+        },
+        httpClient: {
+            type: Object,
+            required: true
+        },
+        getAuthHeaders: {
+            type: Function,
+            required: true
+        },
+        loadPropertyGroups: {
+            type: Function,
+            required: true
+        }
+    },
+
+    emits: ['property-groups-changed'],
+
     data() {
         return {
+            isLoading: false,
             transferMode: 'property_to_custom_field',
             customFieldSets: [],
             // Mode 1: Property → Custom field
@@ -41,6 +74,10 @@ export default Mixin.register('artiss-transfer-methods', {
         customFieldSetRepository() {
             return this.repositoryFactory.create('custom_field_set');
         }
+    },
+
+    created() {
+        this.loadCustomFieldSets();
     },
 
     methods: {
@@ -274,6 +311,8 @@ export default Mixin.register('artiss-transfer-methods', {
                     this.createNotificationSuccess({
                         message: this.$tc('artissTools.propertyProcessing.transfer.messages.executeSuccess')
                     });
+                    await this.loadPropertyGroups();
+                    this.$emit('property-groups-changed');
                     this.resetTransferForm();
                 } else {
                     throw new Error(response.data.error);
@@ -390,3 +429,4 @@ export default Mixin.register('artiss-transfer-methods', {
         }
     }
 });
+

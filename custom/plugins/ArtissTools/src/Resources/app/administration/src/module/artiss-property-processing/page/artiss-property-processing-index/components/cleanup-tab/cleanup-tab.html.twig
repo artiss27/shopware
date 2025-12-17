@@ -1,0 +1,217 @@
+{# Cleanup Tab Content #}
+<sw-card
+    :title="$tc('artissTools.propertyProcessing.cleanup.scanSettings')"
+    :isLoading="isLoading"
+>
+    <sw-switch-field
+        v-model="includeCustomFields"
+        :label="$tc('artissTools.propertyProcessing.cleanup.includeCustomFields')"
+    />
+
+    <sw-switch-field
+        v-model="deleteEmptyGroups"
+        :label="$tc('artissTools.propertyProcessing.cleanup.deleteEmptyGroups')"
+    />
+
+    <sw-button
+        variant="primary"
+        :disabled="isLoading"
+        @click="scanUnused"
+    >
+        {{ $tc('artissTools.propertyProcessing.cleanup.buttons.scan') }}
+    </sw-button>
+</sw-card>
+
+{# Results: Property Groups #}
+<template v-if="cleanupResult && cleanupResult.unusedPropertyOptions.length > 0">
+    <sw-card
+        :title="$tc('artissTools.propertyProcessing.cleanup.propertyGroupsTitle')"
+    >
+        <template v-for="group in cleanupResult.unusedPropertyOptions">
+            <div :key="group.groupId" class="artiss-cleanup-group">
+                <h4>
+                    {{ group.groupName }}
+                    <small>({{ group.groupId }})</small>
+                </h4>
+
+                <sw-checkbox-field
+                    :value="isGroupFullySelected(group.groupId)"
+                    @change="(checked) => toggleAllGroupOptions(group.groupId, checked)"
+                    :label="$tc('artissTools.propertyProcessing.cleanup.selectAll')"
+                    class="sw-checkbox-select-all"
+                />
+
+                <div class="artiss-cleanup-options">
+                    <sw-checkbox-field
+                        v-for="option in group.unusedOptions"
+                        :key="option.optionId"
+                        v-model="selectedPropertyOptions[option.optionId]"
+                        :label="option.optionName"
+                    />
+                </div>
+            </div>
+        </template>
+    </sw-card>
+</template>
+
+{# Results: Custom Fields #}
+<template v-if="cleanupResult && cleanupResult.unusedCustomFields.length > 0">
+    <sw-card
+        :title="$tc('artissTools.propertyProcessing.cleanup.customFieldsTitle')"
+    >
+        <template v-for="set in cleanupResult.unusedCustomFields">
+            <div :key="set.setId" class="artiss-cleanup-group">
+                <h4>
+                    {{ set.setName }}
+                    <small>({{ set.setId }})</small>
+                    <span v-if="set.relations && set.relations.length > 0" class="relations">
+                        [{{ set.relations.join(', ') }}]
+                    </span>
+                    <span v-if="set.isEmpty" class="empty-badge">
+                        {{ $tc('artissTools.propertyProcessing.cleanup.emptySet') }}
+                    </span>
+                </h4>
+
+                <sw-checkbox-field
+                    v-if="set.unusedFields && set.unusedFields.length > 0"
+                    :value="isSetFullySelected(set.setId)"
+                    @change="(checked) => toggleAllSetFields(set.setId, checked)"
+                    :label="$tc('artissTools.propertyProcessing.cleanup.selectAll')"
+                    class="sw-checkbox-select-all"
+                />
+
+                <div v-if="set.unusedFields && set.unusedFields.length > 0" class="artiss-cleanup-options">
+                    <sw-checkbox-field
+                        v-for="field in set.unusedFields"
+                        :key="field.fieldId"
+                        v-model="selectedCustomFields[field.fieldId]"
+                        :label="`${field.fieldLabel} (${field.fieldName})`"
+                    />
+                </div>
+
+                <sw-checkbox-field
+                    v-if="set.isEmpty"
+                    :value="selectedCustomFieldSets.includes(set.setId)"
+                    @change="(checked) => {
+                        if (checked) {
+                            selectedCustomFieldSets.push(set.setId);
+                        } else {
+                            const index = selectedCustomFieldSets.indexOf(set.setId);
+                            if (index > -1) selectedCustomFieldSets.splice(index, 1);
+                        }
+                    }"
+                    :label="$tc('artissTools.propertyProcessing.cleanup.deleteSet')"
+                    class="sw-checkbox-delete-set"
+                />
+            </div>
+        </template>
+    </sw-card>
+</template>
+
+{# No results message #}
+<sw-card v-if="cleanupResult && cleanupResult.unusedPropertyOptions.length === 0 && cleanupResult.unusedCustomFields.length === 0">
+    <sw-alert variant="success">
+        {{ $tc('artissTools.propertyProcessing.cleanup.messages.noUnused') }}
+    </sw-alert>
+</sw-card>
+
+{# Statistics #}
+<sw-card
+    v-if="cleanupResult && cleanupResult.stats"
+    :title="$tc('artissTools.propertyProcessing.cleanup.statistics')"
+>
+    <sw-description-list>
+        <sw-description-list-term>
+            {{ $tc('artissTools.propertyProcessing.cleanup.stats.totalUnusedOptions') }}
+        </sw-description-list-term>
+        <sw-description-list-description>
+            {{ cleanupResult.stats.totalUnusedPropertyOptions }}
+        </sw-description-list-description>
+
+        <sw-description-list-term>
+            {{ $tc('artissTools.propertyProcessing.cleanup.stats.totalPropertyGroups') }}
+        </sw-description-list-term>
+        <sw-description-list-description>
+            {{ cleanupResult.stats.totalPropertyGroups }}
+        </sw-description-list-description>
+
+        <template v-if="includeCustomFields">
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.cleanup.stats.totalUnusedFields') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ cleanupResult.stats.totalUnusedCustomFields }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.cleanup.stats.totalCustomFieldSets') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ cleanupResult.stats.totalCustomFieldSets }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.cleanup.stats.totalEmptySets') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ cleanupResult.stats.totalEmptySets }}
+            </sw-description-list-description>
+        </template>
+
+        <sw-description-list-term>
+            {{ $tc('artissTools.propertyProcessing.cleanup.stats.selectedForDeletion') }}
+        </sw-description-list-term>
+        <sw-description-list-description>
+            <strong>{{ getSelectedCount() }}</strong>
+        </sw-description-list-description>
+    </sw-description-list>
+</sw-card>
+
+{# Action buttons #}
+<sw-card
+    v-if="cleanupResult"
+    :title="$tc('artissTools.propertyProcessing.sections.actions')"
+>
+    <sw-button
+        variant="danger"
+        :disabled="isLoading || getSelectedCount() === 0"
+        @click="openCleanupConfirmModal"
+    >
+        {{ $tc('artissTools.propertyProcessing.cleanup.buttons.deleteSelected') }}
+    </sw-button>
+
+    <sw-button
+        variant="secondary"
+        :disabled="isLoading"
+        @click="resetCleanupForm"
+    >
+        {{ $tc('artissTools.propertyProcessing.cleanup.buttons.reset') }}
+    </sw-button>
+</sw-card>
+
+{# Cleanup confirmation modal #}
+<sw-modal
+    v-if="showCleanupConfirmModal"
+    :title="$tc('artissTools.propertyProcessing.cleanup.confirm.title')"
+    variant="small"
+    @modal-close="showCleanupConfirmModal = false"
+>
+    <p>{{ $tc('artissTools.propertyProcessing.cleanup.confirm.message', getSelectedCount()) }}</p>
+
+    <template #modal-footer>
+        <sw-button
+            variant="secondary"
+            @click="showCleanupConfirmModal = false"
+        >
+            {{ $tc('artissTools.propertyProcessing.buttons.cancel') }}
+        </sw-button>
+
+        <sw-button
+            variant="danger"
+            @click="confirmCleanup"
+        >
+            {{ $tc('artissTools.propertyProcessing.cleanup.buttons.confirmDelete') }}
+        </sw-button>
+    </template>
+</sw-modal>
+

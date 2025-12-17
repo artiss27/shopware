@@ -1,8 +1,41 @@
-const { Mixin } = Shopware;
+import template from './cleanup-tab.html.twig';
 
-export default Mixin.register('artiss-cleanup-methods', {
+const { Component, Mixin } = Shopware;
+
+Component.register('artiss-property-processing-cleanup-tab', {
+    template,
+
+    inject: ['repositoryFactory'],
+
+    mixins: [
+        Mixin.getByName('notification')
+    ],
+
+    props: {
+        propertyGroups: {
+            type: Array,
+            required: true,
+            default: () => []
+        },
+        httpClient: {
+            type: Object,
+            required: true
+        },
+        getAuthHeaders: {
+            type: Function,
+            required: true
+        },
+        loadPropertyGroups: {
+            type: Function,
+            required: true
+        }
+    },
+
+    emits: ['property-groups-changed'],
+
     data() {
         return {
+            isLoading: false,
             includeCustomFields: false,
             cleanupResult: null,
             selectedPropertyOptions: {},
@@ -161,7 +194,7 @@ export default Mixin.register('artiss-cleanup-methods', {
 
                     // Rescan after deletion
                     await this.scanUnused();
-
+                    this.$emit('property-groups-changed');
                 } else {
                     throw new Error(response.data.error);
                 }
@@ -183,3 +216,4 @@ export default Mixin.register('artiss-cleanup-methods', {
         }
     }
 });
+

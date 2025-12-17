@@ -1,8 +1,41 @@
-const { Mixin } = Shopware;
+import template from './merge-tab.html.twig';
 
-export default Mixin.register('artiss-merge-methods', {
+const { Component, Mixin } = Shopware;
+
+Component.register('artiss-property-processing-merge-tab', {
+    template,
+
+    inject: ['repositoryFactory'],
+
+    mixins: [
+        Mixin.getByName('notification')
+    ],
+
+    props: {
+        propertyGroups: {
+            type: Array,
+            required: true,
+            default: () => []
+        },
+        httpClient: {
+            type: Object,
+            required: true
+        },
+        getAuthHeaders: {
+            type: Function,
+            required: true
+        },
+        loadPropertyGroups: {
+            type: Function,
+            required: true
+        }
+    },
+
+    emits: ['property-groups-changed'],
+
     data() {
         return {
+            isLoading: false,
             targetId: null,
             sourceIds: [],
             mergeResult: null,
@@ -97,6 +130,7 @@ export default Mixin.register('artiss-merge-methods', {
                         message: this.$tc('artissTools.propertyProcessing.messages.mergeSuccess')
                     });
                     await this.loadPropertyGroups();
+                    this.$emit('property-groups-changed');
                     this.resetForm();
                 } else {
                     throw new Error(response.data.error);
@@ -125,3 +159,4 @@ export default Mixin.register('artiss-merge-methods', {
         }
     }
 });
+

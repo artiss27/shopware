@@ -1,8 +1,41 @@
-const { Mixin } = Shopware;
+import template from './split-tab.html.twig';
 
-export default Mixin.register('artiss-split-methods', {
+const { Component, Mixin } = Shopware;
+
+Component.register('artiss-property-processing-split-tab', {
+    template,
+
+    inject: ['repositoryFactory'],
+
+    mixins: [
+        Mixin.getByName('notification')
+    ],
+
+    props: {
+        propertyGroups: {
+            type: Array,
+            required: true,
+            default: () => []
+        },
+        httpClient: {
+            type: Object,
+            required: true
+        },
+        getAuthHeaders: {
+            type: Function,
+            required: true
+        },
+        loadPropertyGroups: {
+            type: Function,
+            required: true
+        }
+    },
+
+    emits: ['property-groups-changed'],
+
     data() {
         return {
+            isLoading: false,
             selectedSourceGroupId: null,
             selectedTargetGroupId: null,
             sourceGroupOptions: [],
@@ -150,6 +183,7 @@ export default Mixin.register('artiss-split-methods', {
                         message: this.$tc('artissTools.propertyProcessing.split.messages.splitSuccess')
                     });
                     await this.loadPropertyGroups();
+                    this.$emit('property-groups-changed');
                     this.resetSplitForm();
                 } else {
                     throw new Error(response.data.error);
@@ -184,3 +218,4 @@ export default Mixin.register('artiss-split-methods', {
         }
     }
 });
+

@@ -1,0 +1,211 @@
+{# Split Tab Content #}
+<sw-card
+    :title="$tc('artissTools.propertyProcessing.split.selectSourceGroup')"
+    :isLoading="isLoading"
+>
+    <sw-single-select
+        v-model:value="selectedSourceGroupId"
+        :options="propertyGroups"
+        :label="$tc('artissTools.propertyProcessing.split.sourceGroup')"
+        :placeholder="$tc('artissTools.propertyProcessing.split.placeholders.selectGroup')"
+        valueProperty="id"
+        labelProperty="name"
+    />
+</sw-card>
+
+{# Options list #}
+<sw-card
+    v-if="sourceGroupOptions.length > 0"
+    :title="$tc('artissTools.propertyProcessing.split.optionsList')"
+    :isLoading="isLoading"
+>
+    <sw-checkbox-field
+        :value="isAllOptionsSelected"
+        @change="toggleAllOptions"
+        :label="$tc('artissTools.propertyProcessing.split.selectAll')"
+        class="sw-checkbox-select-all"
+    />
+
+    <div class="artiss-split-options">
+        <sw-checkbox-field
+            v-for="option in sourceGroupOptions"
+            :key="option.id"
+            :value="selectedOptionIds.includes(option.id)"
+            @change="(checked) => {
+                if (checked) {
+                    selectedOptionIds.push(option.id);
+                } else {
+                    const index = selectedOptionIds.indexOf(option.id);
+                    if (index > -1) selectedOptionIds.splice(index, 1);
+                }
+            }"
+            :label="`${option.name} (${$tc('artissTools.propertyProcessing.split.productCount')}: ${option.productCount})`"
+        />
+    </div>
+
+    <div class="artiss-split-selected-count">
+        {{ $tc('artissTools.propertyProcessing.split.selectedCount') }}: <strong>{{ selectedOptionIds.length }}</strong>
+    </div>
+</sw-card>
+
+{# Target group selection #}
+<sw-card
+    v-if="selectedOptionIds.length > 0"
+    :title="$tc('artissTools.propertyProcessing.split.selectTargetGroup')"
+    :isLoading="isLoading"
+>
+    <sw-single-select
+        v-model:value="selectedTargetGroupId"
+        :options="availableTargetGroups"
+        :label="$tc('artissTools.propertyProcessing.split.targetGroup')"
+        :placeholder="$tc('artissTools.propertyProcessing.split.placeholders.selectTargetGroup')"
+        valueProperty="id"
+        labelProperty="name"
+    />
+</sw-card>
+
+{# Actions #}
+<sw-card
+    v-if="canExecuteSplit"
+    :title="$tc('artissTools.propertyProcessing.sections.actions')"
+    :isLoading="isLoading"
+>
+    <sw-button
+        variant="primary"
+        :disabled="isLoading"
+        @click="previewSplit"
+    >
+        {{ $tc('artissTools.propertyProcessing.split.buttons.preview') }}
+    </sw-button>
+
+    <sw-button
+        variant="danger"
+        :disabled="isLoading"
+        @click="executeSplit"
+    >
+        {{ $tc('artissTools.propertyProcessing.split.buttons.split') }}
+    </sw-button>
+</sw-card>
+
+{# Preview/Result #}
+<sw-card
+    v-if="splitResult"
+    :title="$tc('artissTools.propertyProcessing.split.result.title')"
+>
+    <div class="artiss-split-result">
+        <h3>{{ $tc('artissTools.propertyProcessing.split.result.sourceGroup') }}</h3>
+        <sw-description-list>
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.groupName') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.sourceGroup.name }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.totalOptions') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.sourceGroup.totalOptions }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.remainingOptions') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.sourceGroup.remainingOptions }}
+            </sw-description-list-description>
+        </sw-description-list>
+
+        <h3>{{ $tc('artissTools.propertyProcessing.split.result.targetGroup') }}</h3>
+        <sw-description-list>
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.groupName') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.targetGroup.name }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.currentOptions') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.targetGroup.currentOptions }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.optionsToMove') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.targetGroup.optionsToMove }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.totalAfterMove') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                <strong>{{ splitResult.targetGroup.totalAfterMove }}</strong>
+            </sw-description-list-description>
+        </sw-description-list>
+
+        <h3>{{ $tc('artissTools.propertyProcessing.split.result.affectedEntitiesTitle') }}</h3>
+        <sw-description-list>
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.affectedProducts') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.affectedEntities.totalProducts }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.affectedVariants') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                {{ splitResult.affectedEntities.totalVariants }}
+            </sw-description-list-description>
+
+            <sw-description-list-term>
+                {{ $tc('artissTools.propertyProcessing.split.result.totalAffected') }}
+            </sw-description-list-term>
+            <sw-description-list-description>
+                <strong>{{ splitResult.affectedEntities.total }}</strong>
+            </sw-description-list-description>
+        </sw-description-list>
+
+        <div v-if="splitResult.success" class="artiss-split-success">
+            <sw-alert variant="success">
+                {{ $tc('artissTools.propertyProcessing.split.result.successMessage') }}
+            </sw-alert>
+        </div>
+    </div>
+</sw-card>
+
+{# Confirmation modal #}
+<sw-modal
+    v-if="showSplitConfirmModal"
+    :title="$tc('artissTools.propertyProcessing.split.confirm.title')"
+    variant="small"
+    @modal-close="showSplitConfirmModal = false"
+>
+    <p>{{ $tc('artissTools.propertyProcessing.split.confirm.message') }}</p>
+    <p>
+        <strong>{{ $tc('artissTools.propertyProcessing.split.confirm.optionsToMove') }}:</strong> {{ selectedOptionIds.length }}
+    </p>
+
+    <template #modal-footer>
+        <sw-button
+            variant="secondary"
+            @click="showSplitConfirmModal = false"
+        >
+            {{ $tc('artissTools.propertyProcessing.buttons.cancel') }}
+        </sw-button>
+
+        <sw-button
+            variant="primary"
+            @click="confirmSplit"
+        >
+            {{ $tc('artissTools.propertyProcessing.split.buttons.confirmSplit') }}
+        </sw-button>
+    </template>
+</sw-modal>
+

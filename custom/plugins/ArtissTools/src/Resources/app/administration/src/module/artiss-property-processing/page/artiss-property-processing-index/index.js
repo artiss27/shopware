@@ -1,9 +1,9 @@
 import template from './artiss-property-processing-index.html.twig';
 import './artiss-property-processing-index.scss';
-import './components/merge-methods.mixin';
-import './components/split-methods.mixin';
-import './components/cleanup-methods.mixin';
-import './components/transfer-methods.mixin';
+import './components/merge-tab';
+import './components/split-tab';
+import './components/transfer-tab';
+import './components/cleanup-tab';
 
 const { Component, Mixin } = Shopware;
 
@@ -13,11 +13,7 @@ Component.register('artiss-property-processing-index', {
     inject: ['repositoryFactory'],
 
     mixins: [
-        Mixin.getByName('notification'),
-        Mixin.getByName('artiss-merge-methods'),
-        Mixin.getByName('artiss-split-methods'),
-        Mixin.getByName('artiss-cleanup-methods'),
-        Mixin.getByName('artiss-transfer-methods')
+        Mixin.getByName('notification')
     ],
 
     data() {
@@ -36,7 +32,6 @@ Component.register('artiss-property-processing-index', {
 
     created() {
         this.loadPropertyGroups();
-        this.loadCustomFieldSets();
     },
 
     methods: {
@@ -90,6 +85,10 @@ Component.register('artiss-property-processing-index', {
             }
 
             return headers;
+        },
+
+        onPropertyGroupsChanged() {
+            this.loadPropertyGroups();
         }
     }
 });
