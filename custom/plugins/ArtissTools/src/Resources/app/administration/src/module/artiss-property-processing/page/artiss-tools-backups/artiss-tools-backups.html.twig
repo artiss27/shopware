@@ -28,13 +28,181 @@
             </sw-tabs-item>
         </sw-tabs>
 
-        <sw-card v-if="activeTab === 'create'" :title="$tc('artissTools.backups.tabs.create')">
-            <p>{{ $tc('artissTools.backups.placeholders.create') }}</p>
-        </sw-card>
+        {# Create Tab #}
+        <template v-if="activeTab === 'create'">
+            {# Database Backup Block #}
+            <sw-card 
+                :title="$tc('artissTools.backups.create.dbBackup.title')"
+                :isLoading="isDbBackupLoading"
+            >
+                <div class="artiss-backup-form">
+                    <sw-single-select
+                        v-model:value="dbBackup.type"
+                        :options="dbTypeOptions"
+                        :label="$tc('artissTools.backups.create.dbBackup.type')"
+                        valueProperty="value"
+                        labelProperty="label"
+                    />
 
-        <sw-card v-else :title="$tc('artissTools.backups.tabs.restore')">
-            <p>{{ $tc('artissTools.backups.placeholders.restore') }}</p>
-        </sw-card>
+                    <sw-text-field
+                        v-model:value="dbBackup.outputDir"
+                        :label="$tc('artissTools.backups.create.dbBackup.outputDir')"
+                        :placeholder="'var/artiss-backups/db'"
+                    />
+
+                    <sw-number-field
+                        v-model:value="dbBackup.keep"
+                        :label="$tc('artissTools.backups.create.dbBackup.keep')"
+                        :min="1"
+                        :max="100"
+                    />
+
+                    <sw-checkbox-field
+                        v-model:value="dbBackup.gzip"
+                        :label="$tc('artissTools.backups.create.dbBackup.gzip')"
+                    />
+
+                    <sw-textarea-field
+                        v-model:value="dbBackup.comment"
+                        :label="$tc('artissTools.backups.create.dbBackup.comment')"
+                        :placeholder="$tc('artissTools.backups.create.dbBackup.commentPlaceholder')"
+                    />
+                </div>
+
+                <template #toolbar>
+                    <sw-button
+                        variant="primary"
+                        :disabled="isDbBackupLoading"
+                        @click="createDbBackup"
+                    >
+                        <sw-icon name="regular-database" small />
+                        {{ $tc('artissTools.backups.create.dbBackup.button') }}
+                    </sw-button>
+                </template>
+            </sw-card>
+
+            {# Last DB Backup Info #}
+            <sw-card 
+                v-if="lastDbBackup"
+                :title="$tc('artissTools.backups.create.lastBackup.title')"
+            >
+                <table class="artiss-result-table">
+                    <tbody>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.type') }}</td>
+                            <td><strong>{{ lastDbBackup.type }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.filename') }}</td>
+                            <td>{{ lastDbBackup.filename }}</td>
+                        </tr>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.size') }}</td>
+                            <td>{{ lastDbBackup.sizeFormatted }}</td>
+                        </tr>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.createdAt') }}</td>
+                            <td>{{ lastDbBackup.createdAt }}</td>
+                        </tr>
+                        <tr v-if="lastDbBackup.comment">
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.comment') }}</td>
+                            <td>{{ lastDbBackup.comment }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </sw-card>
+
+            {# Media Backup Block #}
+            <sw-card 
+                :title="$tc('artissTools.backups.create.mediaBackup.title')"
+                :isLoading="isMediaBackupLoading"
+            >
+                <div class="artiss-backup-form">
+                    <sw-single-select
+                        v-model:value="mediaBackup.scope"
+                        :options="mediaScopeOptions"
+                        :label="$tc('artissTools.backups.create.mediaBackup.scope')"
+                        valueProperty="value"
+                        labelProperty="label"
+                    />
+
+                    <sw-text-field
+                        v-model:value="mediaBackup.outputDir"
+                        :label="$tc('artissTools.backups.create.mediaBackup.outputDir')"
+                        :placeholder="'var/artiss-backups/media'"
+                    />
+
+                    <sw-number-field
+                        v-model:value="mediaBackup.keep"
+                        :label="$tc('artissTools.backups.create.mediaBackup.keep')"
+                        :min="1"
+                        :max="100"
+                    />
+
+                    <sw-checkbox-field
+                        v-model:value="mediaBackup.excludeThumbnails"
+                        :label="$tc('artissTools.backups.create.mediaBackup.excludeThumbnails')"
+                    />
+
+                    <sw-textarea-field
+                        v-model:value="mediaBackup.comment"
+                        :label="$tc('artissTools.backups.create.mediaBackup.comment')"
+                        :placeholder="$tc('artissTools.backups.create.mediaBackup.commentPlaceholder')"
+                    />
+                </div>
+
+                <template #toolbar>
+                    <sw-button
+                        variant="primary"
+                        :disabled="isMediaBackupLoading"
+                        @click="createMediaBackup"
+                    >
+                        <sw-icon name="regular-image" small />
+                        {{ $tc('artissTools.backups.create.mediaBackup.button') }}
+                    </sw-button>
+                </template>
+            </sw-card>
+
+            {# Last Media Backup Info #}
+            <sw-card 
+                v-if="lastMediaBackup"
+                :title="$tc('artissTools.backups.create.lastMediaBackup.title')"
+            >
+                <table class="artiss-result-table">
+                    <tbody>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.scope') }}</td>
+                            <td><strong>{{ lastMediaBackup.type }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.filename') }}</td>
+                            <td>{{ lastMediaBackup.filename }}</td>
+                        </tr>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.size') }}</td>
+                            <td>{{ lastMediaBackup.sizeFormatted }}</td>
+                        </tr>
+                        <tr>
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.createdAt') }}</td>
+                            <td>{{ lastMediaBackup.createdAt }}</td>
+                        </tr>
+                        <tr v-if="lastMediaBackup.comment">
+                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.comment') }}</td>
+                            <td>{{ lastMediaBackup.comment }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </sw-card>
+        </template>
+
+        {# Restore Tab #}
+        <template v-else>
+            <sw-card :title="$tc('artissTools.backups.tabs.restore')">
+                <sw-alert variant="info">
+                    {{ $tc('artissTools.backups.restore.comingSoon') }}
+                </sw-alert>
+            </sw-card>
+        </template>
     </template>
 </sw-page>
 {% endblock %}

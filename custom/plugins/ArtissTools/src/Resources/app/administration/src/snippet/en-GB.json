@@ -26,12 +26,59 @@
         "backups": {
             "title": "Backups",
             "tabs": {
-                "create": "Create backup",
-                "restore": "Restore backup"
+                "create": "Create",
+                "restore": "Restore"
             },
-            "placeholders": {
-                "create": "Backup creation placeholder",
-                "restore": "Backup restore placeholder"
+            "create": {
+                "dbBackup": {
+                    "title": "Database Backup",
+                    "type": "Backup type",
+                    "types": {
+                        "smart": "Smart (no cache/logs)",
+                        "full": "Full (complete dump)"
+                    },
+                    "outputDir": "Output directory",
+                    "keep": "Keep backups",
+                    "gzip": "Compress (gzip)",
+                    "comment": "Comment",
+                    "commentPlaceholder": "Optional backup comment...",
+                    "button": "Create DB Backup"
+                },
+                "mediaBackup": {
+                    "title": "Media Backup",
+                    "scope": "Backup scope",
+                    "scopes": {
+                        "all": "All media folder",
+                        "product": "Product media only"
+                    },
+                    "outputDir": "Output directory",
+                    "keep": "Keep backups",
+                    "excludeThumbnails": "Exclude thumbnails",
+                    "comment": "Comment",
+                    "commentPlaceholder": "Optional backup comment...",
+                    "button": "Create Media Backup"
+                },
+                "lastBackup": {
+                    "title": "Last DB Backup",
+                    "type": "Type",
+                    "scope": "Scope",
+                    "filename": "File",
+                    "size": "Size",
+                    "createdAt": "Created",
+                    "comment": "Comment"
+                },
+                "lastMediaBackup": {
+                    "title": "Last Media Backup"
+                },
+                "messages": {
+                    "dbSuccess": "Database backup created successfully!",
+                    "dbError": "Failed to create database backup",
+                    "mediaSuccess": "Media backup created successfully!",
+                    "mediaError": "Failed to create media backup"
+                }
+            },
+            "restore": {
+                "comingSoon": "Restore functionality will be available in future versions"
             }
         },
         "images": {

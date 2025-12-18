@@ -29,9 +29,56 @@
                 "create": "Створення",
                 "restore": "Відновлення"
             },
-            "placeholders": {
-                "create": "Заглушка створення бекапу",
-                "restore": "Заглушка відновлення бекапу"
+            "create": {
+                "dbBackup": {
+                    "title": "Бекап бази даних",
+                    "type": "Тип бекапу",
+                    "types": {
+                        "smart": "Smart (без кешу/логів)",
+                        "full": "Full (повний дамп)"
+                    },
+                    "outputDir": "Шлях збереження",
+                    "keep": "Зберігати бекапів",
+                    "gzip": "Стискати (gzip)",
+                    "comment": "Коментар",
+                    "commentPlaceholder": "Опціональний коментар до бекапу...",
+                    "button": "Створити бекап БД"
+                },
+                "mediaBackup": {
+                    "title": "Бекап медіа-файлів",
+                    "scope": "Область бекапу",
+                    "scopes": {
+                        "all": "Вся папка media",
+                        "product": "Тільки product media"
+                    },
+                    "outputDir": "Шлях збереження",
+                    "keep": "Зберігати бекапів",
+                    "excludeThumbnails": "Виключити thumbnails",
+                    "comment": "Коментар",
+                    "commentPlaceholder": "Опціональний коментар до бекапу...",
+                    "button": "Створити бекап медіа"
+                },
+                "lastBackup": {
+                    "title": "Останній бекап БД",
+                    "type": "Тип",
+                    "scope": "Область",
+                    "filename": "Файл",
+                    "size": "Розмір",
+                    "createdAt": "Створено",
+                    "comment": "Коментар"
+                },
+                "lastMediaBackup": {
+                    "title": "Останній бекап медіа"
+                },
+                "messages": {
+                    "dbSuccess": "Бекап БД створено успішно!",
+                    "dbError": "Помилка створення бекапу БД",
+                    "mediaSuccess": "Бекап медіа створено успішно!",
+                    "mediaError": "Помилка створення бекапу медіа"
+                }
+            },
+            "restore": {
+                "comingSoon": "Функціонал відновлення буде доступний у наступних версіях"
             }
         },
         "images": {

@@ -29,9 +29,56 @@
                 "create": "Создание",
                 "restore": "Восстановление"
             },
-            "placeholders": {
-                "create": "Заглушка создания бэкапа",
-                "restore": "Заглушка восстановления бэкапа"
+            "create": {
+                "dbBackup": {
+                    "title": "Бэкап базы данных",
+                    "type": "Тип бэкапа",
+                    "types": {
+                        "smart": "Smart (без кэша/логов)",
+                        "full": "Full (полный дамп)"
+                    },
+                    "outputDir": "Путь хранения",
+                    "keep": "Хранить бэкапов",
+                    "gzip": "Сжимать (gzip)",
+                    "comment": "Комментарий",
+                    "commentPlaceholder": "Опциональный комментарий к бэкапу...",
+                    "button": "Создать бэкап БД"
+                },
+                "mediaBackup": {
+                    "title": "Бэкап медиа-файлов",
+                    "scope": "Область бэкапа",
+                    "scopes": {
+                        "all": "Вся папка media",
+                        "product": "Только product media"
+                    },
+                    "outputDir": "Путь хранения",
+                    "keep": "Хранить бэкапов",
+                    "excludeThumbnails": "Исключить thumbnails",
+                    "comment": "Комментарий",
+                    "commentPlaceholder": "Опциональный комментарий к бэкапу...",
+                    "button": "Создать бэкап медиа"
+                },
+                "lastBackup": {
+                    "title": "Последний бэкап БД",
+                    "type": "Тип",
+                    "scope": "Область",
+                    "filename": "Файл",
+                    "size": "Размер",
+                    "createdAt": "Создан",
+                    "comment": "Комментарий"
+                },
+                "lastMediaBackup": {
+                    "title": "Последний бэкап медиа"
+                },
+                "messages": {
+                    "dbSuccess": "Бэкап БД создан успешно!",
+                    "dbError": "Ошибка создания бэкапа БД",
+                    "mediaSuccess": "Бэкап медиа создан успешно!",
+                    "mediaError": "Ошибка создания бэкапа медиа"
+                }
+            },
+            "restore": {
+                "comingSoon": "Функционал восстановления будет доступен в следующих версиях"
             }
         },
         "images": {

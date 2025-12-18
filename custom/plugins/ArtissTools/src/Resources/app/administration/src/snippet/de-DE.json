@@ -26,12 +26,59 @@
         "backups": {
             "title": "Backups",
             "tabs": {
-                "create": "Backup erstellen",
-                "restore": "Backup wiederherstellen"
+                "create": "Erstellen",
+                "restore": "Wiederherstellen"
             },
-            "placeholders": {
-                "create": "Platzhalter für Backup-Erstellung",
-                "restore": "Platzhalter für Backup-Wiederherstellung"
+            "create": {
+                "dbBackup": {
+                    "title": "Datenbank-Backup",
+                    "type": "Backup-Typ",
+                    "types": {
+                        "smart": "Smart (ohne Cache/Logs)",
+                        "full": "Full (kompletter Dump)"
+                    },
+                    "outputDir": "Ausgabeverzeichnis",
+                    "keep": "Backups behalten",
+                    "gzip": "Komprimieren (gzip)",
+                    "comment": "Kommentar",
+                    "commentPlaceholder": "Optionaler Backup-Kommentar...",
+                    "button": "DB-Backup erstellen"
+                },
+                "mediaBackup": {
+                    "title": "Media-Backup",
+                    "scope": "Backup-Bereich",
+                    "scopes": {
+                        "all": "Gesamter Media-Ordner",
+                        "product": "Nur Produkt-Media"
+                    },
+                    "outputDir": "Ausgabeverzeichnis",
+                    "keep": "Backups behalten",
+                    "excludeThumbnails": "Thumbnails ausschließen",
+                    "comment": "Kommentar",
+                    "commentPlaceholder": "Optionaler Backup-Kommentar...",
+                    "button": "Media-Backup erstellen"
+                },
+                "lastBackup": {
+                    "title": "Letztes DB-Backup",
+                    "type": "Typ",
+                    "scope": "Bereich",
+                    "filename": "Datei",
+                    "size": "Größe",
+                    "createdAt": "Erstellt",
+                    "comment": "Kommentar"
+                },
+                "lastMediaBackup": {
+                    "title": "Letztes Media-Backup"
+                },
+                "messages": {
+                    "dbSuccess": "Datenbank-Backup erfolgreich erstellt!",
+                    "dbError": "Fehler beim Erstellen des Datenbank-Backups",
+                    "mediaSuccess": "Media-Backup erfolgreich erstellt!",
+                    "mediaError": "Fehler beim Erstellen des Media-Backups"
+                }
+            },
+            "restore": {
+                "comingSoon": "Wiederherstellungsfunktion wird in zukünftigen Versionen verfügbar sein"
             }
         },
         "images": {

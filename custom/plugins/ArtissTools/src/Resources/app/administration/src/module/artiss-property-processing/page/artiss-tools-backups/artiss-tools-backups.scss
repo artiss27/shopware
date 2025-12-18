@@ -1,0 +1,41 @@
+.artiss-tools-backups {
+    .artiss-backup-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 600px;
+
+        .sw-field {
+            margin-bottom: 0;
+        }
+    }
+
+    .artiss-result-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        &__label {
+            width: 200px;
+            font-weight: 600;
+            color: #52667a;
+            background-color: #f9fafb;
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #f5f7fa;
+        }
+    }
+
+    .sw-card__toolbar {
+        padding: 16px 24px;
+        border-top: 1px solid #d1d9e0;
+        background-color: #f9fafb;
+    }
+}
+

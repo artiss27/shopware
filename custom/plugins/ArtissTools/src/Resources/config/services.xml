@@ -113,5 +113,32 @@
             <tag name="console.command"/>
         </service>
 
+        <!-- Backup Service -->
+        <service id="ArtissTools\Service\BackupService">
+            <argument type="service" id="kernel"/>
+            <argument>%kernel.project_dir%</argument>
+        </service>
+
+        <!-- Backup Controller -->
+        <service id="ArtissTools\Controller\Api\BackupController" public="true">
+            <argument type="service" id="ArtissTools\Service\BackupService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <!-- Backup Commands -->
+        <service id="ArtissTools\Command\BackupDbCommand">
+            <argument>%kernel.project_dir%</argument>
+            <argument>%env(DATABASE_URL)%</argument>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="ArtissTools\Command\BackupMediaCommand">
+            <argument>%kernel.project_dir%</argument>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="console.command"/>
+        </service>
+
     </services>
 </container>
