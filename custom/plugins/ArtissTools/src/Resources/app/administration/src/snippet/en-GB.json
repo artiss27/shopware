@@ -31,6 +31,8 @@
             },
             "create": {
                 "storagePath": "Backup storage path",
+                "retentionInfo": "Newer backups will automatically delete older ones when this limit is reached",
+                "commentHelp": "Comment will be saved to .meta.txt file and displayed in the backup list",
                 "dbBackup": {
                     "title": "Database Backup",
                     "type": "Backup type",
@@ -38,6 +40,7 @@
                         "smart": "Smart (no cache/logs)",
                         "full": "Full (complete dump)"
                     },
+                    "excludedTables": "Excluded tables (structure only)",
                     "outputDir": "Output directory",
                     "keep": "Keep backups",
                     "gzip": "Compress (gzip)",
@@ -122,12 +125,19 @@
                     "confirmCheckbox": "I understand that restore will modify media files",
                     "button": "Restore Media"
                 },
+                "deleteBackup": {
+                    "title": "Delete Backup",
+                    "warning": "Are you sure you want to delete this backup? This action cannot be undone.",
+                    "button": "Delete"
+                },
                 "messages": {
                     "loadError": "Failed to load backups list",
                     "dbRestoreSuccess": "Database restored successfully!",
                     "dbRestoreError": "Failed to restore database",
                     "mediaRestoreSuccess": "Media files restored successfully!",
-                    "mediaRestoreError": "Failed to restore media files"
+                    "mediaRestoreError": "Failed to restore media files",
+                    "deleteSuccess": "Backup deleted successfully",
+                    "deleteError": "Failed to delete backup"
                 }
             }
         },

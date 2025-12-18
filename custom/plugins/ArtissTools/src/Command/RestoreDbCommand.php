@@ -80,11 +80,39 @@ class RestoreDbCommand extends Command
         $fileSize = filesize($filePath);
         $isGzipped = str_ends_with($filePath, '.gz');
 
+        // Validate checksum if .sha256 file exists
+        $checksumFile = $filePath . '.sha256';
+        $checksumValid = null;
+        if (file_exists($checksumFile)) {
+            $checksumValid = $this->validateChecksum($filePath, $checksumFile);
+            if ($checksumValid === false) {
+                $io->error([
+                    'Checksum validation FAILED!',
+                    'The backup file may be corrupted or tampered with.',
+                    'Restore aborted for safety.',
+                ]);
+                return Command::FAILURE;
+            }
+        }
+
+        // Check available disk space (estimate: need 2-3x file size for uncompressed restore)
+        $requiredSpace = $isGzipped ? $fileSize * 10 : $fileSize * 3;
+        $availableSpace = disk_free_space(sys_get_temp_dir());
+        if ($availableSpace < $requiredSpace) {
+            $io->error([
+                'Insufficient disk space!',
+                sprintf('Required: %s (estimated)', $this->formatBytes($requiredSpace)),
+                sprintf('Available: %s', $this->formatBytes($availableSpace)),
+            ]);
+            return Command::FAILURE;
+        }
+
         $io->title('ArtissTools Database Restore');
         $io->text([
             sprintf('Backup file: <info>%s</info>', $filePath),
             sprintf('File size: <info>%s</info>', $this->formatBytes($fileSize)),
             sprintf('Compressed: <info>%s</info>', $isGzipped ? 'yes (gzip)' : 'no'),
+            sprintf('Checksum: <info>%s</info>', $checksumValid === true ? 'valid' : ($checksumValid === false ? 'INVALID' : 'not checked')),
             sprintf('Target database: <info>%s</info>', $dbParams['database']),
         ]);
 
@@ -305,6 +333,33 @@ class RestoreDbCommand extends Command
         $factor = floor((strlen((string) $bytes) - 1) / 3);
 
         return sprintf('%.2f %s', $bytes / pow(1024, $factor), $units[$factor]);
+    }
+
+    private function validateChecksum(string $filePath, string $checksumFile): bool
+    {
+        try {
+            $actualHash = hash_file('sha256', $filePath);
+            if ($actualHash === false) {
+                return false;
+            }
+
+            $checksumContent = file_get_contents($checksumFile);
+            if ($checksumContent === false) {
+                return false;
+            }
+
+            // Parse checksum file (format: "hash  filename")
+            $parts = preg_split('/\s+/', trim($checksumContent), 2);
+            if (count($parts) < 1) {
+                return false;
+            }
+
+            $expectedHash = $parts[0];
+
+            return hash_equals($expectedHash, $actualHash);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
 

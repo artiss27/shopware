@@ -39,21 +39,14 @@ class BackupDbCommand extends Command
     private const DEFAULT_IGNORED_TABLES = [
         'cache',
         'cart',
-        'customer_wishlist',
-        'customer_wishlist_product',
         'dead_message',
         'elasticsearch_index_task',
         'enqueue',
-        'increment',
         'log_entry',
         'message_queue_stats',
-        'notification',
         'product_keyword_dictionary',
         'product_search_keyword',
         'refresh_token',
-        'version',
-        'version_commit',
-        'version_commit_data',
         'webhook_event_log',
     ];
 
@@ -173,11 +166,36 @@ class BackupDbCommand extends Command
         }
 
         $fileSize = filesize($filePath);
+
+        // Save comment to metadata file
+        if ($comment) {
+            $metaFile = $filePath . '.meta.txt';
+            $metaContent = sprintf(
+                "ArtissTools Database Backup\n" .
+                "===========================\n" .
+                "Type: %s\n" .
+                "Created: %s\n" .
+                "Size: %s\n" .
+                "Compression: %s\n" .
+                "Comment: %s\n",
+                $type,
+                date('Y-m-d H:i:s'),
+                $this->formatBytes($fileSize),
+                $useGzip ? 'gzip' : 'none',
+                $comment
+            );
+            file_put_contents($metaFile, $metaContent);
+        }
+
+        // Create checksum file
+        $checksumFile = $this->createChecksum($filePath, $io);
+
         $io->newLine();
         $io->success([
             'Backup created successfully!',
             sprintf('File: %s', $filePath),
             sprintf('Size: %s', $this->formatBytes($fileSize)),
+            sprintf('Checksum: %s', $checksumFile ? basename($checksumFile) : 'not created'),
         ]);
 
         // Cleanup old backups
@@ -476,8 +494,17 @@ class BackupDbCommand extends Command
     {
         $pattern = sprintf('%s/shopware-db-%s-*.sql*', $outputPath, $type);
         $files = glob($pattern);
-        
-        if ($files === false || count($files) <= $keep) {
+
+        if ($files === false) {
+            return 0;
+        }
+
+        // Filter out auxiliary files (.sha256 and .meta.txt)
+        $files = array_filter($files, function($file) {
+            return !str_ends_with($file, '.sha256') && !str_ends_with($file, '.meta.txt');
+        });
+
+        if (count($files) <= $keep) {
             return 0;
         }
 
@@ -486,10 +513,19 @@ class BackupDbCommand extends Command
 
         $deleted = 0;
         $toDelete = array_slice($files, $keep);
-        
+
         foreach ($toDelete as $file) {
             if (unlink($file)) {
                 $deleted++;
+                // Also remove auxiliary files
+                $checksumFile = $file . '.sha256';
+                if (file_exists($checksumFile)) {
+                    unlink($checksumFile);
+                }
+                $metaFile = $file . '.meta.txt';
+                if (file_exists($metaFile)) {
+                    unlink($metaFile);
+                }
             }
         }
 
@@ -500,8 +536,34 @@ class BackupDbCommand extends Command
     {
         $units = ['B', 'KB', 'MB', 'GB'];
         $factor = floor((strlen((string) $bytes) - 1) / 3);
-        
+
         return sprintf('%.2f %s', $bytes / pow(1024, $factor), $units[$factor]);
+    }
+
+    private function createChecksum(string $filePath, SymfonyStyle $io): ?string
+    {
+        try {
+            $io->text('  Creating checksum...');
+            $hash = hash_file('sha256', $filePath);
+
+            if ($hash === false) {
+                $io->warning('Failed to create checksum');
+                return null;
+            }
+
+            $checksumFile = $filePath . '.sha256';
+            $checksumContent = sprintf("%s  %s\n", $hash, basename($filePath));
+
+            if (file_put_contents($checksumFile, $checksumContent) === false) {
+                $io->warning('Failed to write checksum file');
+                return null;
+            }
+
+            return $checksumFile;
+        } catch (\Exception $e) {
+            $io->warning('Checksum creation failed: ' . $e->getMessage());
+            return null;
+        }
     }
 }
 

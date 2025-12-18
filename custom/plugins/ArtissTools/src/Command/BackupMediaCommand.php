@@ -181,6 +181,9 @@ class BackupMediaCommand extends Command
             file_put_contents($metaFile, $metaContent);
         }
 
+        // Create checksum file
+        $this->createChecksum($filePath, $io);
+
         // Cleanup old backups
         $deleted = $this->cleanupOldBackups($outputPath, $keep, $scope);
         if ($deleted > 0) {
@@ -372,6 +375,11 @@ class BackupMediaCommand extends Command
             $filesTarGz
         );
 
+        // Filter out auxiliary files (.sha256 and .meta.txt)
+        $files = array_filter($files, function($file) {
+            return !str_ends_with($file, '.sha256') && !str_ends_with($file, '.meta.txt');
+        });
+
         if (count($files) <= $keep) {
             return 0;
         }
@@ -385,7 +393,11 @@ class BackupMediaCommand extends Command
         foreach ($toDelete as $file) {
             if (unlink($file)) {
                 $deleted++;
-                // Also remove metadata file
+                // Also remove auxiliary files
+                $checksumFile = $file . '.sha256';
+                if (file_exists($checksumFile)) {
+                    unlink($checksumFile);
+                }
                 $metaFile = $file . '.meta.txt';
                 if (file_exists($metaFile)) {
                     unlink($metaFile);
@@ -402,6 +414,32 @@ class BackupMediaCommand extends Command
         $factor = floor((strlen((string) $bytes) - 1) / 3);
 
         return sprintf('%.2f %s', $bytes / pow(1024, $factor), $units[$factor]);
+    }
+
+    private function createChecksum(string $filePath, SymfonyStyle $io): ?string
+    {
+        try {
+            $io->text('  Creating checksum...');
+            $hash = hash_file('sha256', $filePath);
+
+            if ($hash === false) {
+                $io->warning('Failed to create checksum');
+                return null;
+            }
+
+            $checksumFile = $filePath . '.sha256';
+            $checksumContent = sprintf("%s  %s\n", $hash, basename($filePath));
+
+            if (file_put_contents($checksumFile, $checksumContent) === false) {
+                $io->warning('Failed to write checksum file');
+                return null;
+            }
+
+            return $checksumFile;
+        } catch (\Exception $e) {
+            $io->warning('Checksum creation failed: ' . $e->getMessage());
+            return null;
+        }
     }
 }
 

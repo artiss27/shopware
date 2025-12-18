@@ -38,6 +38,7 @@
                         "smart": "Smart (ohne Cache/Logs)",
                         "full": "Full (kompletter Dump)"
                     },
+                    "excludedTables": "Ausgeschlossene Tabellen (nur Struktur)",
                     "outputDir": "Ausgabeverzeichnis",
                     "keep": "Backups behalten",
                     "gzip": "Komprimieren (gzip)",
@@ -122,12 +123,19 @@
                     "confirmCheckbox": "Ich verstehe, dass die Wiederherstellung Media-Dateien ändert",
                     "button": "Media wiederherstellen"
                 },
+                "deleteBackup": {
+                    "title": "Backup löschen",
+                    "warning": "Möchten Sie dieses Backup wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+                    "button": "Löschen"
+                },
                 "messages": {
                     "loadError": "Fehler beim Laden der Backup-Liste",
                     "dbRestoreSuccess": "Datenbank erfolgreich wiederhergestellt!",
                     "dbRestoreError": "Fehler bei der Datenbankwiederherstellung",
                     "mediaRestoreSuccess": "Media-Dateien erfolgreich wiederhergestellt!",
-                    "mediaRestoreError": "Fehler bei der Media-Wiederherstellung"
+                    "mediaRestoreError": "Fehler bei der Media-Wiederherstellung",
+                    "deleteSuccess": "Backup erfolgreich gelöscht",
+                    "deleteError": "Fehler beim Löschen des Backups"
                 }
             }
         },

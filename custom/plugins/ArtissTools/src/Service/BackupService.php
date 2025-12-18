@@ -132,29 +132,35 @@ class BackupService
      */
     public function getLastBackupInfo(string $backupType): ?array
     {
-        $outputDir = $backupType === 'db' 
-            ? $this->getDbOutputDir() 
+        $outputDir = $backupType === 'db'
+            ? $this->getDbOutputDir()
             : $this->getMediaOutputDir();
-            
+
         $fullPath = $this->projectDir . '/' . $outputDir;
-        
+
         if (!is_dir($fullPath)) {
             return null;
         }
 
         if ($backupType === 'db') {
             $files = glob($fullPath . '/shopware-db-*.sql*') ?: [];
+            // Filter out .sha256, .meta.txt, and .tmp files
+            $files = array_filter($files, function($file) {
+                return !str_ends_with($file, '.sha256')
+                    && !str_ends_with($file, '.meta.txt')
+                    && !str_ends_with($file, '.tmp');
+            });
         } else {
             // Find both .tar and .tar.gz media backups
             $filesTar = glob($fullPath . '/media-backup-*.tar') ?: [];
             $filesTarGz = glob($fullPath . '/media-backup-*.tar.gz') ?: [];
-            // Combine and exclude .tar.gz from .tar matches
+            // Combine and exclude .tar.gz from .tar matches, and filter out auxiliary files
             $files = array_merge(
-                array_filter($filesTar, fn($f) => !str_ends_with($f, '.tar.gz')),
-                $filesTarGz
+                array_filter($filesTar, fn($f) => !str_ends_with($f, '.tar.gz') && !str_ends_with($f, '.sha256') && !str_ends_with($f, '.meta.txt') && !str_ends_with($f, '.tmp')),
+                array_filter($filesTarGz, fn($f) => !str_ends_with($f, '.sha256') && !str_ends_with($f, '.meta.txt') && !str_ends_with($f, '.tmp'))
             );
         }
-        
+
         if (empty($files)) {
             return null;
         }
@@ -193,36 +199,42 @@ class BackupService
      */
     public function getBackupsList(string $backupType): array
     {
-        $outputDir = $backupType === 'db' 
-            ? $this->getDbOutputDir() 
+        $outputDir = $backupType === 'db'
+            ? $this->getDbOutputDir()
             : $this->getMediaOutputDir();
-            
+
         $fullPath = $this->projectDir . '/' . $outputDir;
-        
+
         if (!is_dir($fullPath)) {
             return [];
         }
 
         if ($backupType === 'db') {
             $files = glob($fullPath . '/shopware-db-*.sql*') ?: [];
+            // Filter out .sha256, .meta.txt, and .tmp files
+            $files = array_filter($files, function($file) {
+                return !str_ends_with($file, '.sha256')
+                    && !str_ends_with($file, '.meta.txt')
+                    && !str_ends_with($file, '.tmp');
+            });
         } else {
             // Find both .tar and .tar.gz media backups
             $filesTar = glob($fullPath . '/media-backup-*.tar') ?: [];
             $filesTarGz = glob($fullPath . '/media-backup-*.tar.gz') ?: [];
-            // Combine and exclude .tar.gz from .tar matches
+            // Combine and exclude .tar.gz from .tar matches, and filter out auxiliary files
             $files = array_merge(
-                array_filter($filesTar, fn($f) => !str_ends_with($f, '.tar.gz')),
-                $filesTarGz
+                array_filter($filesTar, fn($f) => !str_ends_with($f, '.tar.gz') && !str_ends_with($f, '.sha256') && !str_ends_with($f, '.meta.txt') && !str_ends_with($f, '.tmp')),
+                array_filter($filesTarGz, fn($f) => !str_ends_with($f, '.sha256') && !str_ends_with($f, '.meta.txt') && !str_ends_with($f, '.tmp'))
             );
         }
-        
+
         if (empty($files)) {
             return [];
         }
 
         // Sort by modification time (newest first)
         usort($files, fn($a, $b) => filemtime($b) - filemtime($a));
-        
+
         $backups = [];
         foreach ($files as $file) {
             $filename = basename($file);
@@ -249,6 +261,105 @@ class BackupService
         }
 
         return $backups;
+    }
+
+    /**
+     * Delete a backup file
+     */
+    public function deleteBackup(string $relativePath): array
+    {
+        $fullPath = $this->projectDir . '/' . $relativePath;
+
+        if (!file_exists($fullPath)) {
+            return [
+                'success' => false,
+                'error' => 'Backup file not found: ' . $relativePath,
+            ];
+        }
+
+        // Security check: ensure file is within backup directories
+        $allowedDirs = [
+            $this->projectDir . '/' . $this->getDbOutputDir(),
+            $this->projectDir . '/' . $this->getMediaOutputDir(),
+        ];
+
+        $realPath = realpath($fullPath);
+        $isAllowed = false;
+        foreach ($allowedDirs as $dir) {
+            if (is_dir($dir) && str_starts_with($realPath, realpath($dir))) {
+                $isAllowed = true;
+                break;
+            }
+        }
+
+        if (!$isAllowed) {
+            return [
+                'success' => false,
+                'error' => 'Access denied: file is not in backup directory',
+            ];
+        }
+
+        // Delete the file
+        if (!unlink($fullPath)) {
+            return [
+                'success' => false,
+                'error' => 'Failed to delete backup file',
+            ];
+        }
+
+        // Also delete metadata file if exists
+        $metaFile = $fullPath . '.meta.txt';
+        if (file_exists($metaFile)) {
+            unlink($metaFile);
+        }
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    /**
+     * Get backup file for download
+     */
+    public function getBackupForDownload(string $relativePath): array
+    {
+        $fullPath = $this->projectDir . '/' . $relativePath;
+
+        if (!file_exists($fullPath)) {
+            return [
+                'success' => false,
+                'error' => 'Backup file not found: ' . $relativePath,
+            ];
+        }
+
+        // Security check: ensure file is within backup directories
+        $allowedDirs = [
+            $this->projectDir . '/' . $this->getDbOutputDir(),
+            $this->projectDir . '/' . $this->getMediaOutputDir(),
+        ];
+
+        $realPath = realpath($fullPath);
+        $isAllowed = false;
+        foreach ($allowedDirs as $dir) {
+            if (is_dir($dir) && str_starts_with($realPath, realpath($dir))) {
+                $isAllowed = true;
+                break;
+            }
+        }
+
+        if (!$isAllowed) {
+            return [
+                'success' => false,
+                'error' => 'Access denied: file is not in backup directory',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'fullPath' => $realPath,
+            'filename' => basename($realPath),
+            'filesize' => filesize($realPath),
+        ];
     }
 
     /**

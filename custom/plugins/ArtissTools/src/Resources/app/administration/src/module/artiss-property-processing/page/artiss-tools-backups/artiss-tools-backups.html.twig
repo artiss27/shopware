@@ -30,18 +30,10 @@
 
         {# Create Tab #}
         <template v-if="activeTab === 'create'">
-            {# Storage Path Info #}
-            <sw-card v-if="pluginConfig.projectDir" class="artiss-path-card">
-                <sw-alert variant="info" class="artiss-path-info">
-                    <strong>{{ $tc('artissTools.backups.create.storagePath') }}:</strong>
-                    <code>{{ pluginConfig.projectDir }}/{{ pluginConfig.backupPath }}</code>
-                </sw-alert>
-            </sw-card>
 
             {# Database Backup Block #}
-            <sw-card 
+            <sw-card
                 :title="$tc('artissTools.backups.create.dbBackup.title')"
-                :isLoading="isDbBackupLoading"
             >
                 <div class="artiss-backup-form">
                     <sw-single-select
@@ -52,18 +44,21 @@
                         labelProperty="label"
                     />
 
+                    {# Smart backup excluded tables info #}
+                    <sw-alert v-if="dbBackup.type === 'smart'" variant="info" class="artiss-smart-tables-info">
+                        <strong>{{ $tc('artissTools.backups.create.dbBackup.excludedTables') }}:</strong>
+                        <div class="artiss-smart-tables-list">
+                            <span v-for="table in smartExcludedTables" :key="table" class="artiss-smart-tables-list__item">
+                                {{ table }}
+                            </span>
+                        </div>
+                    </sw-alert>
+
                     <sw-text-field
                         v-model:value="dbBackup.outputDir"
                         :label="$tc('artissTools.backups.create.dbBackup.outputDir')"
                         :helpText="pluginConfig.dbOutputDirFull"
                         :placeholder="pluginConfig.dbOutputDir"
-                    />
-
-                    <sw-number-field
-                        v-model:value="dbBackup.keep"
-                        :label="$tc('artissTools.backups.create.dbBackup.keep')"
-                        :min="1"
-                        :max="100"
                     />
 
                     <sw-checkbox-field
@@ -75,56 +70,32 @@
                         v-model:value="dbBackup.comment"
                         :label="$tc('artissTools.backups.create.dbBackup.comment')"
                         :placeholder="$tc('artissTools.backups.create.dbBackup.commentPlaceholder')"
+                        :helpText="$tc('artissTools.backups.create.commentHelp')"
+                        @update:value="(value) => { console.log('Comment updated:', value); dbBackup.comment = value; }"
                     />
-                </div>
 
-                <template #toolbar>
+                    {# Progress bar #}
+                    <div v-if="isDbBackupLoading && dbBackupProgress > 0" class="artiss-backup-progress">
+                        <sw-progress-bar :value="dbBackupProgress" />
+                        <p class="artiss-backup-progress__text">{{ dbBackupProgress }}% - Creating backup...</p>
+                    </div>
+
+                    {# Create button #}
                     <sw-button
                         variant="primary"
                         :disabled="isDbBackupLoading"
                         @click="createDbBackup"
+                        block
                     >
                         <sw-icon name="regular-database" small />
                         {{ $tc('artissTools.backups.create.dbBackup.button') }}
                     </sw-button>
-                </template>
-            </sw-card>
-
-            {# Last DB Backup Info #}
-            <sw-card 
-                v-if="lastDbBackup"
-                :title="$tc('artissTools.backups.create.lastBackup.title')"
-            >
-                <table class="artiss-result-table">
-                    <tbody>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.type') }}</td>
-                            <td><strong>{{ lastDbBackup.type }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.filename') }}</td>
-                            <td>{{ lastDbBackup.filename }}</td>
-                        </tr>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.size') }}</td>
-                            <td>{{ lastDbBackup.sizeFormatted }}</td>
-                        </tr>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.createdAt') }}</td>
-                            <td>{{ lastDbBackup.createdAt }}</td>
-                        </tr>
-                        <tr v-if="lastDbBackup.comment">
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.comment') }}</td>
-                            <td>{{ lastDbBackup.comment }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                </div>
             </sw-card>
 
             {# Media Backup Block #}
-            <sw-card 
+            <sw-card
                 :title="$tc('artissTools.backups.create.mediaBackup.title')"
-                :isLoading="isMediaBackupLoading"
             >
                 <div class="artiss-backup-form">
                     <sw-single-select
@@ -142,13 +113,6 @@
                         :placeholder="pluginConfig.mediaOutputDir"
                     />
 
-                    <sw-number-field
-                        v-model:value="mediaBackup.keep"
-                        :label="$tc('artissTools.backups.create.mediaBackup.keep')"
-                        :min="1"
-                        :max="100"
-                    />
-
                     <sw-checkbox-field
                         v-model:value="mediaBackup.compress"
                         :label="$tc('artissTools.backups.create.mediaBackup.compress')"
@@ -164,50 +128,39 @@
                         v-model:value="mediaBackup.comment"
                         :label="$tc('artissTools.backups.create.mediaBackup.comment')"
                         :placeholder="$tc('artissTools.backups.create.mediaBackup.commentPlaceholder')"
+                        :helpText="$tc('artissTools.backups.create.commentHelp')"
+                        @update:value="(value) => { console.log('Media comment updated:', value); mediaBackup.comment = value; }"
                     />
-                </div>
 
-                <template #toolbar>
+                    {# Progress bar #}
+                    <div v-if="isMediaBackupLoading && mediaBackupProgress > 0" class="artiss-backup-progress">
+                        <sw-progress-bar :value="mediaBackupProgress" />
+                        <p class="artiss-backup-progress__text">{{ mediaBackupProgress }}% - Creating backup...</p>
+                    </div>
+
+                    {# Create button #}
                     <sw-button
                         variant="primary"
                         :disabled="isMediaBackupLoading"
                         @click="createMediaBackup"
+                        block
                     >
                         <sw-icon name="regular-image" small />
                         {{ $tc('artissTools.backups.create.mediaBackup.button') }}
                     </sw-button>
-                </template>
+                </div>
             </sw-card>
 
-            {# Last Media Backup Info #}
-            <sw-card 
-                v-if="lastMediaBackup"
-                :title="$tc('artissTools.backups.create.lastMediaBackup.title')"
-            >
-                <table class="artiss-result-table">
-                    <tbody>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.scope') }}</td>
-                            <td><strong>{{ lastMediaBackup.type }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.filename') }}</td>
-                            <td>{{ lastMediaBackup.filename }}</td>
-                        </tr>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.size') }}</td>
-                            <td>{{ lastMediaBackup.sizeFormatted }}</td>
-                        </tr>
-                        <tr>
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.createdAt') }}</td>
-                            <td>{{ lastMediaBackup.createdAt }}</td>
-                        </tr>
-                        <tr v-if="lastMediaBackup.comment">
-                            <td class="artiss-result-table__label">{{ $tc('artissTools.backups.create.lastBackup.comment') }}</td>
-                            <td>{{ lastMediaBackup.comment }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+            {# Storage Path Info #}
+            <sw-card v-if="pluginConfig.projectDir" class="artiss-path-card">
+                <sw-alert variant="info" class="artiss-path-info">
+                    <strong>{{ $tc('artissTools.backups.create.storagePath') }}:</strong>
+                    <code>{{ pluginConfig.projectDir }}/{{ pluginConfig.backupPath }}</code>
+                    <br>
+                    {{ $tc('artissTools.backups.create.dbBackup.keep') }}: <strong>{{ pluginConfig.backupRetention }}</strong>
+                    <br>
+                    <small>{{ $tc('artissTools.backups.create.retentionInfo') }}</small>
+                </sw-alert>
             </sw-card>
         </template>
 
@@ -237,15 +190,30 @@
                                 <td>{{ backup.sizeFormatted }}</td>
                                 <td>{{ backup.createdAt }}</td>
                                 <td>{{ backup.comment || '-' }}</td>
-                                <td>
-                                    <sw-button
-                                        v-if="backup.exists"
-                                        variant="ghost"
-                                        size="small"
-                                        @click="openDbRestoreModal(backup)"
-                                    >
-                                        {{ $tc('artissTools.backups.restore.buttons.restore') }}
-                                    </sw-button>
+                                <td class="artiss-backups-table__actions">
+                                    <div v-if="backup.exists" class="artiss-backups-table__buttons">
+                                        <sw-button
+                                            variant="primary"
+                                            size="small"
+                                            @click.stop.native="openDbRestoreModal(backup)"
+                                        >
+                                            {{ $tc('artissTools.backups.restore.buttons.restore') }}
+                                        </sw-button>
+                                        <sw-button
+                                            variant="secondary"
+                                            size="small"
+                                            @click.stop.native="downloadBackup(backup)"
+                                        >
+                                            <sw-icon name="regular-download" small />
+                                        </sw-button>
+                                        <sw-button
+                                            variant="danger"
+                                            size="small"
+                                            @click.stop.native="confirmDeleteBackup(backup, 'db')"
+                                        >
+                                            <sw-icon name="regular-trash" small />
+                                        </sw-button>
+                                    </div>
                                     <span v-else class="artiss-backups-table__missing">
                                         {{ $tc('artissTools.backups.restore.fileMissing') }}
                                     </span>
@@ -285,15 +253,30 @@
                                 <td>{{ backup.sizeFormatted }}</td>
                                 <td>{{ backup.createdAt }}</td>
                                 <td>{{ backup.comment || '-' }}</td>
-                                <td>
-                                    <sw-button
-                                        v-if="backup.exists"
-                                        variant="ghost"
-                                        size="small"
-                                        @click="openMediaRestoreModal(backup)"
-                                    >
-                                        {{ $tc('artissTools.backups.restore.buttons.restore') }}
-                                    </sw-button>
+                                <td class="artiss-backups-table__actions">
+                                    <div v-if="backup.exists" class="artiss-backups-table__buttons">
+                                        <sw-button
+                                            variant="primary"
+                                            size="small"
+                                            @click.stop.native="openMediaRestoreModal(backup)"
+                                        >
+                                            {{ $tc('artissTools.backups.restore.buttons.restore') }}
+                                        </sw-button>
+                                        <sw-button
+                                            variant="secondary"
+                                            size="small"
+                                            @click.stop.native="downloadBackup(backup)"
+                                        >
+                                            <sw-icon name="regular-download" small />
+                                        </sw-button>
+                                        <sw-button
+                                            variant="danger"
+                                            size="small"
+                                            @click.stop.native="confirmDeleteBackup(backup, 'media')"
+                                        >
+                                            <sw-icon name="regular-trash" small />
+                                        </sw-button>
+                                    </div>
                                     <span v-else class="artiss-backups-table__missing">
                                         {{ $tc('artissTools.backups.restore.fileMissing') }}
                                     </span>
@@ -309,7 +292,6 @@
                 </template>
         </sw-card>
         </template>
-    </template>
 
     {# DB Restore Modal #}
     <sw-modal
@@ -406,5 +388,41 @@
             </sw-button>
         </template>
     </sw-modal>
+
+    {# Delete Confirmation Modal #}
+    <sw-modal
+        v-if="showDeleteModal"
+        :title="$tc('artissTools.backups.restore.deleteBackup.title')"
+        variant="small"
+        @modal-close="closeDeleteModal"
+    >
+        <sw-alert variant="warning" class="artiss-restore-warning">
+            {{ $tc('artissTools.backups.restore.deleteBackup.warning') }}
+        </sw-alert>
+
+        <div class="artiss-restore-info" v-if="backupToDelete">
+            <p><strong>{{ $tc('artissTools.backups.restore.table.filename') }}:</strong> {{ backupToDelete.filename }}</p>
+            <p><strong>{{ $tc('artissTools.backups.restore.table.size') }}:</strong> {{ backupToDelete.sizeFormatted }}</p>
+        </div>
+
+        <template #modal-footer>
+            <sw-button
+                variant="secondary"
+                @click="closeDeleteModal"
+            >
+                {{ $tc('artissTools.backups.restore.buttons.cancel') }}
+            </sw-button>
+
+            <sw-button
+                variant="danger"
+                :isLoading="isDeleting"
+                @click="deleteBackup"
+            >
+                <sw-icon name="regular-trash" small />
+                {{ $tc('artissTools.backups.restore.deleteBackup.button') }}
+            </sw-button>
+        </template>
+    </sw-modal>
+    </template>
 </sw-page>
 {% endblock %}
