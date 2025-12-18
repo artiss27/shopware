@@ -16,7 +16,7 @@
 
         {% block artiss_property_processing_index_content %}
             <template #content>
-                <sw-tabs class="sw-tabs--small" @new-item-active="onTabChange" default-item="merge">
+                <sw-tabs class="sw-tabs--small artiss-property-processing-index__tabs" @new-item-active="onTabChange" default-item="merge">
                     <sw-tabs-item name="merge">
                         {{ $tc('artissTools.propertyProcessing.tabs.merge') }}
                     </sw-tabs-item>
