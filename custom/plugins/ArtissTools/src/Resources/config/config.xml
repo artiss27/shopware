@@ -1,16 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
-
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+    
     <card>
-        <title>Access Settings</title>
+        <title>Backup Settings</title>
+        <title lang="de-DE">Backup-Einstellungen</title>
+        <title lang="ru-RU">Настройки бэкапов</title>
+        <title lang="uk-UA">Налаштування бекапів</title>
+
+        <input-field type="text">
+            <name>backupPath</name>
+            <label>Backup directory</label>
+            <label lang="de-DE">Backup-Verzeichnis</label>
+            <label lang="ru-RU">Директория бэкапов</label>
+            <label lang="uk-UA">Директорія бекапів</label>
+            <helpText>Path relative to project root where backups will be stored</helpText>
+            <helpText lang="de-DE">Pfad relativ zum Projektstamm, wo Backups gespeichert werden</helpText>
+            <helpText lang="ru-RU">Путь относительно корня проекта для хранения бэкапов</helpText>
+            <helpText lang="uk-UA">Шлях відносно кореня проекту для зберігання бекапів</helpText>
+            <defaultValue>artiss-backups</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>backupRetention</name>
+            <label>Default retention count</label>
+            <label lang="de-DE">Standard-Aufbewahrungsanzahl</label>
+            <label lang="ru-RU">Хранить бэкапов по умолчанию</label>
+            <label lang="uk-UA">Зберігати бекапів за замовчуванням</label>
+            <helpText>Number of backups to keep (older ones will be deleted)</helpText>
+            <helpText lang="de-DE">Anzahl der aufzubewahrenden Backups (ältere werden gelöscht)</helpText>
+            <helpText lang="ru-RU">Количество хранимых бэкапов (старые удаляются)</helpText>
+            <helpText lang="uk-UA">Кількість бекапів для зберігання (старі видаляються)</helpText>
+            <defaultValue>5</defaultValue>
+        </input-field>
 
         <input-field type="bool">
-            <name>enabledForAllUsers</name>
-            <label>Enable for all users</label>
+            <name>dbGzipDefault</name>
+            <label>Compress DB backups by default</label>
+            <label lang="de-DE">DB-Backups standardmäßig komprimieren</label>
+            <label lang="ru-RU">Сжимать бэкапы БД по умолчанию</label>
+            <label lang="uk-UA">Стискати бекапи БД за замовчуванням</label>
             <defaultValue>true</defaultValue>
-            <helpText>If enabled, all users will have access to ArtissTools features</helpText>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>dbTypeDefault</name>
+            <label>Default DB backup type</label>
+            <label lang="de-DE">Standard-DB-Backup-Typ</label>
+            <label lang="ru-RU">Тип бэкапа БД по умолчанию</label>
+            <label lang="uk-UA">Тип бекапу БД за замовчуванням</label>
+            <defaultValue>smart</defaultValue>
+            <options>
+                <option>
+                    <id>smart</id>
+                    <name>Smart (without cache/logs)</name>
+                    <name lang="de-DE">Smart (ohne Cache/Logs)</name>
+                    <name lang="ru-RU">Smart (без кэша/логов)</name>
+                    <name lang="uk-UA">Smart (без кешу/логів)</name>
+                </option>
+                <option>
+                    <id>full</id>
+                    <name>Full dump</name>
+                    <name lang="de-DE">Vollständiger Dump</name>
+                    <name lang="ru-RU">Полный дамп</name>
+                    <name lang="uk-UA">Повний дамп</name>
+                </option>
+            </options>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>mediaScopeDefault</name>
+            <label>Default media backup scope</label>
+            <label lang="de-DE">Standard-Medien-Backup-Bereich</label>
+            <label lang="ru-RU">Область бэкапа медиа по умолчанию</label>
+            <label lang="uk-UA">Область бекапу медіа за замовчуванням</label>
+            <defaultValue>all</defaultValue>
+            <options>
+                <option>
+                    <id>all</id>
+                    <name>All media</name>
+                    <name lang="de-DE">Alle Medien</name>
+                    <name lang="ru-RU">Вся папка media</name>
+                    <name lang="uk-UA">Вся папка media</name>
+                </option>
+                <option>
+                    <id>product</id>
+                    <name>Product media only</name>
+                    <name lang="de-DE">Nur Produktmedien</name>
+                    <name lang="ru-RU">Только product media</name>
+                    <name lang="uk-UA">Тільки product media</name>
+                </option>
+            </options>
+        </input-field>
+
+        <input-field type="bool">
+            <name>mediaExcludeThumbnailsDefault</name>
+            <label>Exclude thumbnails by default</label>
+            <label lang="de-DE">Thumbnails standardmäßig ausschließen</label>
+            <label lang="ru-RU">Исключать thumbnails по умолчанию</label>
+            <label lang="uk-UA">Виключати thumbnails за замовчуванням</label>
+            <defaultValue>true</defaultValue>
         </input-field>
     </card>
 

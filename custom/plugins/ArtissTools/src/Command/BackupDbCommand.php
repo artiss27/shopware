@@ -10,15 +10,15 @@
  *
  * Options:
  *   --type=smart|full        Backup type: smart (default) excludes cache/log data, full includes everything
- *   --output-dir=PATH        Directory to save backup (default: var/artiss-backups/db)
- *   --keep=INT               Number of backups to keep (default: 3)
+ *   --output-dir=PATH        Directory to save backup (default: artiss-backups/db)
+ *   --keep=INT               Number of backups to keep (default: 5)
  *   --gzip                   Compress output with gzip
  *   --no-gzip                Disable gzip compression
  *   --comment="TEXT"         Comment to include in backup
  *   --ignored-tables=LIST    Comma-separated list of tables to ignore data (smart mode only)
  *
  * Example:
- *   bin/console artiss:backup:db --type=smart --output-dir=var/artiss-backups/db --keep=5 --gzip --comment="Before update"
+ *   bin/console artiss:backup:db --type=smart --gzip --comment="Before update"
  */
 
 namespace ArtissTools\Command;
@@ -71,8 +71,8 @@ class BackupDbCommand extends Command
     {
         $this
             ->addOption('type', 't', InputOption::VALUE_REQUIRED, 'Backup type: smart or full', 'smart')
-            ->addOption('output-dir', 'o', InputOption::VALUE_REQUIRED, 'Output directory', 'var/artiss-backups/db')
-            ->addOption('keep', 'k', InputOption::VALUE_REQUIRED, 'Number of backups to keep', '3')
+            ->addOption('output-dir', 'o', InputOption::VALUE_REQUIRED, 'Output directory', 'artiss-backups/db')
+            ->addOption('keep', 'k', InputOption::VALUE_REQUIRED, 'Number of backups to keep', '5')
             ->addOption('gzip', null, InputOption::VALUE_NONE, 'Compress with gzip')
             ->addOption('no-gzip', null, InputOption::VALUE_NONE, 'Disable gzip compression')
             ->addOption('comment', 'c', InputOption::VALUE_REQUIRED, 'Comment for this backup')
@@ -112,10 +112,23 @@ class BackupDbCommand extends Command
             return Command::FAILURE;
         }
 
+        // Check if mysqldump is available early
+        try {
+            $mysqldumpPath = $this->findMysqldump();
+            $io->text(sprintf('Using: <info>%s</info>', $mysqldumpPath));
+        } catch (\RuntimeException $e) {
+            $io->error($e->getMessage());
+            return Command::FAILURE;
+        }
+
         // Prepare output directory
         $outputPath = $this->prepareOutputDirectory($outputDir);
         if ($outputPath === null) {
-            $io->error(sprintf('Failed to create output directory: %s', $outputDir));
+            $absolutePath = str_starts_with($outputDir, '/') ? $outputDir : $this->projectDir . '/' . $outputDir;
+            $io->error([
+                sprintf('Failed to create or access output directory: %s', $absolutePath),
+                'Please check directory permissions or create it manually.',
+            ]);
             return Command::FAILURE;
         }
 
@@ -135,7 +148,7 @@ class BackupDbCommand extends Command
         // Get ignored tables for smart mode
         $ignoredTables = [];
         if ($type === 'smart') {
-            $ignoredTables = $this->getIgnoredTables($ignoredTablesOption, $dbParams['database']);
+            $ignoredTables = $this->getIgnoredTables($ignoredTablesOption, $dbParams);
             $io->text(sprintf('Ignored tables (data only): <comment>%d tables</comment>', count($ignoredTables)));
         }
 
@@ -204,15 +217,23 @@ class BackupDbCommand extends Command
         }
 
         if (!is_dir($outputDir)) {
-            if (!mkdir($outputDir, 0755, true)) {
+            // Create directory recursively with proper permissions
+            if (!@mkdir($outputDir, 0755, true) && !is_dir($outputDir)) {
                 return null;
             }
+            // Ensure permissions are set correctly
+            @chmod($outputDir, 0755);
+        }
+
+        // Verify directory is writable
+        if (!is_writable($outputDir)) {
+            return null;
         }
 
         return realpath($outputDir) ?: $outputDir;
     }
 
-    private function getIgnoredTables(?string $ignoredTablesOption, string $database): array
+    private function getIgnoredTables(?string $ignoredTablesOption, array $dbParams): array
     {
         if ($ignoredTablesOption !== null) {
             $tables = array_map('trim', explode(',', $ignoredTablesOption));
@@ -220,8 +241,40 @@ class BackupDbCommand extends Command
             $tables = self::DEFAULT_IGNORED_TABLES;
         }
 
+        // Filter to only existing tables
+        $existingTables = $this->getExistingTables($dbParams);
+        $tables = array_filter($tables, fn($table) => in_array($table, $existingTables, true));
+
         // Prefix with database name for mysqldump
-        return array_map(fn($table) => $database . '.' . $table, $tables);
+        return array_map(fn($table) => $dbParams['database'] . '.' . $table, $tables);
+    }
+
+    private function getExistingTables(array $dbParams): array
+    {
+        $mysqldumpPath = $this->findMysqldump();
+        // Use mysql/mariadb client to get table list
+        $mysqlPath = str_replace('-dump', '', $mysqldumpPath);
+        if (!file_exists($mysqlPath)) {
+            $mysqlPath = dirname($mysqldumpPath) . '/mariadb';
+            if (!file_exists($mysqlPath)) {
+                $mysqlPath = dirname($mysqldumpPath) . '/mysql';
+            }
+        }
+
+        $cmd = sprintf(
+            '%s -h %s -P %d -u %s %s -N -e "SHOW TABLES" %s 2>/dev/null',
+            escapeshellarg($mysqlPath),
+            escapeshellarg($dbParams['host']),
+            $dbParams['port'],
+            escapeshellarg($dbParams['user']),
+            !empty($dbParams['password']) ? '-p' . escapeshellarg($dbParams['password']) : '',
+            escapeshellarg($dbParams['database'])
+        );
+
+        $output = [];
+        exec($cmd, $output);
+
+        return $output;
     }
 
     private function createSmartBackup(
@@ -343,25 +396,37 @@ class BackupDbCommand extends Command
 
     private function findMysqldump(): string
     {
-        // Try common paths
+        // Prefer mariadb-dump over mysqldump (mysqldump is deprecated in MariaDB)
         $paths = [
-            'mysqldump',
-            '/usr/bin/mysqldump',
-            '/usr/local/bin/mysqldump',
-            'mariadb-dump',
             '/usr/bin/mariadb-dump',
             '/usr/local/bin/mariadb-dump',
+            '/usr/bin/mysqldump',
+            '/usr/local/bin/mysqldump',
+            '/usr/local/mysql/bin/mysqldump',
         ];
 
+        // First check direct paths
         foreach ($paths as $path) {
-            $result = shell_exec('which ' . escapeshellarg($path) . ' 2>/dev/null');
-            if (!empty(trim($result ?? ''))) {
-                return trim($result);
+            if (file_exists($path) && is_executable($path)) {
+                return $path;
             }
         }
 
-        // Default to mysqldump and let it fail with proper error
-        return 'mysqldump';
+        // Try using 'which' command - prefer mariadb-dump
+        $commands = ['mariadb-dump', 'mysqldump'];
+        foreach ($commands as $cmd) {
+            $result = shell_exec('which ' . escapeshellarg($cmd) . ' 2>/dev/null');
+            if (!empty(trim($result ?? ''))) {
+                $foundPath = trim($result);
+                if (file_exists($foundPath) && is_executable($foundPath)) {
+                    return $foundPath;
+                }
+            }
+        }
+
+        throw new \RuntimeException(
+            'mysqldump or mariadb-dump not found. Please ensure MySQL/MariaDB client tools are installed.'
+        );
     }
 
     private function generateHeader(string $type, ?string $comment, array $ignoredTables = []): string

@@ -62,6 +62,7 @@ custom/plugins/*/src/Resources/public/
 *.sql
 *.sqlite
 /backups/
+/artiss-backups/
 
 # Bitrix export data
 /bitrix-export/

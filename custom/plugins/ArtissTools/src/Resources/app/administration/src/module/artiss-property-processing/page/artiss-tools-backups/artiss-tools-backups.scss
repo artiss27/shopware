@@ -1,4 +1,24 @@
 .artiss-tools-backups {
+    .artiss-path-card {
+        .sw-card__content {
+            padding: 0;
+        }
+    }
+
+    .artiss-path-info {
+        margin: 0;
+
+        code {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+    }
+
     .artiss-backup-form {
         display: flex;
         flex-direction: column;
@@ -36,6 +56,74 @@
         padding: 16px 24px;
         border-top: 1px solid #d1d9e0;
         background-color: #f9fafb;
+    }
+
+    // Backups list table (restore tab)
+    .artiss-backups-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #d1d9e0;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #52667a;
+            white-space: nowrap;
+        }
+
+        td {
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #f5f7fa;
+        }
+
+        &__filename {
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        &__row--missing {
+            background-color: #fff5f5;
+            opacity: 0.7;
+
+            &:hover {
+                background-color: #ffe5e5;
+            }
+        }
+
+        &__missing {
+            color: #e74c3c;
+            font-style: italic;
+            font-size: 12px;
+        }
+    }
+
+    // Restore modals
+    .artiss-restore-warning {
+        margin-bottom: 20px;
+    }
+
+    .artiss-restore-info {
+        padding: 16px;
+        background-color: #f9fafb;
+        border-radius: 4px;
+        margin-bottom: 20px;
+
+        p {
+            margin: 0 0 8px 0;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
     }
 }
 

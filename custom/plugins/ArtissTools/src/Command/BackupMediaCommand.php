@@ -10,14 +10,14 @@
  *
  * Options:
  *   --scope=all|product       Backup scope: all media or product media only (default: all)
- *   --output-dir=PATH         Directory to save backup (default: var/artiss-backups/media)
- *   --keep=INT                Number of backups to keep (default: 3)
+ *   --output-dir=PATH         Directory to save backup (default: artiss-backups/media)
+ *   --keep=INT                Number of backups to keep (default: 5)
  *   --exclude-thumbnails      Exclude thumbnail files from backup
  *   --no-exclude-thumbnails   Include all thumbnails in backup
  *   --comment="TEXT"          Comment to include in backup metadata
  *
  * Example:
- *   bin/console artiss:backup:media --scope=all --output-dir=var/artiss-backups/media --keep=5 --exclude-thumbnails --comment="Before update"
+ *   bin/console artiss:backup:media --scope=product --exclude-thumbnails --comment="Before update"
  */
 
 namespace ArtissTools\Command;
@@ -58,8 +58,8 @@ class BackupMediaCommand extends Command
     {
         $this
             ->addOption('scope', 's', InputOption::VALUE_REQUIRED, 'Backup scope: all or product', 'all')
-            ->addOption('output-dir', 'o', InputOption::VALUE_REQUIRED, 'Output directory', 'var/artiss-backups/media')
-            ->addOption('keep', 'k', InputOption::VALUE_REQUIRED, 'Number of backups to keep', '3')
+            ->addOption('output-dir', 'o', InputOption::VALUE_REQUIRED, 'Output directory', 'artiss-backups/media')
+            ->addOption('keep', 'k', InputOption::VALUE_REQUIRED, 'Number of backups to keep', '5')
             ->addOption('exclude-thumbnails', null, InputOption::VALUE_NONE, 'Exclude thumbnails from backup')
             ->addOption('no-exclude-thumbnails', null, InputOption::VALUE_NONE, 'Include thumbnails in backup')
             ->addOption('comment', 'c', InputOption::VALUE_REQUIRED, 'Comment for this backup');
@@ -191,9 +191,17 @@ class BackupMediaCommand extends Command
         }
 
         if (!is_dir($outputDir)) {
-            if (!mkdir($outputDir, 0755, true)) {
+            // Create directory recursively with proper permissions
+            if (!@mkdir($outputDir, 0755, true) && !is_dir($outputDir)) {
                 return null;
             }
+            // Ensure permissions are set correctly
+            @chmod($outputDir, 0755);
+        }
+
+        // Verify directory is writable
+        if (!is_writable($outputDir)) {
+            return null;
         }
 
         return realpath($outputDir) ?: $outputDir;
@@ -286,55 +294,57 @@ class BackupMediaCommand extends Command
 
     private function createArchive(string $mediaPath, array $files, string $outputFile, ?string $comment, SymfonyStyle $io): void
     {
-        // Use PharData for creating tar.gz
-        $tarFile = substr($outputFile, 0, -3); // Remove .gz extension
+        // Create a temporary file list for tar command
+        $fileListPath = sys_get_temp_dir() . '/artiss-media-backup-' . uniqid() . '.txt';
         
         try {
-            // Create tar archive
-            $phar = new \PharData($tarFile);
-            
-            $progressBar = $io->createProgressBar(count($files));
-            $progressBar->start();
-            
-            foreach ($files as $file) {
-                $fullPath = $mediaPath . '/' . $file;
-                if (file_exists($fullPath)) {
-                    $phar->addFile($fullPath, $file);
-                }
-                $progressBar->advance();
-            }
-            
-            $progressBar->finish();
-            $io->newLine();
-            
+            // Write file list to temp file
+            $io->text('  Writing file list...');
+            file_put_contents($fileListPath, implode("\n", $files));
+
             // Add metadata file if comment provided
+            $metaFile = null;
             if ($comment) {
+                $metaFile = $mediaPath . '/_backup_info.txt';
                 $metaContent = sprintf(
-                    "Backup Comment: %s\nCreated: %s\n",
+                    "Backup Comment: %s\nCreated: %s\nFiles: %d\n",
                     $comment,
-                    date('Y-m-d H:i:s')
+                    date('Y-m-d H:i:s'),
+                    count($files)
                 );
-                $phar->addFromString('_backup_info.txt', $metaContent);
+                file_put_contents($metaFile, $metaContent);
+                // Add to file list
+                file_put_contents($fileListPath, "\n_backup_info.txt", FILE_APPEND);
             }
-            
-            // Compress to gzip
-            $phar->compress(\Phar::GZ);
-            
-            // Remove uncompressed tar
-            unlink($tarFile);
-            
-            // Rename .tar.gz to expected filename
-            $compressedFile = $tarFile . '.gz';
-            if ($compressedFile !== $outputFile && file_exists($compressedFile)) {
-                rename($compressedFile, $outputFile);
+
+            $io->text(sprintf('  Creating archive with %d files...', count($files)));
+
+            // Use system tar command with POSIX extended format for long filenames
+            $cmd = sprintf(
+                'cd %s && tar --format=posix -czf %s -T %s 2>&1',
+                escapeshellarg($mediaPath),
+                escapeshellarg($outputFile),
+                escapeshellarg($fileListPath)
+            );
+
+            $output = [];
+            $returnCode = 0;
+            exec($cmd, $output, $returnCode);
+
+            // Cleanup temp metadata file
+            if ($metaFile && file_exists($metaFile)) {
+                unlink($metaFile);
             }
-            
-        } catch (\Exception $e) {
-            // Cleanup on failure
-            if (file_exists($tarFile)) {
-                unlink($tarFile);
+
+            if ($returnCode !== 0) {
+                throw new \RuntimeException('tar command failed: ' . implode("\n", $output));
             }
-            throw $e;
+
+        } finally {
+            // Cleanup file list
+            if (file_exists($fileListPath)) {
+                unlink($fileListPath);
+            }
         }
     }
 

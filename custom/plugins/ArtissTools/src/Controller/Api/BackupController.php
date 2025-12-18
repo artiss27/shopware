@@ -18,6 +18,38 @@ class BackupController extends AbstractController
     }
 
     #[Route(
+        path: '/api/_action/artiss-tools/backup/config',
+        name: 'api.action.artiss_tools.backup.config',
+        methods: ['GET']
+    )]
+    public function getConfig(Context $context): JsonResponse
+    {
+        try {
+            $config = $this->backupService->getConfig();
+            
+            // Add computed paths (relative)
+            $config['dbOutputDir'] = $this->backupService->getDbOutputDir();
+            $config['mediaOutputDir'] = $this->backupService->getMediaOutputDir();
+            
+            // Add full paths for display
+            $config['projectDir'] = $this->backupService->getProjectDir();
+            $config['dbOutputDirFull'] = $this->backupService->getProjectDir() . '/' . $config['dbOutputDir'];
+            $config['mediaOutputDirFull'] = $this->backupService->getProjectDir() . '/' . $config['mediaOutputDir'];
+
+            return new JsonResponse([
+                'success' => true,
+                'data' => $config,
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    #[Route(
         path: '/api/_action/artiss-tools/backup/db',
         name: 'api.action.artiss_tools.backup.db',
         methods: ['POST']
@@ -159,6 +191,102 @@ class BackupController extends AbstractController
                 'success' => true,
                 'data' => $backups,
             ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    #[Route(
+        path: '/api/_action/artiss-tools/restore/db',
+        name: 'api.action.artiss_tools.restore.db',
+        methods: ['POST']
+    )]
+    public function restoreDb(Request $request, Context $context): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+
+            if (empty($data['backupFile'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Backup file path is required.',
+                ], 400);
+            }
+
+            $options = [
+                'backupFile' => $data['backupFile'],
+                'dropTables' => $data['dropTables'] ?? false,
+                'noForeignChecks' => $data['noForeignChecks'] ?? true,
+            ];
+
+            $result = $this->backupService->restoreDb($options);
+
+            if ($result['success']) {
+                return new JsonResponse([
+                    'success' => true,
+                    'data' => [
+                        'output' => $result['output'],
+                        'message' => 'Database restored successfully',
+                    ],
+                ]);
+            }
+
+            return new JsonResponse([
+                'success' => false,
+                'error' => $result['error'] ?? $result['output'],
+            ], 500);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    #[Route(
+        path: '/api/_action/artiss-tools/restore/media',
+        name: 'api.action.artiss_tools.restore.media',
+        methods: ['POST']
+    )]
+    public function restoreMedia(Request $request, Context $context): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+
+            if (empty($data['backupFile'])) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Backup file path is required.',
+                ], 400);
+            }
+
+            $options = [
+                'backupFile' => $data['backupFile'],
+                'mode' => $data['mode'] ?? 'add',
+                'dryRun' => $data['dryRun'] ?? false,
+            ];
+
+            $result = $this->backupService->restoreMedia($options);
+
+            if ($result['success']) {
+                return new JsonResponse([
+                    'success' => true,
+                    'data' => [
+                        'output' => $result['output'],
+                        'message' => 'Media restored successfully',
+                    ],
+                ]);
+            }
+
+            return new JsonResponse([
+                'success' => false,
+                'error' => $result['error'] ?? $result['output'],
+            ], 500);
 
         } catch (\Exception $e) {
             return new JsonResponse([

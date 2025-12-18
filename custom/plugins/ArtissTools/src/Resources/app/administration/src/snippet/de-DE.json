@@ -30,6 +30,7 @@
                 "restore": "Wiederherstellen"
             },
             "create": {
+                "storagePath": "Backup-Speicherpfad",
                 "dbBackup": {
                     "title": "Datenbank-Backup",
                     "type": "Backup-Typ",
@@ -78,7 +79,54 @@
                 }
             },
             "restore": {
-                "comingSoon": "Wiederherstellungsfunktion wird in zukünftigen Versionen verfügbar sein"
+                "dbBackups": {
+                    "title": "Datenbank-Backups"
+                },
+                "mediaBackups": {
+                    "title": "Media-Backups"
+                },
+                "table": {
+                    "type": "Typ",
+                    "scope": "Bereich",
+                    "filename": "Datei",
+                    "size": "Größe",
+                    "createdAt": "Erstellt",
+                    "comment": "Kommentar",
+                    "actions": "Aktionen"
+                },
+                "buttons": {
+                    "restore": "Wiederherstellen",
+                    "cancel": "Abbrechen"
+                },
+                "noBackups": "Keine Backups verfügbar",
+                "fileMissing": "Datei fehlt",
+                "dbRestore": {
+                    "title": "Datenbank-Wiederherstellung",
+                    "warning": "WARNUNG: Diese Operation überschreibt Ihre Datenbank! Dies ist eine riskante Operation, die nicht rückgängig gemacht werden kann.",
+                    "dropTables": "Alle Tabellen vor der Wiederherstellung löschen",
+                    "confirmLabel": "Bestätigung",
+                    "confirmPlaceholder": "Geben Sie RESTORE zur Bestätigung ein",
+                    "button": "Datenbank wiederherstellen"
+                },
+                "mediaRestore": {
+                    "title": "Media-Wiederherstellung",
+                    "warning": "WARNUNG: Diese Operation ändert Dateien im Ordner public/media!",
+                    "mode": "Wiederherstellungsmodus",
+                    "modes": {
+                        "add": "Nur fehlende Dateien hinzufügen",
+                        "overwrite": "Vorhandene Dateien überschreiben",
+                        "clean": "Bereinigen und wiederherstellen (alles löschen und wiederherstellen)"
+                    },
+                    "confirmCheckbox": "Ich verstehe, dass die Wiederherstellung Media-Dateien ändert",
+                    "button": "Media wiederherstellen"
+                },
+                "messages": {
+                    "loadError": "Fehler beim Laden der Backup-Liste",
+                    "dbRestoreSuccess": "Datenbank erfolgreich wiederhergestellt!",
+                    "dbRestoreError": "Fehler bei der Datenbankwiederherstellung",
+                    "mediaRestoreSuccess": "Media-Dateien erfolgreich wiederhergestellt!",
+                    "mediaRestoreError": "Fehler bei der Media-Wiederherstellung"
+                }
             }
         },
         "images": {

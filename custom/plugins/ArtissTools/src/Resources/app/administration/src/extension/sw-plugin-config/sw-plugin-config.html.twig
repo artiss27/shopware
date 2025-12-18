@@ -1,0 +1,11 @@
+{% block sw_plugin_config_content %}
+    <template v-if="isArtissToolsConfig && artissBackupFullPath">
+        <sw-alert variant="info" class="artiss-plugin-config-path-info">
+            <strong>{{ $tc('artissTools.backups.create.storagePath') }}:</strong>
+            <code>{{ artissBackupFullPath }}</code>
+        </sw-alert>
+    </template>
+
+    {% parent %}
+{% endblock %}
+

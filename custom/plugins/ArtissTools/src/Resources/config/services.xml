@@ -117,6 +117,7 @@
         <service id="ArtissTools\Service\BackupService">
             <argument type="service" id="kernel"/>
             <argument>%kernel.project_dir%</argument>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
         </service>
 
         <!-- Backup Controller -->
@@ -138,6 +139,24 @@
             <argument>%kernel.project_dir%</argument>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <tag name="console.command"/>
+        </service>
+
+        <!-- Restore Commands -->
+        <service id="ArtissTools\Command\RestoreDbCommand">
+            <argument>%kernel.project_dir%</argument>
+            <argument>%env(DATABASE_URL)%</argument>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="ArtissTools\Command\RestoreMediaCommand">
+            <argument>%kernel.project_dir%</argument>
+            <tag name="console.command"/>
+        </service>
+
+        <!-- Subscribers -->
+        <service id="ArtissTools\Subscriber\PluginLifecycleSubscriber">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <tag name="kernel.event_subscriber"/>
         </service>
 
     </services>

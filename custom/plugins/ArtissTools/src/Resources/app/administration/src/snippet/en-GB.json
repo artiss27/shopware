@@ -30,6 +30,7 @@
                 "restore": "Restore"
             },
             "create": {
+                "storagePath": "Backup storage path",
                 "dbBackup": {
                     "title": "Database Backup",
                     "type": "Backup type",
@@ -78,7 +79,54 @@
                 }
             },
             "restore": {
-                "comingSoon": "Restore functionality will be available in future versions"
+                "dbBackups": {
+                    "title": "Database Backups"
+                },
+                "mediaBackups": {
+                    "title": "Media Backups"
+                },
+                "table": {
+                    "type": "Type",
+                    "scope": "Scope",
+                    "filename": "File",
+                    "size": "Size",
+                    "createdAt": "Created",
+                    "comment": "Comment",
+                    "actions": "Actions"
+                },
+                "buttons": {
+                    "restore": "Restore",
+                    "cancel": "Cancel"
+                },
+                "noBackups": "No backups available",
+                "fileMissing": "File missing",
+                "dbRestore": {
+                    "title": "Database Restore",
+                    "warning": "WARNING: This operation will overwrite your database! This is a risky operation that cannot be undone.",
+                    "dropTables": "Drop all tables before restore",
+                    "confirmLabel": "Confirmation",
+                    "confirmPlaceholder": "Type RESTORE to confirm",
+                    "button": "Restore Database"
+                },
+                "mediaRestore": {
+                    "title": "Media Restore",
+                    "warning": "WARNING: This operation will modify files in public/media folder!",
+                    "mode": "Restore mode",
+                    "modes": {
+                        "add": "Only add missing files",
+                        "overwrite": "Overwrite existing files",
+                        "clean": "Clean and restore (delete all and restore)"
+                    },
+                    "confirmCheckbox": "I understand that restore will modify media files",
+                    "button": "Restore Media"
+                },
+                "messages": {
+                    "loadError": "Failed to load backups list",
+                    "dbRestoreSuccess": "Database restored successfully!",
+                    "dbRestoreError": "Failed to restore database",
+                    "mediaRestoreSuccess": "Media files restored successfully!",
+                    "mediaRestoreError": "Failed to restore media files"
+                }
             }
         },
         "images": {

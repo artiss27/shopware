@@ -30,6 +30,14 @@
 
         {# Create Tab #}
         <template v-if="activeTab === 'create'">
+            {# Storage Path Info #}
+            <sw-card v-if="pluginConfig.projectDir" class="artiss-path-card">
+                <sw-alert variant="info" class="artiss-path-info">
+                    <strong>{{ $tc('artissTools.backups.create.storagePath') }}:</strong>
+                    <code>{{ pluginConfig.projectDir }}/{{ pluginConfig.backupPath }}</code>
+                </sw-alert>
+            </sw-card>
+
             {# Database Backup Block #}
             <sw-card 
                 :title="$tc('artissTools.backups.create.dbBackup.title')"
@@ -47,7 +55,8 @@
                     <sw-text-field
                         v-model:value="dbBackup.outputDir"
                         :label="$tc('artissTools.backups.create.dbBackup.outputDir')"
-                        :placeholder="'var/artiss-backups/db'"
+                        :helpText="pluginConfig.dbOutputDirFull"
+                        :placeholder="pluginConfig.dbOutputDir"
                     />
 
                     <sw-number-field
@@ -129,7 +138,8 @@
                     <sw-text-field
                         v-model:value="mediaBackup.outputDir"
                         :label="$tc('artissTools.backups.create.mediaBackup.outputDir')"
-                        :placeholder="'var/artiss-backups/media'"
+                        :helpText="pluginConfig.mediaOutputDirFull"
+                        :placeholder="pluginConfig.mediaOutputDir"
                     />
 
                     <sw-number-field
@@ -197,12 +207,198 @@
 
         {# Restore Tab #}
         <template v-else>
-            <sw-card :title="$tc('artissTools.backups.tabs.restore')">
-                <sw-alert variant="info">
-                    {{ $tc('artissTools.backups.restore.comingSoon') }}
-                </sw-alert>
-            </sw-card>
+            {# Database Backups List #}
+            <sw-card 
+                :title="$tc('artissTools.backups.restore.dbBackups.title')"
+                :isLoading="isLoadingDbList"
+            >
+                <template v-if="dbBackupsList.length > 0">
+                    <table class="artiss-backups-table">
+                        <thead>
+                            <tr>
+                                <th>{{ $tc('artissTools.backups.restore.table.type') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.filename') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.size') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.createdAt') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.comment') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="backup in dbBackupsList" :key="backup.id" :class="{ 'artiss-backups-table__row--missing': !backup.exists }">
+                                <td><strong>{{ backup.type }}</strong></td>
+                                <td class="artiss-backups-table__filename">{{ backup.filename }}</td>
+                                <td>{{ backup.sizeFormatted }}</td>
+                                <td>{{ backup.createdAt }}</td>
+                                <td>{{ backup.comment || '-' }}</td>
+                                <td>
+                                    <sw-button
+                                        v-if="backup.exists"
+                                        variant="ghost"
+                                        size="small"
+                                        @click="openDbRestoreModal(backup)"
+                                    >
+                                        {{ $tc('artissTools.backups.restore.buttons.restore') }}
+                                    </sw-button>
+                                    <span v-else class="artiss-backups-table__missing">
+                                        {{ $tc('artissTools.backups.restore.fileMissing') }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </template>
+                <template v-else>
+                    <sw-alert variant="info">
+                        {{ $tc('artissTools.backups.restore.noBackups') }}
+                    </sw-alert>
+                </template>
+        </sw-card>
+
+            {# Media Backups List #}
+            <sw-card 
+                :title="$tc('artissTools.backups.restore.mediaBackups.title')"
+                :isLoading="isLoadingMediaList"
+            >
+                <template v-if="mediaBackupsList.length > 0">
+                    <table class="artiss-backups-table">
+                        <thead>
+                            <tr>
+                                <th>{{ $tc('artissTools.backups.restore.table.scope') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.filename') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.size') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.createdAt') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.comment') }}</th>
+                                <th>{{ $tc('artissTools.backups.restore.table.actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="backup in mediaBackupsList" :key="backup.id" :class="{ 'artiss-backups-table__row--missing': !backup.exists }">
+                                <td><strong>{{ backup.type }}</strong></td>
+                                <td class="artiss-backups-table__filename">{{ backup.filename }}</td>
+                                <td>{{ backup.sizeFormatted }}</td>
+                                <td>{{ backup.createdAt }}</td>
+                                <td>{{ backup.comment || '-' }}</td>
+                                <td>
+                                    <sw-button
+                                        v-if="backup.exists"
+                                        variant="ghost"
+                                        size="small"
+                                        @click="openMediaRestoreModal(backup)"
+                                    >
+                                        {{ $tc('artissTools.backups.restore.buttons.restore') }}
+                                    </sw-button>
+                                    <span v-else class="artiss-backups-table__missing">
+                                        {{ $tc('artissTools.backups.restore.fileMissing') }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </template>
+                <template v-else>
+                    <sw-alert variant="info">
+                        {{ $tc('artissTools.backups.restore.noBackups') }}
+                    </sw-alert>
+                </template>
+        </sw-card>
         </template>
     </template>
+
+    {# DB Restore Modal #}
+    <sw-modal
+        v-if="showDbRestoreModal"
+        :title="$tc('artissTools.backups.restore.dbRestore.title')"
+        variant="default"
+        @modal-close="closeDbRestoreModal"
+    >
+        <sw-alert variant="warning" class="artiss-restore-warning">
+            {{ $tc('artissTools.backups.restore.dbRestore.warning') }}
+        </sw-alert>
+
+        <div class="artiss-restore-info" v-if="selectedDbBackup">
+            <p><strong>{{ $tc('artissTools.backups.restore.table.filename') }}:</strong> {{ selectedDbBackup.filename }}</p>
+            <p><strong>{{ $tc('artissTools.backups.restore.table.size') }}:</strong> {{ selectedDbBackup.sizeFormatted }}</p>
+            <p><strong>{{ $tc('artissTools.backups.restore.table.type') }}:</strong> {{ selectedDbBackup.type }}</p>
+        </div>
+
+        <sw-checkbox-field
+            v-model:value="dbRestoreOptions.dropTables"
+            :label="$tc('artissTools.backups.restore.dbRestore.dropTables')"
+        />
+
+        <sw-text-field
+            v-model:value="dbRestoreConfirmation"
+            :label="$tc('artissTools.backups.restore.dbRestore.confirmLabel')"
+            :placeholder="$tc('artissTools.backups.restore.dbRestore.confirmPlaceholder')"
+        />
+
+        <template #modal-footer>
+            <sw-button
+                variant="secondary"
+                @click="closeDbRestoreModal"
+            >
+                {{ $tc('artissTools.backups.restore.buttons.cancel') }}
+            </sw-button>
+
+            <sw-button
+                variant="danger"
+                :disabled="!canRestoreDb || isDbRestoring"
+                :isLoading="isDbRestoring"
+                @click="restoreDb"
+            >
+                {{ $tc('artissTools.backups.restore.dbRestore.button') }}
+            </sw-button>
+        </template>
+    </sw-modal>
+
+    {# Media Restore Modal #}
+    <sw-modal
+        v-if="showMediaRestoreModal"
+        :title="$tc('artissTools.backups.restore.mediaRestore.title')"
+        variant="default"
+        @modal-close="closeMediaRestoreModal"
+    >
+        <sw-alert variant="warning" class="artiss-restore-warning">
+            {{ $tc('artissTools.backups.restore.mediaRestore.warning') }}
+        </sw-alert>
+
+        <div class="artiss-restore-info" v-if="selectedMediaBackup">
+            <p><strong>{{ $tc('artissTools.backups.restore.table.filename') }}:</strong> {{ selectedMediaBackup.filename }}</p>
+            <p><strong>{{ $tc('artissTools.backups.restore.table.size') }}:</strong> {{ selectedMediaBackup.sizeFormatted }}</p>
+            <p><strong>{{ $tc('artissTools.backups.restore.table.scope') }}:</strong> {{ selectedMediaBackup.type }}</p>
+        </div>
+
+        <sw-single-select
+            v-model:value="mediaRestoreOptions.mode"
+            :options="mediaRestoreModeOptions"
+            :label="$tc('artissTools.backups.restore.mediaRestore.mode')"
+            valueProperty="value"
+            labelProperty="label"
+        />
+
+        <sw-checkbox-field
+            v-model:value="mediaRestoreConfirmed"
+            :label="$tc('artissTools.backups.restore.mediaRestore.confirmCheckbox')"
+        />
+
+        <template #modal-footer>
+            <sw-button
+                variant="secondary"
+                @click="closeMediaRestoreModal"
+            >
+                {{ $tc('artissTools.backups.restore.buttons.cancel') }}
+            </sw-button>
+
+            <sw-button
+                variant="danger"
+                :disabled="!canRestoreMedia || isMediaRestoring"
+                :isLoading="isMediaRestoring"
+                @click="restoreMedia"
+            >
+                {{ $tc('artissTools.backups.restore.mediaRestore.button') }}
+            </sw-button>
+        </template>
+    </sw-modal>
 </sw-page>
 {% endblock %}
