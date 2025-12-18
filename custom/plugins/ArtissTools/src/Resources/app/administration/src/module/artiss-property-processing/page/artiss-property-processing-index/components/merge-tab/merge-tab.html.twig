@@ -33,7 +33,7 @@
         :disabled="isLoading"
         @click="executeDryRun"
     >
-        {{ $tc('artissTools.propertyProcessing.buttons.dryRun') }}
+        {{ $tc('artissTools.propertyProcessing.buttons.preview') }}
     </sw-button>
 
     <sw-button
@@ -55,80 +55,128 @@
         </sw-alert>
     </div>
 
-    <div class="artiss-property-processing-index__result">
-        <h3>{{ $tc('artissTools.propertyProcessing.result.target') }}</h3>
-        <p><strong>{{ mergeResult.target.name }}</strong></p>
-        <p>{{ $tc('artissTools.propertyProcessing.result.currentItems') }}: {{ mergeResult.targetOptionsCount }}</p>
+    <table class="sw-data-grid__table sw-table artiss-result-table">
+        <tbody>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.result.target') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    <strong>{{ mergeResult.target.name }}</strong>
+                    ({{ $tc('artissTools.propertyProcessing.result.currentItems') }}: {{ mergeResult.targetOptionsCount }})
+                </td>
+            </tr>
 
-        <h3>{{ $tc('artissTools.propertyProcessing.result.sources') }}</h3>
-        <ul>
-            <li v-for="source in mergeResult.sources" :key="source.id">
-                <strong>{{ source.name }}</strong>
-                ({{ $tc('artissTools.propertyProcessing.result.totalItems') }}: {{ source.optionCount }})
-                <ul>
-                    <li v-if="source.mergeActions.length > 0">
-                        {{ $tc('artissTools.propertyProcessing.result.toMerge') }}: {{ source.mergeActions.length }}
-                    </li>
-                    <li v-if="source.moveActions.length > 0">
-                        {{ $tc('artissTools.propertyProcessing.result.toMove') }}: {{ source.moveActions.length }}
-                    </li>
-                </ul>
-            </li>
-        </ul>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.result.sources') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    <span v-for="(source, index) in mergeResult.sources" :key="source.id">
+                        {{ source.name }} ({{ source.optionCount }})<span v-if="index < mergeResult.sources.length - 1">, </span>
+                    </span>
+                </td>
+            </tr>
 
-        <h3>{{ $tc('artissTools.propertyProcessing.result.statistics') }}</h3>
-        <sw-description-list>
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.stats.totalSourceItems') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ mergeResult.stats.totalSourceOptions }}
-            </sw-description-list-description>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.productsModal.totalProducts') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    <a
+                        v-if="mergeResult.stats.affectedProductIds && mergeResult.stats.affectedProductIds.length > 0"
+                        href="#"
+                        @click.prevent="showProductsModal = true"
+                        class="artiss-products-link"
+                    >
+                        {{ mergeResult.stats.affectedProductIds.length }}
+                    </a>
+                    <span v-else>0</span>
+                </td>
+            </tr>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.stats.itemsToMerge') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ mergeResult.stats.optionsToMerge }}
-            </sw-description-list-description>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.stats.totalSourceItems') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ mergeResult.stats.totalSourceOptions }}
+                </td>
+            </tr>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.stats.itemsToMove') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ mergeResult.stats.optionsToMove }}
-            </sw-description-list-description>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.stats.itemsToMerge') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ mergeResult.stats.optionsToMerge }}
+                </td>
+            </tr>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.stats.itemsToDelete') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ mergeResult.stats.optionsToDelete }}
-            </sw-description-list-description>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.stats.itemsToMove') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ mergeResult.stats.optionsToMove }}
+                </td>
+            </tr>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.stats.productPropertyUpdates') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ mergeResult.stats.productPropertyUpdates }}
-            </sw-description-list-description>
+            <template v-if="mergeResult.stats.optionsToDelete > 0">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.stats.itemsToDelete') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ mergeResult.stats.optionsToDelete }}
+                    </td>
+                </tr>
+            </template>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.stats.configuratorSettingUpdates') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ mergeResult.stats.configuratorSettingUpdates }}
-            </sw-description-list-description>
+            <template v-if="mergeResult.stats.productPropertyUpdates > 0">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.stats.productPropertyUpdates') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ mergeResult.stats.productPropertyUpdates }}
+                    </td>
+                </tr>
+            </template>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.stats.groupsToDelete') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ mergeResult.stats.groupsToDelete }}
-            </sw-description-list-description>
-        </sw-description-list>
-    </div>
+            <template v-if="mergeResult.stats.configuratorSettingUpdates > 0">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.stats.configuratorSettingUpdates') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ mergeResult.stats.configuratorSettingUpdates }}
+                    </td>
+                </tr>
+            </template>
+
+            <template v-if="mergeResult.stats.groupsToDelete > 0">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.stats.groupsToDelete') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ mergeResult.stats.groupsToDelete }}
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
 </sw-card>
+
+{# Products Preview Modal #}
+<artiss-products-preview-modal
+    v-if="showProductsModal && mergeResult && mergeResult.stats && mergeResult.stats.affectedProductIds"
+    :productIds="mergeResult.stats.affectedProductIds"
+    :httpClient="httpClient"
+    :getAuthHeaders="getAuthHeaders"
+    @close="showProductsModal = false"
+/>
 
 <sw-modal
     v-if="showConfirmModal"
@@ -154,4 +202,3 @@
         </sw-button>
     </template>
 </sw-modal>
-

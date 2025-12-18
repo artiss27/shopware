@@ -69,7 +69,8 @@ Component.register('artiss-property-processing-transfer-tab', {
             transferDeleteEmpty: false,
             transferResult: null,
             showTransferConfirm: false,
-            dryRunMode: false
+            dryRunMode: false,
+            showProductsModal: false
         };
     },
 

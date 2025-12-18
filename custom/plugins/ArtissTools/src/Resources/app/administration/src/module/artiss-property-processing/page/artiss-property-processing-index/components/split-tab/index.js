@@ -43,7 +43,8 @@ Component.register('artiss-property-processing-split-tab', {
             sourceGroupOptions: [],
             selectedOptionIds: [],
             splitResult: null,
-            showSplitConfirmModal: false
+            showSplitConfirmModal: false,
+            showProductsModal: false
         };
     },
 

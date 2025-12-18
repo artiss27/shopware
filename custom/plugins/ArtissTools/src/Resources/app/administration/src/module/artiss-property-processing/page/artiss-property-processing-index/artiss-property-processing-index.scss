@@ -165,4 +165,172 @@
             margin-top: 20px;
         }
     }
+
+    // Unified result table styles
+    .artiss-result-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+
+        &__label {
+            width: 250px;
+            font-weight: 600;
+            color: #52667a;
+            background-color: #f9fafb;
+        }
+
+        &__section-header {
+            td {
+                padding-top: 16px !important;
+                padding-bottom: 8px !important;
+                font-size: 14px;
+                border-bottom: 1px solid #d1d9e0;
+            }
+        }
+
+        tr {
+            &:hover {
+                background-color: #f5f7fa;
+            }
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+    }
+
+    // Products link style
+    .artiss-products-link {
+        color: #189eff;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+            color: #0d6efd;
+        }
+    }
+}
+
+// Options info table styles (merge-options-tab)
+.artiss-options-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+
+    th, td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #d1d9e0;
+    }
+
+    th {
+        background-color: #f9fafb;
+        font-weight: 600;
+        color: #52667a;
+        white-space: nowrap;
+    }
+
+    td {
+        vertical-align: middle;
+    }
+
+    tr:hover {
+        background-color: #f5f7fa;
+    }
+
+    .artiss-options-info-table__target-row {
+        background-color: #e8f5e9;
+        
+        &:hover {
+            background-color: #c8e6c9;
+        }
+    }
+
+    .artiss-options-info-table__source-row {
+        background-color: #fff3e0;
+        
+        &:hover {
+            background-color: #ffe0b2;
+        }
+    }
+}
+
+// Products preview modal styles
+.artiss-products-preview-modal {
+    &__info {
+        margin-bottom: 16px;
+        padding: 12px;
+        background-color: #f9fafb;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    &__table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #d1d9e0;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #52667a;
+        }
+
+        tr:hover {
+            background-color: #f5f7fa;
+        }
+    }
+
+    &__product-link {
+        color: #189eff;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+            color: #0d6efd;
+        }
+    }
+
+    &__empty {
+        text-align: center;
+        color: #758ca3;
+        font-style: italic;
+    }
+
+    &__pagination {
+        margin-top: 16px;
+        padding: 16px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        
+        .sw-pagination {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            
+            .sw-pagination__controls {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .sw-field {
+                min-width: 80px;
+            }
+        }
+    }
 }

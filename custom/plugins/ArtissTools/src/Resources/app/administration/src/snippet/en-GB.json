@@ -128,8 +128,17 @@
             },
             "buttons": {
                 "dryRun": "Dry-Run (Simulation)",
+                "preview": "Preview",
                 "execute": "Execute",
-                "cancel": "Cancel"
+                "cancel": "Cancel",
+                "close": "Close"
+            },
+            "productsModal": {
+                "title": "Affected Products",
+                "totalProducts": "Total products",
+                "productNumber": "Product Number",
+                "productName": "Name",
+                "noProducts": "No products"
             },
             "confirm": {
                 "title": "Confirm Execution",

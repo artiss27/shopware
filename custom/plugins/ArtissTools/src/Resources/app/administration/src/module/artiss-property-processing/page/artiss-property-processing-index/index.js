@@ -5,6 +5,7 @@ import './components/merge-options-tab';
 import './components/split-tab';
 import './components/transfer-tab';
 import './components/cleanup-tab';
+import './components/products-preview-modal';
 
 const { Component, Mixin } = Shopware;
 

@@ -45,7 +45,8 @@ Component.register('artiss-property-processing-merge-options-tab', {
             optionsInfo: {},
             mergeResult: null,
             dryRunMode: true,
-            showConfirmModal: false
+            showConfirmModal: false,
+            showProductsModal: false
         };
     },
 

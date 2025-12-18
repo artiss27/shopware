@@ -66,8 +66,17 @@
             },
             "buttons": {
                 "dryRun": "Тестовый запуск",
+                "preview": "Предпросмотр",
                 "execute": "Выполнить",
-                "cancel": "Отмена"
+                "cancel": "Отмена",
+                "close": "Закрыть"
+            },
+            "productsModal": {
+                "title": "Затронутые товары",
+                "totalProducts": "Всего товаров",
+                "productNumber": "Артикул",
+                "productName": "Название",
+                "noProducts": "Нет товаров"
             },
             "confirm": {
                 "title": "Подтверждение",

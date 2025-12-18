@@ -84,6 +84,13 @@
             </call>
         </service>
 
+        <service id="ArtissTools\Controller\Api\ProductsController" public="true">
+            <argument type="service" id="product.repository"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
         <!-- Property Group Commands -->
         <service id="ArtissTools\Command\PropertyGroupMergeCommand">
             <argument type="service" id="property_group.repository"/>

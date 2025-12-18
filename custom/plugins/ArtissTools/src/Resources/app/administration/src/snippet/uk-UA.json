@@ -126,8 +126,17 @@
             },
             "buttons": {
                 "dryRun": "Тестовий запуск",
+                "preview": "Попередній перегляд",
                 "execute": "Виконати",
-                "cancel": "Скасувати"
+                "cancel": "Скасувати",
+                "close": "Закрити"
+            },
+            "productsModal": {
+                "title": "Затронуті товари",
+                "totalProducts": "Всього товарів",
+                "productNumber": "Артикул",
+                "productName": "Назва",
+                "noProducts": "Немає товарів"
             },
             "confirm": {
                 "title": "Підтвердження",

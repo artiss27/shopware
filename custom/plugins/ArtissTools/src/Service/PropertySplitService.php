@@ -197,17 +197,22 @@ class PropertySplitService
     {
         $totalProducts = 0;
         $totalVariants = 0;
+        $allProductIds = [];
 
         foreach ($optionIds as $optionId) {
             $counts = $this->countAffectedProducts($optionId);
             $totalProducts += $counts['products'];
             $totalVariants += $counts['variants'];
+            $allProductIds = array_merge($allProductIds, $counts['productIds']);
         }
 
+        $allProductIds = array_unique($allProductIds);
+
         return [
-            'totalProducts' => $totalProducts,
+            'totalProducts' => count($allProductIds),
             'totalVariants' => $totalVariants,
-            'total' => $totalProducts + $totalVariants
+            'total' => count($allProductIds) + $totalVariants,
+            'productIds' => array_values($allProductIds)
         ];
     }
 
@@ -216,15 +221,17 @@ class PropertySplitService
      */
     private function countAffectedProducts(string $optionId): array
     {
-        // Count in product_property (products)
+        // Get product IDs from product_property
         $qb = $this->connection->createQueryBuilder();
-        $productCount = (int) $qb
-            ->select('COUNT(DISTINCT product_id)')
+        $productIds = $qb
+            ->select('DISTINCT LOWER(HEX(product_id)) as product_id')
             ->from('product_property')
             ->where('property_group_option_id = :optionId')
             ->setParameter('optionId', Uuid::fromHexToBytes($optionId))
             ->executeQuery()
-            ->fetchOne();
+            ->fetchAllAssociative();
+
+        $productIdList = array_column($productIds, 'product_id');
 
         // Count in product_configurator_setting (variants)
         $qb = $this->connection->createQueryBuilder();
@@ -237,9 +244,10 @@ class PropertySplitService
             ->fetchOne();
 
         return [
-            'products' => $productCount,
+            'products' => count($productIdList),
             'variants' => $variantCount,
-            'total' => $productCount + $variantCount
+            'total' => count($productIdList) + $variantCount,
+            'productIds' => $productIdList
         ];
     }
 

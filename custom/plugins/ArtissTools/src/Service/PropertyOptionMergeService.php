@@ -79,6 +79,7 @@ class PropertyOptionMergeService
 
         $productPropertyCount = $this->countProductPropertyToUpdate($sourceOptionIds);
         $configuratorSettingCount = $this->countConfiguratorSettingToUpdate($sourceOptionIds);
+        $affectedProductIds = $this->getAffectedProductIds($sourceOptionIds);
 
         return [
             'target' => [
@@ -93,7 +94,8 @@ class PropertyOptionMergeService
             }, $sourceOptions),
             'stats' => [
                 'productPropertyCount' => $productPropertyCount,
-                'configuratorSettingCount' => $configuratorSettingCount
+                'configuratorSettingCount' => $configuratorSettingCount,
+                'affectedProductIds' => $affectedProductIds
             ]
         ];
     }
@@ -257,6 +259,24 @@ class PropertyOptionMergeService
         );
 
         return (int) $count;
+    }
+
+    /**
+     * Get product IDs affected by source options
+     */
+    private function getAffectedProductIds(array $optionIds): array
+    {
+        $optionIdsBin = array_map(fn($id) => Uuid::fromHexToBytes($id), $optionIds);
+
+        $qb = $this->connection->createQueryBuilder();
+        $productIds = $qb->select('DISTINCT LOWER(HEX(product_id)) as product_id')
+            ->from('product_property')
+            ->where('property_group_option_id IN (:optionIds)')
+            ->setParameter('optionIds', $optionIdsBin, ArrayParameterType::BINARY)
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        return array_column($productIds, 'product_id');
     }
 }
 

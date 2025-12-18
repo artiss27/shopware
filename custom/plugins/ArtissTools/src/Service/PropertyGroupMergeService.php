@@ -98,8 +98,11 @@ class PropertyGroupMergeService
                 'productPropertyUpdates' => 0,
                 'configuratorSettingUpdates' => 0,
                 'groupsToDelete' => 0,
+                'affectedProductIds' => [],
             ],
         ];
+
+        $allProductIds = [];
 
         foreach ($sourceGroups as $sourceGroup) {
             $sourceOptions = $this->loadGroupOptions($sourceGroup->getId(), $context);
@@ -117,9 +120,13 @@ class PropertyGroupMergeService
                 $sourceName = $this->getOptionName($sourceOption);
                 $matchingTargetOption = $this->findOptionByName($targetOptions, $sourceName);
 
-                if ($matchingTargetOption) {
-                    $affectedRecords = $this->countAffectedRecords($sourceOption->getId());
+                // Get affected records for this option
+                $affectedRecords = $this->countAffectedRecords($sourceOption->getId());
+                
+                // Collect all product IDs (for both merge and move)
+                $allProductIds = array_merge($allProductIds, $affectedRecords['productIds']);
 
+                if ($matchingTargetOption) {
                     $sourceData['mergeActions'][] = [
                         'sourceOptionId' => $sourceOption->getId(),
                         'sourceOptionName' => $sourceName,
@@ -135,6 +142,7 @@ class PropertyGroupMergeService
                     $sourceData['moveActions'][] = [
                         'optionId' => $sourceOption->getId(),
                         'optionName' => $sourceName,
+                        'productCount' => $affectedRecords['productProperty'],
                     ];
 
                     $plan['stats']['optionsToMove']++;
@@ -144,6 +152,8 @@ class PropertyGroupMergeService
             $plan['sources'][] = $sourceData;
             $plan['stats']['groupsToDelete']++;
         }
+
+        $plan['stats']['affectedProductIds'] = array_values(array_unique($allProductIds));
 
         return $plan;
     }
@@ -202,19 +212,24 @@ class PropertyGroupMergeService
 
     private function countAffectedRecords(string $optionId): array
     {
-        $productPropertyCount = (int) $this->connection->fetchOne(
-            'SELECT COUNT(*) FROM product_property WHERE property_group_option_id = :optionId',
-            ['optionId' => hex2bin($optionId)]
+        $optionIdBin = hex2bin($optionId);
+        
+        // Get product IDs
+        $productIds = $this->connection->fetchAllAssociative(
+            'SELECT DISTINCT LOWER(HEX(product_id)) as product_id FROM product_property WHERE property_group_option_id = :optionId',
+            ['optionId' => $optionIdBin]
         );
+        $productIdList = array_column($productIds, 'product_id');
 
         $configuratorSettingCount = (int) $this->connection->fetchOne(
             'SELECT COUNT(*) FROM product_configurator_setting WHERE property_group_option_id = :optionId',
-            ['optionId' => hex2bin($optionId)]
+            ['optionId' => $optionIdBin]
         );
 
         return [
-            'productProperty' => $productPropertyCount,
+            'productProperty' => count($productIdList),
             'configuratorSetting' => $configuratorSettingCount,
+            'productIds' => $productIdList,
         ];
     }
 

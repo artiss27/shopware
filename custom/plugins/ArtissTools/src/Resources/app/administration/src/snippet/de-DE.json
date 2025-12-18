@@ -126,8 +126,17 @@
             },
             "buttons": {
                 "dryRun": "Testlauf",
+                "preview": "Vorschau",
                 "execute": "Ausführen",
-                "cancel": "Abbrechen"
+                "cancel": "Abbrechen",
+                "close": "Schließen"
+            },
+            "productsModal": {
+                "title": "Betroffene Produkte",
+                "totalProducts": "Gesamtprodukte",
+                "productNumber": "Produktnummer",
+                "productName": "Name",
+                "noProducts": "Keine Produkte"
             },
             "confirm": {
                 "title": "Ausführung bestätigen",

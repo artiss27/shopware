@@ -206,7 +206,7 @@
         @click="previewTransfer"
         :disabled="isLoading"
     >
-        {{ $tc('artissTools.propertyProcessing.transfer.buttons.preview') }}
+        {{ $tc('artissTools.propertyProcessing.buttons.preview') }}
     </sw-button>
 
     <sw-button
@@ -229,98 +229,135 @@
         </sw-alert>
     </div>
 
-    <div class="transfer-result">
-        <sw-description-list>
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.transfer.result.affectedProducts') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                <strong>{{ transferResult.stats.affectedProducts || 0 }}</strong>
-            </sw-description-list-description>
+    <table class="sw-data-grid__table sw-table artiss-result-table">
+        <tbody>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.productsModal.totalProducts') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    <a
+                        v-if="transferResult.stats.productIds && transferResult.stats.productIds.length > 0"
+                        href="#"
+                        @click.prevent="showProductsModal = true"
+                        class="artiss-products-link"
+                    >
+                        {{ transferResult.stats.productIds.length }}
+                    </a>
+                    <span v-else>{{ transferResult.stats.affectedProducts || 0 }}</span>
+                </td>
+            </tr>
 
             <template v-if="transferResult.stats.valuesRead !== undefined && transferResult.stats.valuesRead > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.valuesRead') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.valuesRead }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.valuesRead') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.valuesRead }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.valuesWritten !== undefined && transferResult.stats.valuesWritten > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.valuesWritten') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.valuesWritten }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.valuesWritten') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.valuesWritten }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.valuesTransferred !== undefined && transferResult.stats.valuesTransferred > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.valuesTransferred') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.valuesTransferred }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.valuesTransferred') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.valuesTransferred }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.optionsCreated !== undefined && transferResult.stats.optionsCreated > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.optionsCreated') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.optionsCreated }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.optionsCreated') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.optionsCreated }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.optionsMapped !== undefined && transferResult.stats.optionsMapped > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.optionsMapped') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.optionsMapped }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.optionsMapped') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.optionsMapped }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.associationsCreated !== undefined && transferResult.stats.associationsCreated > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.associationsCreated') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.associationsCreated }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.associationsCreated') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.associationsCreated }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.optionsDeleted !== undefined && transferResult.stats.optionsDeleted > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.optionsDeleted') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.optionsDeleted }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.optionsDeleted') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.optionsDeleted }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.groupsDeleted !== undefined && transferResult.stats.groupsDeleted > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.groupsDeleted') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.groupsDeleted }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.groupsDeleted') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.groupsDeleted }}
+                    </td>
+                </tr>
             </template>
 
             <template v-if="transferResult.stats.fieldsDeleted !== undefined && transferResult.stats.fieldsDeleted > 0">
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.transfer.result.fieldsDeleted') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ transferResult.stats.fieldsDeleted }}
-                </sw-description-list-description>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.transfer.result.fieldsDeleted') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ transferResult.stats.fieldsDeleted }}
+                    </td>
+                </tr>
             </template>
-        </sw-description-list>
-    </div>
+        </tbody>
+    </table>
 </sw-card>
+
+{# Products Preview Modal #}
+<artiss-products-preview-modal
+    v-if="showProductsModal && transferResult && transferResult.stats && transferResult.stats.productIds"
+    :productIds="transferResult.stats.productIds"
+    :httpClient="httpClient"
+    :getAuthHeaders="getAuthHeaders"
+    @close="showProductsModal = false"
+/>
 
 {# Confirmation modal #}
 <sw-modal

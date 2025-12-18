@@ -75,7 +75,7 @@
         :disabled="isLoading"
         @click="previewSplit"
     >
-        {{ $tc('artissTools.propertyProcessing.split.buttons.preview') }}
+        {{ $tc('artissTools.propertyProcessing.buttons.preview') }}
     </sw-button>
 
     <sw-button
@@ -92,93 +92,139 @@
     v-if="splitResult"
     :title="$tc('artissTools.propertyProcessing.split.result.title')"
 >
-    <div class="artiss-split-result">
-        <h3>{{ $tc('artissTools.propertyProcessing.split.result.sourceGroup') }}</h3>
-        <sw-description-list>
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.groupName') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.sourceGroup.name }}
-            </sw-description-list-description>
+    <div v-if="!splitResult.success" class="artiss-property-processing-index__dry-run-notice">
+        <sw-alert variant="info">
+            {{ $tc('artissTools.propertyProcessing.messages.dryRunMode') }}
+        </sw-alert>
+    </div>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.totalOptions') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.sourceGroup.totalOptions }}
-            </sw-description-list-description>
+    <table class="sw-data-grid__table sw-table artiss-result-table">
+        <tbody>
+            <tr class="sw-data-grid__row sw-table__row artiss-result-table__section-header">
+                <td colspan="2" class="sw-data-grid__cell sw-table__cell">
+                    <strong>{{ $tc('artissTools.propertyProcessing.split.result.sourceGroup') }}</strong>
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.groupName') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ splitResult.sourceGroup.name }}
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.totalOptions') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ splitResult.sourceGroup.totalOptions }}
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.remainingOptions') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ splitResult.sourceGroup.remainingOptions }}
+                </td>
+            </tr>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.remainingOptions') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.sourceGroup.remainingOptions }}
-            </sw-description-list-description>
-        </sw-description-list>
+            <tr class="sw-data-grid__row sw-table__row artiss-result-table__section-header">
+                <td colspan="2" class="sw-data-grid__cell sw-table__cell">
+                    <strong>{{ $tc('artissTools.propertyProcessing.split.result.targetGroup') }}</strong>
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.groupName') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ splitResult.targetGroup.name }}
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.currentOptions') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ splitResult.targetGroup.currentOptions }}
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.optionsToMove') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    {{ splitResult.targetGroup.optionsToMove }}
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.totalAfterMove') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    <strong>{{ splitResult.targetGroup.totalAfterMove }}</strong>
+                </td>
+            </tr>
 
-        <h3>{{ $tc('artissTools.propertyProcessing.split.result.targetGroup') }}</h3>
-        <sw-description-list>
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.groupName') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.targetGroup.name }}
-            </sw-description-list-description>
+            <tr class="sw-data-grid__row sw-table__row artiss-result-table__section-header">
+                <td colspan="2" class="sw-data-grid__cell sw-table__cell">
+                    <strong>{{ $tc('artissTools.propertyProcessing.split.result.affectedEntitiesTitle') }}</strong>
+                </td>
+            </tr>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.productsModal.totalProducts') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    <a
+                        v-if="splitResult.affectedEntities.productIds && splitResult.affectedEntities.productIds.length > 0"
+                        href="#"
+                        @click.prevent="showProductsModal = true"
+                        class="artiss-products-link"
+                    >
+                        {{ splitResult.affectedEntities.totalProducts }}
+                    </a>
+                    <span v-else>{{ splitResult.affectedEntities.totalProducts }}</span>
+                </td>
+            </tr>
+            <template v-if="splitResult.affectedEntities.totalVariants > 0">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.split.result.affectedVariants') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ splitResult.affectedEntities.totalVariants }}
+                    </td>
+                </tr>
+            </template>
+            <tr class="sw-data-grid__row sw-table__row">
+                <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                    {{ $tc('artissTools.propertyProcessing.split.result.totalAffected') }}
+                </td>
+                <td class="sw-data-grid__cell sw-table__cell">
+                    <strong>{{ splitResult.affectedEntities.total }}</strong>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.currentOptions') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.targetGroup.currentOptions }}
-            </sw-description-list-description>
-
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.optionsToMove') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.targetGroup.optionsToMove }}
-            </sw-description-list-description>
-
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.totalAfterMove') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                <strong>{{ splitResult.targetGroup.totalAfterMove }}</strong>
-            </sw-description-list-description>
-        </sw-description-list>
-
-        <h3>{{ $tc('artissTools.propertyProcessing.split.result.affectedEntitiesTitle') }}</h3>
-        <sw-description-list>
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.affectedProducts') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.affectedEntities.totalProducts }}
-            </sw-description-list-description>
-
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.affectedVariants') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                {{ splitResult.affectedEntities.totalVariants }}
-            </sw-description-list-description>
-
-            <sw-description-list-term>
-                {{ $tc('artissTools.propertyProcessing.split.result.totalAffected') }}
-            </sw-description-list-term>
-            <sw-description-list-description>
-                <strong>{{ splitResult.affectedEntities.total }}</strong>
-            </sw-description-list-description>
-        </sw-description-list>
-
-        <div v-if="splitResult.success" class="artiss-split-success">
-            <sw-alert variant="success">
-                {{ $tc('artissTools.propertyProcessing.split.result.successMessage') }}
-            </sw-alert>
-        </div>
+    <div v-if="splitResult.success" class="artiss-split-success">
+        <sw-alert variant="success">
+            {{ $tc('artissTools.propertyProcessing.split.result.successMessage') }}
+        </sw-alert>
     </div>
 </sw-card>
+
+{# Products Preview Modal #}
+<artiss-products-preview-modal
+    v-if="showProductsModal && splitResult && splitResult.affectedEntities && splitResult.affectedEntities.productIds"
+    :productIds="splitResult.affectedEntities.productIds"
+    :httpClient="httpClient"
+    :getAuthHeaders="getAuthHeaders"
+    @close="showProductsModal = false"
+/>
 
 {# Confirmation modal #}
 <sw-modal

@@ -1,0 +1,72 @@
+<sw-modal
+    :title="title || $tc('artissTools.propertyProcessing.productsModal.title')"
+    variant="large"
+    @modal-close="closeModal"
+>
+    <sw-loader v-if="isLoading" />
+
+    <template v-else>
+        <div class="artiss-products-preview-modal__info">
+            {{ $tc('artissTools.propertyProcessing.productsModal.totalProducts') }}: <strong>{{ totalProducts }}</strong>
+        </div>
+
+        <table class="sw-data-grid__table sw-table artiss-products-preview-modal__table">
+            <thead>
+                <tr class="sw-data-grid__row sw-table__row">
+                    <th class="sw-data-grid__cell sw-table__cell">{{ $tc('artissTools.propertyProcessing.productsModal.productNumber') }}</th>
+                    <th class="sw-data-grid__cell sw-table__cell">{{ $tc('artissTools.propertyProcessing.productsModal.productName') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-if="products.length > 0">
+                    <tr v-for="product in products" :key="product.id" class="sw-data-grid__row sw-table__row">
+                        <td class="sw-data-grid__cell sw-table__cell">
+                            <a
+                                href="#"
+                                @click.prevent="openProductInNewTab(product.id)"
+                                class="artiss-products-preview-modal__product-link"
+                            >
+                                {{ product.productNumber }}
+                            </a>
+                        </td>
+                        <td class="sw-data-grid__cell sw-table__cell">
+                            <a
+                                href="#"
+                                @click.prevent="openProductInNewTab(product.id)"
+                                class="artiss-products-preview-modal__product-link"
+                            >
+                                {{ product.name }}
+                            </a>
+                        </td>
+                    </tr>
+                </template>
+                <template v-else>
+                    <tr class="sw-data-grid__row sw-table__row">
+                        <td colspan="2" class="sw-data-grid__cell sw-table__cell artiss-products-preview-modal__empty">
+                            {{ $tc('artissTools.propertyProcessing.productsModal.noProducts') }}
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+
+        <div v-if="showPagination" class="artiss-products-preview-modal__pagination">
+            <sw-pagination
+                :total="totalProducts"
+                :limit="pageSize"
+                :page="currentPage"
+                @page-change="onPageChange"
+            />
+        </div>
+    </template>
+
+    <template #modal-footer>
+        <sw-button
+            variant="primary"
+            @click="closeModal"
+        >
+            {{ $tc('artissTools.propertyProcessing.buttons.close') }}
+        </sw-button>
+    </template>
+</sw-modal>
+

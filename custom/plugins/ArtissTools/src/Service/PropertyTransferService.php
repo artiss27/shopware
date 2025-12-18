@@ -68,7 +68,8 @@ class PropertyTransferService
             'valuesRead' => 0,
             'valuesWritten' => 0,
             'optionsDeleted' => 0,
-            'groupsDeleted' => 0
+            'groupsDeleted' => 0,
+            'productIds' => []
         ];
 
         if (!$dryRun) {
@@ -88,6 +89,7 @@ class PropertyTransferService
                 }
 
                 $stats['affectedProducts']++;
+                $stats['productIds'][] = $productId;
                 $stats['valuesRead'] += count($optionNames);
 
                 if (!$dryRun) {
@@ -143,7 +145,8 @@ class PropertyTransferService
             'optionsMapped' => 0,
             'optionsCreated' => 0,
             'optionsDeleted' => 0,
-            'groupsDeleted' => 0
+            'groupsDeleted' => 0,
+            'productIds' => []
         ];
 
         if (!$dryRun) {
@@ -163,6 +166,7 @@ class PropertyTransferService
                 }
 
                 $stats['affectedProducts']++;
+                $stats['productIds'][] = $productId;
 
                 foreach ($sourceOptions as $sourceOption) {
                     $optionName = $sourceOption['name'];
@@ -239,6 +243,7 @@ class PropertyTransferService
             'valuesRead' => 0,
             'optionsCreated' => 0,
             'associationsCreated' => 0,
+            'productIds' => [],
             'fieldsDeleted' => 0
         ];
 
@@ -261,6 +266,7 @@ class PropertyTransferService
                 }
 
                 $stats['affectedProducts']++;
+                $stats['productIds'][] = $productId;
                 $values = is_array($sourceValue) ? $sourceValue : [$sourceValue];
                 $stats['valuesRead'] += count($values);
 
@@ -328,7 +334,8 @@ class PropertyTransferService
         $stats = [
             'affectedProducts' => 0,
             'valuesTransferred' => 0,
-            'fieldsDeleted' => 0
+            'fieldsDeleted' => 0,
+            'productIds' => []
         ];
 
         if (!$dryRun) {
@@ -349,6 +356,7 @@ class PropertyTransferService
                 }
 
                 $stats['affectedProducts']++;
+                $stats['productIds'][] = $productId;
 
                 if (!$dryRun) {
                     $customFields[$targetFieldName] = $sourceValue;

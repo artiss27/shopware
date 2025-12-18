@@ -44,37 +44,35 @@
         v-if="targetOptionId || sourceOptionIds.length > 0"
         :title="$tc('artissTools.propertyProcessing.mergeOptions.optionsInfo')"
     >
-        <table class="sw-data-grid__table sw-table">
+        <table class="artiss-options-info-table">
             <thead>
-                <tr class="sw-data-grid__row sw-table__row">
-                    <th class="sw-data-grid__cell sw-table__cell">{{ $tc('artissTools.propertyProcessing.mergeOptions.table.type') }}</th>
-                    <th class="sw-data-grid__cell sw-table__cell">{{ $tc('artissTools.propertyProcessing.mergeOptions.table.name') }}</th>
-                    <th class="sw-data-grid__cell sw-table__cell">{{ $tc('artissTools.propertyProcessing.mergeOptions.table.productCount') }}</th>
-                    <th class="sw-data-grid__cell sw-table__cell">{{ $tc('artissTools.propertyProcessing.mergeOptions.table.variantCount') }}</th>
+                <tr>
+                    <th>{{ $tc('artissTools.propertyProcessing.mergeOptions.table.type') }}</th>
+                    <th>{{ $tc('artissTools.propertyProcessing.mergeOptions.table.name') }}</th>
+                    <th>{{ $tc('artissTools.propertyProcessing.mergeOptions.table.productCount') }}</th>
+                    <th>{{ $tc('artissTools.propertyProcessing.mergeOptions.table.variantCount') }}</th>
                 </tr>
             </thead>
             <tbody>
                 <template v-if="targetOptionInfo">
-                    <tr class="sw-data-grid__row sw-table__row">
-                        <td class="sw-data-grid__cell sw-table__cell">
+                    <tr class="artiss-options-info-table__target-row">
+                        <td>
                             <strong>{{ $tc('artissTools.propertyProcessing.mergeOptions.targetOption') }}</strong>
                         </td>
-                        <td class="sw-data-grid__cell sw-table__cell">
+                        <td>
                             <strong>{{ targetOptionInfo.name }}</strong>
                         </td>
-                        <td class="sw-data-grid__cell sw-table__cell">{{ targetOptionInfo.productCount || 0 }}</td>
-                        <td class="sw-data-grid__cell sw-table__cell">{{ targetOptionInfo.variantCount || 0 }}</td>
+                        <td>{{ targetOptionInfo.productCount || 0 }}</td>
+                        <td>{{ targetOptionInfo.variantCount || 0 }}</td>
                     </tr>
                 </template>
                 <template v-for="optionId in sourceOptionIds" :key="optionId">
                     <template v-if="optionsInfo[optionId]">
-                        <tr class="sw-data-grid__row sw-table__row">
-                            <td class="sw-data-grid__cell sw-table__cell">
-                                {{ $tc('artissTools.propertyProcessing.mergeOptions.sourceOptions') }}
-                            </td>
-                            <td class="sw-data-grid__cell sw-table__cell">{{ optionsInfo[optionId].name }}</td>
-                            <td class="sw-data-grid__cell sw-table__cell">{{ optionsInfo[optionId].productCount || 0 }}</td>
-                            <td class="sw-data-grid__cell sw-table__cell">{{ optionsInfo[optionId].variantCount || 0 }}</td>
+                        <tr class="artiss-options-info-table__source-row">
+                            <td>{{ $tc('artissTools.propertyProcessing.mergeOptions.sourceOptions') }}</td>
+                            <td>{{ optionsInfo[optionId].name }}</td>
+                            <td>{{ optionsInfo[optionId].productCount || 0 }}</td>
+                            <td>{{ optionsInfo[optionId].variantCount || 0 }}</td>
                         </tr>
                     </template>
                 </template>
@@ -94,7 +92,7 @@
         :disabled="isLoading"
         @click="executeDryRun"
     >
-        {{ $tc('artissTools.propertyProcessing.mergeOptions.buttons.simulate') }}
+        {{ $tc('artissTools.propertyProcessing.buttons.preview') }}
     </sw-button>
 
     <sw-button
@@ -117,59 +115,93 @@
         </sw-alert>
     </div>
 
-    <div class="merge-options-result">
-        <template v-if="mergeResult.target">
-            <h3>{{ $tc('artissTools.propertyProcessing.mergeOptions.result.target') }}</h3>
-            <sw-description-list>
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.mergeOptions.result.name') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    <strong>{{ mergeResult.target.name }}</strong>
-                </sw-description-list-description>
-            </sw-description-list>
-        </template>
+    <table class="sw-data-grid__table sw-table artiss-result-table">
+        <tbody>
+            <template v-if="mergeResult.target">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.mergeOptions.result.target') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        <strong>{{ mergeResult.target.name }}</strong>
+                    </td>
+                </tr>
+            </template>
 
-        <template v-if="mergeResult.sources && mergeResult.sources.length > 0">
-            <h3>{{ $tc('artissTools.propertyProcessing.mergeOptions.result.sources') }}</h3>
-            <ul>
-                <li v-for="source in mergeResult.sources" :key="source.id">
-                    <strong>{{ source.name }}</strong>
-                </li>
-            </ul>
-        </template>
+            <template v-if="mergeResult.sources && mergeResult.sources.length > 0">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.mergeOptions.result.sources') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        <span v-for="(source, index) in mergeResult.sources" :key="source.id">
+                            {{ source.name }}<span v-if="index < mergeResult.sources.length - 1">, </span>
+                        </span>
+                    </td>
+                </tr>
+            </template>
 
-        <template v-if="mergeResult.stats">
-            <h3>{{ $tc('artissTools.propertyProcessing.mergeOptions.result.statistics') }}</h3>
-            <sw-description-list>
-                <sw-description-list-term>
-                    {{ $tc('artissTools.propertyProcessing.mergeOptions.result.productPropertyUpdates') }}
-                </sw-description-list-term>
-                <sw-description-list-description>
-                    {{ mergeResult.stats.productPropertyCount || 0 }}
-                </sw-description-list-description>
+            <template v-if="mergeResult.stats">
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.productsModal.totalProducts') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        <a
+                            v-if="mergeResult.stats.affectedProductIds && mergeResult.stats.affectedProductIds.length > 0"
+                            href="#"
+                            @click.prevent="showProductsModal = true"
+                            class="artiss-products-link"
+                        >
+                            {{ mergeResult.stats.affectedProductIds.length }}
+                        </a>
+                        <span v-else>0</span>
+                    </td>
+                </tr>
+
+                <tr class="sw-data-grid__row sw-table__row">
+                    <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                        {{ $tc('artissTools.propertyProcessing.mergeOptions.result.productPropertyUpdates') }}
+                    </td>
+                    <td class="sw-data-grid__cell sw-table__cell">
+                        {{ mergeResult.stats.productPropertyCount || 0 }}
+                    </td>
+                </tr>
 
                 <template v-if="mergeResult.stats.configuratorSettingCount !== undefined && mergeResult.stats.configuratorSettingCount > 0">
-                    <sw-description-list-term>
-                        {{ $tc('artissTools.propertyProcessing.mergeOptions.result.configuratorSettingUpdates') }}
-                    </sw-description-list-term>
-                    <sw-description-list-description>
-                        {{ mergeResult.stats.configuratorSettingCount }}
-                    </sw-description-list-description>
+                    <tr class="sw-data-grid__row sw-table__row">
+                        <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                            {{ $tc('artissTools.propertyProcessing.mergeOptions.result.configuratorSettingUpdates') }}
+                        </td>
+                        <td class="sw-data-grid__cell sw-table__cell">
+                            {{ mergeResult.stats.configuratorSettingCount }}
+                        </td>
+                    </tr>
                 </template>
 
                 <template v-if="mergeResult.stats.deletedOptionIds && mergeResult.stats.deletedOptionIds.length > 0">
-                    <sw-description-list-term>
-                        {{ $tc('artissTools.propertyProcessing.mergeOptions.result.deletedOptions') }}
-                    </sw-description-list-term>
-                    <sw-description-list-description>
-                        {{ mergeResult.stats.deletedOptionIds.length }}
-                    </sw-description-list-description>
+                    <tr class="sw-data-grid__row sw-table__row">
+                        <td class="sw-data-grid__cell sw-table__cell artiss-result-table__label">
+                            {{ $tc('artissTools.propertyProcessing.mergeOptions.result.deletedOptions') }}
+                        </td>
+                        <td class="sw-data-grid__cell sw-table__cell">
+                            {{ mergeResult.stats.deletedOptionIds.length }}
+                        </td>
+                    </tr>
                 </template>
-            </sw-description-list>
-        </template>
-    </div>
+            </template>
+        </tbody>
+    </table>
 </sw-card>
+
+{# Products Preview Modal #}
+<artiss-products-preview-modal
+    v-if="showProductsModal && mergeResult && mergeResult.stats && mergeResult.stats.affectedProductIds"
+    :productIds="mergeResult.stats.affectedProductIds"
+    :httpClient="httpClient"
+    :getAuthHeaders="getAuthHeaders"
+    @close="showProductsModal = false"
+/>
 
 {# Confirmation Modal #}
 <sw-modal
