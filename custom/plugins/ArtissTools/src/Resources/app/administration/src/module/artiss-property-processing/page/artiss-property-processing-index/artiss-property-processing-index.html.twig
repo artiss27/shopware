@@ -16,20 +16,24 @@
 
         {% block artiss_property_processing_index_content %}
             <template #content>
-                <sw-tabs class="sw-tabs--small artiss-property-processing-index__tabs" @new-item-active="onTabChange" default-item="merge">
-                    <sw-tabs-item name="merge">
+                <sw-tabs 
+                    class="sw-tabs--small artiss-property-processing-index__tabs" 
+                    @new-item-active="onTabChange" 
+                    :default-item="activeTab"
+                >
+                    <sw-tabs-item name="merge" :active-tab="activeTab">
                         {{ $tc('artissTools.propertyProcessing.tabs.merge') }}
                     </sw-tabs-item>
-                    <sw-tabs-item name="merge-options">
+                    <sw-tabs-item name="merge-options" :active-tab="activeTab">
                         {{ $tc('artissTools.propertyProcessing.tabs.mergeOptions') }}
                     </sw-tabs-item>
-                    <sw-tabs-item name="split">
+                    <sw-tabs-item name="split" :active-tab="activeTab">
                         {{ $tc('artissTools.propertyProcessing.tabs.split') }}
                     </sw-tabs-item>
-                    <sw-tabs-item name="transfer">
+                    <sw-tabs-item name="transfer" :active-tab="activeTab">
                         {{ $tc('artissTools.propertyProcessing.tabs.transfer') }}
                     </sw-tabs-item>
-                    <sw-tabs-item name="cleanup">
+                    <sw-tabs-item name="cleanup" :active-tab="activeTab">
                         {{ $tc('artissTools.propertyProcessing.tabs.cleanup') }}
                     </sw-tabs-item>
                 </sw-tabs>
