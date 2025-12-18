@@ -54,6 +54,8 @@
                     },
                     "outputDir": "Ausgabeverzeichnis",
                     "keep": "Backups behalten",
+                    "compress": "Komprimieren (gzip)",
+                    "compressHelp": "Nicht empfohlen - Mediendateien sind bereits komprimiert, minimale Größenreduzierung, aber viel langsamere Backup-Erstellung",
                     "excludeThumbnails": "Thumbnails ausschließen",
                     "comment": "Kommentar",
                     "commentPlaceholder": "Optionaler Backup-Kommentar...",

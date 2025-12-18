@@ -150,6 +150,12 @@
                     />
 
                     <sw-checkbox-field
+                        v-model:value="mediaBackup.compress"
+                        :label="$tc('artissTools.backups.create.mediaBackup.compress')"
+                        :helpText="$tc('artissTools.backups.create.mediaBackup.compressHelp')"
+                    />
+
+                    <sw-checkbox-field
                         v-model:value="mediaBackup.excludeThumbnails"
                         :label="$tc('artissTools.backups.create.mediaBackup.excludeThumbnails')"
                     />

@@ -2,7 +2,8 @@
 
 /**
  * Description:
- *   Creates a tar.gz archive of Shopware media files.
+ *   Creates a tar archive of Shopware media files.
+ *   By default creates uncompressed .tar (media files are already compressed).
  *   Supports full media backup or product-only scope with optional thumbnail exclusion.
  *
  * Usage:
@@ -12,6 +13,7 @@
  *   --scope=all|product       Backup scope: all media or product media only (default: all)
  *   --output-dir=PATH         Directory to save backup (default: artiss-backups/media)
  *   --keep=INT                Number of backups to keep (default: 5)
+ *   --compress                Compress archive with gzip (slower, minimal size reduction for media)
  *   --exclude-thumbnails      Exclude thumbnail files from backup
  *   --no-exclude-thumbnails   Include all thumbnails in backup
  *   --comment="TEXT"          Comment to include in backup metadata
@@ -60,6 +62,7 @@ class BackupMediaCommand extends Command
             ->addOption('scope', 's', InputOption::VALUE_REQUIRED, 'Backup scope: all or product', 'all')
             ->addOption('output-dir', 'o', InputOption::VALUE_REQUIRED, 'Output directory', 'artiss-backups/media')
             ->addOption('keep', 'k', InputOption::VALUE_REQUIRED, 'Number of backups to keep', '5')
+            ->addOption('compress', null, InputOption::VALUE_NONE, 'Compress with gzip (slower, minimal benefit for media)')
             ->addOption('exclude-thumbnails', null, InputOption::VALUE_NONE, 'Exclude thumbnails from backup')
             ->addOption('no-exclude-thumbnails', null, InputOption::VALUE_NONE, 'Include thumbnails in backup')
             ->addOption('comment', 'c', InputOption::VALUE_REQUIRED, 'Comment for this backup');
@@ -72,6 +75,7 @@ class BackupMediaCommand extends Command
         $scope = $input->getOption('scope');
         $outputDir = $input->getOption('output-dir');
         $keep = (int) $input->getOption('keep');
+        $compress = $input->getOption('compress');
         $excludeThumbnails = $input->getOption('exclude-thumbnails');
         $noExcludeThumbnails = $input->getOption('no-exclude-thumbnails');
         $comment = $input->getOption('comment');
@@ -104,15 +108,17 @@ class BackupMediaCommand extends Command
             return Command::FAILURE;
         }
 
-        // Generate filename
+        // Generate filename (no compression by default for media)
         $timestamp = date('Ymd-His');
-        $filename = sprintf('media-backup-%s-%s.tar.gz', $scope, $timestamp);
+        $extension = $compress ? 'tar.gz' : 'tar';
+        $filename = sprintf('media-backup-%s-%s.%s', $scope, $timestamp, $extension);
         $filePath = $outputPath . '/' . $filename;
 
         $io->title('ArtissTools Media Backup');
         $io->text([
             sprintf('Scope: <info>%s</info>', $scope),
             sprintf('Output: <info>%s</info>', $filePath),
+            sprintf('Compression: <info>%s</info>', $compress ? 'gzip' : 'none (faster)'),
             sprintf('Exclude thumbnails: <info>%s</info>', $skipThumbnails ? 'yes' : 'no'),
         ]);
 
@@ -133,7 +139,7 @@ class BackupMediaCommand extends Command
             $io->text('Creating archive...');
 
             // Create archive
-            $this->createArchive($mediaPath, $files, $filePath, $comment, $io);
+            $this->createArchive($mediaPath, $files, $filePath, $compress, $comment, $io);
 
         } catch (\Exception $e) {
             $io->error(sprintf('Backup failed: %s', $e->getMessage()));
@@ -292,7 +298,7 @@ class BackupMediaCommand extends Command
         });
     }
 
-    private function createArchive(string $mediaPath, array $files, string $outputFile, ?string $comment, SymfonyStyle $io): void
+    private function createArchive(string $mediaPath, array $files, string $outputFile, bool $compress, ?string $comment, SymfonyStyle $io): void
     {
         // Create a temporary file list for tar command
         $fileListPath = sys_get_temp_dir() . '/artiss-media-backup-' . uniqid() . '.txt';
@@ -320,9 +326,12 @@ class BackupMediaCommand extends Command
             $io->text(sprintf('  Creating archive with %d files...', count($files)));
 
             // Use system tar command with POSIX extended format for long filenames
+            // -c = create, -z = gzip (optional), -f = file
+            $tarOptions = $compress ? '-czf' : '-cf';
             $cmd = sprintf(
-                'cd %s && tar --format=posix -czf %s -T %s 2>&1',
+                'cd %s && tar --format=posix %s %s -T %s 2>&1',
                 escapeshellarg($mediaPath),
+                $tarOptions,
                 escapeshellarg($outputFile),
                 escapeshellarg($fileListPath)
             );
@@ -350,10 +359,20 @@ class BackupMediaCommand extends Command
 
     private function cleanupOldBackups(string $outputPath, int $keep, string $scope): int
     {
-        $pattern = sprintf('%s/media-backup-%s-*.tar.gz', $outputPath, $scope);
-        $files = glob($pattern);
+        // Find both .tar and .tar.gz files
+        $patternTar = sprintf('%s/media-backup-%s-*.tar', $outputPath, $scope);
+        $patternTarGz = sprintf('%s/media-backup-%s-*.tar.gz', $outputPath, $scope);
+        
+        $filesTar = glob($patternTar) ?: [];
+        $filesTarGz = glob($patternTarGz) ?: [];
+        
+        // Combine and deduplicate (exclude .tar.gz from .tar matches)
+        $files = array_merge(
+            array_filter($filesTar, fn($f) => !str_ends_with($f, '.tar.gz')),
+            $filesTarGz
+        );
 
-        if ($files === false || count($files) <= $keep) {
+        if (count($files) <= $keep) {
             return 0;
         }
 

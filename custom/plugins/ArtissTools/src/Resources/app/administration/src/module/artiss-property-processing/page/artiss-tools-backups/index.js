@@ -41,6 +41,7 @@ Component.register('artiss-tools-backups', {
                 scope: 'all',
                 outputDir: 'artiss-backups/media',
                 keep: 5,
+                compress: false,
                 excludeThumbnails: true,
                 comment: ''
             },
@@ -283,6 +284,7 @@ Component.register('artiss-tools-backups', {
                         scope: this.mediaBackup.scope,
                         outputDir: this.mediaBackup.outputDir,
                         keep: this.mediaBackup.keep,
+                        compress: this.mediaBackup.compress,
                         excludeThumbnails: this.mediaBackup.excludeThumbnails,
                         comment: this.mediaBackup.comment || null
                     },

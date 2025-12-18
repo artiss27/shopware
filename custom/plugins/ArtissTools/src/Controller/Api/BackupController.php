@@ -109,6 +109,7 @@ class BackupController extends AbstractController
                 'scope' => $data['scope'] ?? 'all',
                 'outputDir' => $data['outputDir'] ?? null,
                 'keep' => $data['keep'] ?? 3,
+                'compress' => $data['compress'] ?? false,
                 'excludeThumbnails' => $data['excludeThumbnails'] ?? true,
                 'comment' => $data['comment'] ?? null,
             ];

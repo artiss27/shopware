@@ -108,6 +108,11 @@ class BackupService
             '--keep' => (string) ($options['keep'] ?? $config['backupRetention']),
         ];
 
+        // Compression disabled by default (media files are already compressed)
+        if (!empty($options['compress'])) {
+            $commandArgs['--compress'] = true;
+        }
+
         $excludeThumbnails = $options['excludeThumbnails'] ?? $config['mediaExcludeThumbnailsDefault'];
         if ($excludeThumbnails) {
             $commandArgs['--exclude-thumbnails'] = true;
@@ -137,11 +142,18 @@ class BackupService
             return null;
         }
 
-        $pattern = $backupType === 'db' 
-            ? $fullPath . '/shopware-db-*.sql*'
-            : $fullPath . '/media-backup-*.tar.gz';
-            
-        $files = glob($pattern);
+        if ($backupType === 'db') {
+            $files = glob($fullPath . '/shopware-db-*.sql*') ?: [];
+        } else {
+            // Find both .tar and .tar.gz media backups
+            $filesTar = glob($fullPath . '/media-backup-*.tar') ?: [];
+            $filesTarGz = glob($fullPath . '/media-backup-*.tar.gz') ?: [];
+            // Combine and exclude .tar.gz from .tar matches
+            $files = array_merge(
+                array_filter($filesTar, fn($f) => !str_ends_with($f, '.tar.gz')),
+                $filesTarGz
+            );
+        }
         
         if (empty($files)) {
             return null;
@@ -191,11 +203,18 @@ class BackupService
             return [];
         }
 
-        $pattern = $backupType === 'db' 
-            ? $fullPath . '/shopware-db-*.sql*'
-            : $fullPath . '/media-backup-*.tar.gz';
-            
-        $files = glob($pattern);
+        if ($backupType === 'db') {
+            $files = glob($fullPath . '/shopware-db-*.sql*') ?: [];
+        } else {
+            // Find both .tar and .tar.gz media backups
+            $filesTar = glob($fullPath . '/media-backup-*.tar') ?: [];
+            $filesTarGz = glob($fullPath . '/media-backup-*.tar.gz') ?: [];
+            // Combine and exclude .tar.gz from .tar matches
+            $files = array_merge(
+                array_filter($filesTar, fn($f) => !str_ends_with($f, '.tar.gz')),
+                $filesTarGz
+            );
+        }
         
         if (empty($files)) {
             return [];
