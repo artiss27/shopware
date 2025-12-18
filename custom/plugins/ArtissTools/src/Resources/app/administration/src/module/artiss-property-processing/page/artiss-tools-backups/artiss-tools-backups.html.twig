@@ -9,17 +9,21 @@
                 >
                     <sw-icon name="regular-chevron-left" small></sw-icon>
                 </router-link>
-                {{ $tc('artissTools.propertyProcessing.title') }}
+                {{ $tc('artissTools.backups.title') }}
             </h2>
         </template>
     {% endblock %}
 
     <template #content>
-        <sw-tabs class="sw-tabs--small" v-model="activeTab" default-item="create">
-            <sw-tabs-item name="create">
+        <sw-tabs 
+            class="sw-tabs--small artiss-tools__tabs" 
+            @new-item-active="onTabChange" 
+            :default-item="activeTab"
+        >
+            <sw-tabs-item name="create" :active-tab="activeTab">
                 {{ $tc('artissTools.backups.tabs.create') }}
             </sw-tabs-item>
-            <sw-tabs-item name="restore">
+            <sw-tabs-item name="restore" :active-tab="activeTab">
                 {{ $tc('artissTools.backups.tabs.restore') }}
             </sw-tabs-item>
         </sw-tabs>

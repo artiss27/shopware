@@ -9,17 +9,21 @@
                 >
                     <sw-icon name="regular-chevron-left" small></sw-icon>
                 </router-link>
-                {{ $tc('artissTools.propertyProcessing.title') }}
+                {{ $tc('artissTools.images.title') }}
             </h2>
         </template>
     {% endblock %}
 
     <template #content>
-        <sw-tabs class="sw-tabs--small" v-model="activeTab" default-item="cleanup">
-            <sw-tabs-item name="cleanup">
+        <sw-tabs 
+            class="sw-tabs--small artiss-tools__tabs" 
+            @new-item-active="onTabChange" 
+            :default-item="activeTab"
+        >
+            <sw-tabs-item name="cleanup" :active-tab="activeTab">
                 {{ $tc('artissTools.images.tabs.cleanup') }}
             </sw-tabs-item>
-            <sw-tabs-item name="duplicates">
+            <sw-tabs-item name="duplicates" :active-tab="activeTab">
                 {{ $tc('artissTools.images.tabs.duplicates') }}
             </sw-tabs-item>
         </sw-tabs>

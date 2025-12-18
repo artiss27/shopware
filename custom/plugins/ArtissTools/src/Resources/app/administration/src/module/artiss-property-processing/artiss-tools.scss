@@ -1,13 +1,30 @@
-.artiss-property-processing-index {
-  .sw-tabs {
-    margin-bottom: 20px;
-  }
+// Shared sticky tabs styles for all ArtissTools pages
+.artiss-tools__tabs {
+    position: sticky !important;
+    top: -24px;
+    z-index: 100;
+    background-color: #fff;
+    margin: -24px -32px 0 -32px;
+    padding: 16px 32px 0 32px;
+    border-bottom: 1px solid #d1d9e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
 
-  .smart-bar__back-btn {
-    margin-right: 12px;
-  }
+// Add spacing after sticky tabs
+.artiss-tools__tabs + * {
+    margin-top: 24px;
+}
+
+.artiss-property-processing-index {
+    .sw-tabs {
+        margin-bottom: 20px;
+    }
+
+    .smart-bar__back-btn {
+        margin-right: 12px;
+    }
 }
 
 .sw-page .smart-bar__back-btn {
-  display: inline !important;
+    display: inline !important;
 }

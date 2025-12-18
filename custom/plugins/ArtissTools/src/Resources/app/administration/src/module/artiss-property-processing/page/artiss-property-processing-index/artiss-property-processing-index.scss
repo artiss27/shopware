@@ -1,21 +1,4 @@
 .artiss-property-processing-index {
-    // Sticky tabs - works within sw-page__main-content-inner scroll container
-    &__tabs {
-        position: sticky !important;
-        top: -24px; // Compensate for content padding
-        z-index: 100;
-        background-color: #fff;
-        margin: -24px -32px 0 -32px;
-        padding: 16px 32px 0 32px;
-        border-bottom: 1px solid #d1d9e0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-    }
-
-    // Add padding after sticky tabs for content
-    &__tabs + * {
-        margin-top: 24px;
-    }
-
     .sw-card {
         margin-bottom: 20px;
     }

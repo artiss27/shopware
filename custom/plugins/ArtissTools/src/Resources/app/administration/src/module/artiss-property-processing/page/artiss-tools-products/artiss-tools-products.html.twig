@@ -9,14 +9,18 @@
                 >
                     <sw-icon name="regular-chevron-left" small></sw-icon>
                 </router-link>
-                {{ $tc('artissTools.propertyProcessing.title') }}
+                {{ $tc('artissTools.products.title') }}
             </h2>
         </template>
     {% endblock %}
 
     <template #content>
-        <sw-tabs class="sw-tabs--small" v-model="activeTab" default-item="merge">
-            <sw-tabs-item name="merge">
+        <sw-tabs 
+            class="sw-tabs--small artiss-tools__tabs" 
+            @new-item-active="onTabChange" 
+            :default-item="activeTab"
+        >
+            <sw-tabs-item name="merge" :active-tab="activeTab">
                 {{ $tc('artissTools.products.tabs.merge') }}
             </sw-tabs-item>
         </sw-tabs>
