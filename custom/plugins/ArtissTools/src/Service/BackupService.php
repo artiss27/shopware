@@ -307,7 +307,12 @@ class BackupService
             ];
         }
 
-        // Also delete metadata file if exists
+        // Also delete auxiliary files
+        $checksumFile = $fullPath . '.sha256';
+        if (file_exists($checksumFile)) {
+            unlink($checksumFile);
+        }
+
         $metaFile = $fullPath . '.meta.txt';
         if (file_exists($metaFile)) {
             unlink($metaFile);

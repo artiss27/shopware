@@ -67,11 +67,11 @@
                     />
 
                     <sw-textarea-field
-                        v-model:value="dbBackup.comment"
+                        v-model="dbBackup.comment"
                         :label="$tc('artissTools.backups.create.dbBackup.comment')"
                         :placeholder="$tc('artissTools.backups.create.dbBackup.commentPlaceholder')"
                         :helpText="$tc('artissTools.backups.create.commentHelp')"
-                        @update:value="(value) => { console.log('Comment updated:', value); dbBackup.comment = value; }"
+                        @input="(value) => { console.log('Comment input:', value); dbBackup.comment = value; }"
                     />
 
                     {# Progress bar #}
@@ -125,11 +125,11 @@
                     />
 
                     <sw-textarea-field
-                        v-model:value="mediaBackup.comment"
+                        v-model="mediaBackup.comment"
                         :label="$tc('artissTools.backups.create.mediaBackup.comment')"
                         :placeholder="$tc('artissTools.backups.create.mediaBackup.commentPlaceholder')"
                         :helpText="$tc('artissTools.backups.create.commentHelp')"
-                        @update:value="(value) => { console.log('Media comment updated:', value); mediaBackup.comment = value; }"
+                        @input="(value) => { console.log('Media comment input:', value); mediaBackup.comment = value; }"
                     />
 
                     {# Progress bar #}

@@ -556,12 +556,12 @@ Component.register('artiss-tools-backups', {
                 );
 
                 if (response.data.success) {
+                    this.closeDeleteModal();
                     this.createNotificationSuccess({
                         message: this.$tc('artissTools.backups.restore.messages.deleteSuccess')
                     });
-                    this.closeDeleteModal();
                     // Refresh the list
-                    this.loadBackupsList();
+                    await this.loadBackupsList();
                 } else {
                     throw new Error(response.data.error || 'Unknown error');
                 }
