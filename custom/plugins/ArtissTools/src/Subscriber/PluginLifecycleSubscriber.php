@@ -14,10 +14,6 @@ class PluginLifecycleSubscriber implements EventSubscriberInterface
     private const DEFAULTS = [
         'backupPath' => 'artiss-backups',
         'backupRetention' => 5,
-        'dbGzipDefault' => true,
-        'dbTypeDefault' => 'smart',
-        'mediaScopeDefault' => 'all',
-        'mediaExcludeThumbnailsDefault' => true,
     ];
 
     public function __construct(

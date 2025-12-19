@@ -29,10 +29,6 @@ class BackupService
         return [
             'backupPath' => $this->getConfigValue('backupPath', self::DEFAULT_BACKUP_PATH),
             'backupRetention' => (int) $this->getConfigValue('backupRetention', self::DEFAULT_RETENTION),
-            'dbGzipDefault' => (bool) $this->getConfigValue('dbGzipDefault', true),
-            'dbTypeDefault' => $this->getConfigValue('dbTypeDefault', 'smart'),
-            'mediaScopeDefault' => $this->getConfigValue('mediaScopeDefault', 'all'),
-            'mediaExcludeThumbnailsDefault' => (bool) $this->getConfigValue('mediaExcludeThumbnailsDefault', true),
         ];
     }
 
@@ -71,12 +67,12 @@ class BackupService
         
         $commandArgs = [
             'command' => 'artiss:backup:db',
-            '--type' => $options['type'] ?? $config['dbTypeDefault'],
+            '--type' => $options['type'] ?? 'smart',
             '--output-dir' => $options['outputDir'] ?? $this->getDbOutputDir(),
             '--keep' => (string) ($options['keep'] ?? $config['backupRetention']),
         ];
 
-        $gzip = $options['gzip'] ?? $config['dbGzipDefault'];
+        $gzip = $options['gzip'] ?? true;
         if ($gzip) {
             $commandArgs['--gzip'] = true;
         } else {
@@ -103,7 +99,7 @@ class BackupService
         
         $commandArgs = [
             'command' => 'artiss:backup:media',
-            '--scope' => $options['scope'] ?? $config['mediaScopeDefault'],
+            '--scope' => $options['scope'] ?? 'all',
             '--output-dir' => $options['outputDir'] ?? $this->getMediaOutputDir(),
             '--keep' => (string) ($options['keep'] ?? $config['backupRetention']),
         ];
@@ -113,7 +109,7 @@ class BackupService
             $commandArgs['--compress'] = true;
         }
 
-        $excludeThumbnails = $options['excludeThumbnails'] ?? $config['mediaExcludeThumbnailsDefault'];
+        $excludeThumbnails = $options['excludeThumbnails'] ?? true;
         if ($excludeThumbnails) {
             $commandArgs['--exclude-thumbnails'] = true;
         } else {

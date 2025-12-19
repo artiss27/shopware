@@ -18,10 +18,6 @@ Component.register('artiss-tools-backups', {
             pluginConfig: {
                 backupPath: 'artiss-backups',
                 backupRetention: 5,
-                dbGzipDefault: true,
-                dbTypeDefault: 'smart',
-                mediaScopeDefault: 'all',
-                mediaExcludeThumbnailsDefault: true,
                 dbOutputDir: 'artiss-backups/db',
                 mediaOutputDir: 'artiss-backups/media'
             },
@@ -154,13 +150,8 @@ Component.register('artiss-tools-backups', {
                     this.pluginConfig = response.data.data;
                     
                     // Apply config defaults to forms
-                    this.dbBackup.type = this.pluginConfig.dbTypeDefault;
                     this.dbBackup.outputDir = this.pluginConfig.dbOutputDir;
-                    this.dbBackup.gzip = this.pluginConfig.dbGzipDefault;
-
-                    this.mediaBackup.scope = this.pluginConfig.mediaScopeDefault;
                     this.mediaBackup.outputDir = this.pluginConfig.mediaOutputDir;
-                    this.mediaBackup.excludeThumbnails = this.pluginConfig.mediaExcludeThumbnailsDefault;
                 }
             } catch (error) {
                 console.error('Failed to load backup config:', error);
@@ -257,39 +248,19 @@ Component.register('artiss-tools-backups', {
             }
         },
 
-        updateDbBackupComment(value) {
-            this.dbBackup.comment = value;
-            console.log('updateDbBackupComment called with:', value);
-            console.log('dbBackup.comment is now:', this.dbBackup.comment);
-        },
-
-        updateMediaBackupComment(value) {
-            this.mediaBackup.comment = value;
-            console.log('updateMediaBackupComment called with:', value);
-            console.log('mediaBackup.comment is now:', this.mediaBackup.comment);
-        },
-
         async createDbBackup() {
             this.isDbBackupLoading = true;
             this.dbBackupProgress = 0;
 
-            // Debug: log comment value
-            console.log('DB Backup comment value:', this.dbBackup.comment);
-            console.log('DB Backup full object:', JSON.stringify(this.dbBackup, null, 2));
-
-            const requestData = {
-                type: this.dbBackup.type,
-                outputDir: this.dbBackup.outputDir,
-                gzip: this.dbBackup.gzip,
-                comment: this.dbBackup.comment || null
-            };
-
-            console.log('Request data being sent:', JSON.stringify(requestData, null, 2));
-
             try {
                 const response = await this.httpClient.post(
                     '/_action/artiss-tools/backup/db',
-                    requestData,
+                    {
+                        type: this.dbBackup.type,
+                        outputDir: this.dbBackup.outputDir,
+                        gzip: this.dbBackup.gzip,
+                        comment: this.dbBackup.comment || null
+                    },
                     { headers: this.getAuthHeaders() }
                 );
 
@@ -317,24 +288,16 @@ Component.register('artiss-tools-backups', {
             this.isMediaBackupLoading = true;
             this.mediaBackupProgress = 0;
 
-            // Debug: log comment value
-            console.log('Media Backup comment value:', this.mediaBackup.comment);
-            console.log('Media Backup full object:', JSON.stringify(this.mediaBackup, null, 2));
-
-            const requestData = {
-                scope: this.mediaBackup.scope,
-                outputDir: this.mediaBackup.outputDir,
-                compress: this.mediaBackup.compress,
-                excludeThumbnails: this.mediaBackup.excludeThumbnails,
-                comment: this.mediaBackup.comment || null
-            };
-
-            console.log('Request data being sent:', JSON.stringify(requestData, null, 2));
-
             try {
                 const response = await this.httpClient.post(
                     '/_action/artiss-tools/backup/media',
-                    requestData,
+                    {
+                        scope: this.mediaBackup.scope,
+                        outputDir: this.mediaBackup.outputDir,
+                        compress: this.mediaBackup.compress,
+                        excludeThumbnails: this.mediaBackup.excludeThumbnails,
+                        comment: this.mediaBackup.comment || null
+                    },
                     { headers: this.getAuthHeaders() }
                 );
 
@@ -380,30 +343,42 @@ Component.register('artiss-tools-backups', {
                         }
 
                         if (job.status === 'completed') {
-                            // Success!
-                            if (type === 'db') {
-                                this.isDbBackupLoading = false;
-                                this.dbBackupProgress = 100;
-                                this.dbBackup.comment = '';
-                                if (job.lastBackup) {
-                                    this.lastDbBackup = job.lastBackup;
+                            // Only mark as completed if progress is 100
+                            if (job.progress >= 100) {
+                                // Success!
+                                if (type === 'db') {
+                                    this.isDbBackupLoading = false;
+                                    this.dbBackupProgress = 100;
+                                    this.dbBackup.comment = '';
+                                    if (job.lastBackup) {
+                                        this.lastDbBackup = job.lastBackup;
+                                    }
+                                } else {
+                                    this.isMediaBackupLoading = false;
+                                    this.mediaBackupProgress = 100;
+                                    this.mediaBackup.comment = '';
+                                    if (job.lastBackup) {
+                                        this.lastMediaBackup = job.lastBackup;
+                                    }
                                 }
+
+                                this.createNotificationSuccess({
+                                    message: type === 'db'
+                                        ? this.$tc('artissTools.backups.create.messages.dbSuccess')
+                                        : this.$tc('artissTools.backups.create.messages.mediaSuccess')
+                                });
+
+                                return;
                             } else {
-                                this.isMediaBackupLoading = false;
-                                this.mediaBackupProgress = 100;
-                                this.mediaBackup.comment = '';
-                                if (job.lastBackup) {
-                                    this.lastMediaBackup = job.lastBackup;
+                                // Status is completed but progress is not 100 yet, continue polling
+                                attempts++;
+                                if (attempts < maxAttempts) {
+                                    setTimeout(poll, 1000);
+                                } else {
+                                    throw new Error('Backup timed out');
                                 }
+                                return;
                             }
-
-                            this.createNotificationSuccess({
-                                message: type === 'db'
-                                    ? this.$tc('artissTools.backups.create.messages.dbSuccess')
-                                    : this.$tc('artissTools.backups.create.messages.mediaSuccess')
-                            });
-
-                            return;
                         } else if (job.status === 'failed') {
                             // Failed
                             throw new Error(job.error || 'Backup failed');
