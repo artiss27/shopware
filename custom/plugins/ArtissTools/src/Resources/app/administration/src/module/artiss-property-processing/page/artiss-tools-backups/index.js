@@ -257,26 +257,39 @@ Component.register('artiss-tools-backups', {
             }
         },
 
+        updateDbBackupComment(value) {
+            this.dbBackup.comment = value;
+            console.log('updateDbBackupComment called with:', value);
+            console.log('dbBackup.comment is now:', this.dbBackup.comment);
+        },
+
+        updateMediaBackupComment(value) {
+            this.mediaBackup.comment = value;
+            console.log('updateMediaBackupComment called with:', value);
+            console.log('mediaBackup.comment is now:', this.mediaBackup.comment);
+        },
+
         async createDbBackup() {
             this.isDbBackupLoading = true;
             this.dbBackupProgress = 0;
 
-            console.log('Creating DB backup with data:', {
+            // Debug: log comment value
+            console.log('DB Backup comment value:', this.dbBackup.comment);
+            console.log('DB Backup full object:', JSON.stringify(this.dbBackup, null, 2));
+
+            const requestData = {
                 type: this.dbBackup.type,
                 outputDir: this.dbBackup.outputDir,
                 gzip: this.dbBackup.gzip,
-                comment: this.dbBackup.comment
-            });
+                comment: this.dbBackup.comment || null
+            };
+
+            console.log('Request data being sent:', JSON.stringify(requestData, null, 2));
 
             try {
                 const response = await this.httpClient.post(
                     '/_action/artiss-tools/backup/db',
-                    {
-                        type: this.dbBackup.type,
-                        outputDir: this.dbBackup.outputDir,
-                        gzip: this.dbBackup.gzip,
-                        comment: this.dbBackup.comment || null
-                    },
+                    requestData,
                     { headers: this.getAuthHeaders() }
                 );
 
@@ -304,16 +317,24 @@ Component.register('artiss-tools-backups', {
             this.isMediaBackupLoading = true;
             this.mediaBackupProgress = 0;
 
+            // Debug: log comment value
+            console.log('Media Backup comment value:', this.mediaBackup.comment);
+            console.log('Media Backup full object:', JSON.stringify(this.mediaBackup, null, 2));
+
+            const requestData = {
+                scope: this.mediaBackup.scope,
+                outputDir: this.mediaBackup.outputDir,
+                compress: this.mediaBackup.compress,
+                excludeThumbnails: this.mediaBackup.excludeThumbnails,
+                comment: this.mediaBackup.comment || null
+            };
+
+            console.log('Request data being sent:', JSON.stringify(requestData, null, 2));
+
             try {
                 const response = await this.httpClient.post(
                     '/_action/artiss-tools/backup/media',
-                    {
-                        scope: this.mediaBackup.scope,
-                        outputDir: this.mediaBackup.outputDir,
-                        compress: this.mediaBackup.compress,
-                        excludeThumbnails: this.mediaBackup.excludeThumbnails,
-                        comment: this.mediaBackup.comment || null
-                    },
+                    requestData,
                     { headers: this.getAuthHeaders() }
                 );
 
@@ -417,16 +438,10 @@ Component.register('artiss-tools-backups', {
 
         // DB Restore
         openDbRestoreModal(backup) {
-            console.log('openDbRestoreModal called', backup);
             this.selectedDbBackup = backup;
             this.dbRestoreConfirmation = '';
             this.dbRestoreOptions.dropTables = false;
             this.showDbRestoreModal = true;
-            console.log('showDbRestoreModal set to:', this.showDbRestoreModal);
-            // Force reactivity
-            this.$nextTick(() => {
-                console.log('After nextTick, showDbRestoreModal:', this.showDbRestoreModal);
-            });
         },
 
         closeDbRestoreModal() {
@@ -472,7 +487,6 @@ Component.register('artiss-tools-backups', {
 
         // Media Restore
         openMediaRestoreModal(backup) {
-            console.log('openMediaRestoreModal called', backup);
             this.selectedMediaBackup = backup;
             this.mediaRestoreConfirmed = false;
             this.mediaRestoreOptions.mode = 'add';
@@ -521,15 +535,9 @@ Component.register('artiss-tools-backups', {
 
         // Delete backup
         confirmDeleteBackup(backup, type) {
-            console.log('confirmDeleteBackup called', backup, type);
             this.backupToDelete = backup;
             this.backupToDeleteType = type;
             this.showDeleteModal = true;
-            console.log('showDeleteModal set to:', this.showDeleteModal);
-            // Force reactivity
-            this.$nextTick(() => {
-                console.log('After nextTick, showDeleteModal:', this.showDeleteModal);
-            });
         },
 
         closeDeleteModal() {

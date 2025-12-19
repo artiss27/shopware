@@ -71,7 +71,6 @@
                         :label="$tc('artissTools.backups.create.dbBackup.comment')"
                         :placeholder="$tc('artissTools.backups.create.dbBackup.commentPlaceholder')"
                         :helpText="$tc('artissTools.backups.create.commentHelp')"
-                        @input="(value) => { console.log('Comment input:', value); dbBackup.comment = value; }"
                     />
 
                     {# Progress bar #}
@@ -129,7 +128,6 @@
                         :label="$tc('artissTools.backups.create.mediaBackup.comment')"
                         :placeholder="$tc('artissTools.backups.create.mediaBackup.commentPlaceholder')"
                         :helpText="$tc('artissTools.backups.create.commentHelp')"
-                        @input="(value) => { console.log('Media comment input:', value); mediaBackup.comment = value; }"
                     />
 
                     {# Progress bar #}
