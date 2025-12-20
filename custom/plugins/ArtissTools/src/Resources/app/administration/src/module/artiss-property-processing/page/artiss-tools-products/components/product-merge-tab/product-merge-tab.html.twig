@@ -105,22 +105,18 @@
     <sw-card
         :title="$tc('artissTools.products.merge.selectedProducts.title', selectedProducts.length, { count: selectedProducts.length })"
     >
-        <sw-list
-            v-if="selectedProducts.length > 0"
-            :items="selectedProducts"
-            class="artiss-product-merge-tab__selected-list"
-        >
-            <template #item="{ item }">
-                <sw-list-item>
-                    <sw-label>
-                        {{ item.name }} ({{ item.productNumber }})
-                        <template #dismiss>
-                            <sw-icon name="regular-times" small @click="removeProduct(item.id)" />
-                        </template>
-                    </sw-label>
-                </sw-list-item>
-            </template>
-        </sw-list>
+        <div v-if="selectedProducts.length > 0" class="artiss-product-merge-tab__selected-list">
+            <sw-label
+                v-for="product in selectedProducts"
+                :key="product.id"
+                class="artiss-product-merge-tab__selected-item"
+            >
+                {{ product.name }} ({{ product.productNumber }})
+                <template #dismiss>
+                    <sw-icon name="regular-times" small @click="removeProduct(product.id)" />
+                </template>
+            </sw-label>
+        </div>
         <div v-else class="artiss-product-merge-tab__empty-list">
             {{ $tc('artissTools.products.merge.selectedProducts.empty') }}
         </div>

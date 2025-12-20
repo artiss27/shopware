@@ -30,6 +30,13 @@
 
     &__selected-list {
         margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__selected-item {
+        display: block;
     }
 
     &__preview {
