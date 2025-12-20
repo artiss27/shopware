@@ -295,7 +295,7 @@ Component.register('artiss-tools-backups', {
         },
 
         pollBackupStatus(jobId, type) {
-            const maxAttempts = 120;
+            const maxAttempts = 300;
             let attempts = 0;
 
             const poll = async () => {
@@ -345,7 +345,7 @@ Component.register('artiss-tools-backups', {
                         } else if (status === 'running' || status === 'pending') {
                             attempts++;
                             if (attempts < maxAttempts) {
-                                setTimeout(poll, 1000);
+                                setTimeout(poll, 2000);
                             } else {
                                 if (type === 'db') {
                                     this.isDbBackupLoading = false;
@@ -362,7 +362,7 @@ Component.register('artiss-tools-backups', {
                 } catch (error) {
                     attempts++;
                     if (attempts < maxAttempts) {
-                        setTimeout(poll, 1000);
+                        setTimeout(poll, 2000);
                     } else {
                         if (type === 'db') {
                             this.isDbBackupLoading = false;
