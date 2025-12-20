@@ -34,6 +34,7 @@
             {# Database Backup Block #}
             <sw-card
                 :title="$tc('artissTools.backups.create.dbBackup.title')"
+                :isLoading="isDbBackupLoading"
             >
                 <div class="artiss-backup-form">
                     <sw-single-select
@@ -73,12 +74,6 @@
                         :helpText="$tc('artissTools.backups.create.commentHelp')"
                     />
 
-                    {# Progress bar #}
-                    <div v-if="isDbBackupLoading && dbBackupProgress > 0" class="artiss-backup-progress">
-                        <sw-progress-bar :value="dbBackupProgress" />
-                        <p class="artiss-backup-progress__text">{{ dbBackupProgress }}% - Creating backup...</p>
-                    </div>
-
                     {# Create button #}
                     <sw-button
                         variant="primary"
@@ -86,7 +81,8 @@
                         @click="createDbBackup"
                         block
                     >
-                        <sw-icon name="regular-database" small />
+                        <sw-loader v-if="isDbBackupLoading" size="16px"></sw-loader>
+                        <sw-icon v-else name="regular-database" small />
                         {{ $tc('artissTools.backups.create.dbBackup.button') }}
                     </sw-button>
                 </div>
@@ -95,6 +91,7 @@
             {# Media Backup Block #}
             <sw-card
                 :title="$tc('artissTools.backups.create.mediaBackup.title')"
+                :isLoading="isMediaBackupLoading"
             >
                 <div class="artiss-backup-form">
                     <sw-single-select
@@ -130,12 +127,6 @@
                         :helpText="$tc('artissTools.backups.create.commentHelp')"
                     />
 
-                    {# Progress bar #}
-                    <div v-if="isMediaBackupLoading && mediaBackupProgress > 0" class="artiss-backup-progress">
-                        <sw-progress-bar :value="mediaBackupProgress" />
-                        <p class="artiss-backup-progress__text">{{ mediaBackupProgress }}% - Creating backup...</p>
-                    </div>
-
                     {# Create button #}
                     <sw-button
                         variant="primary"
@@ -143,7 +134,8 @@
                         @click="createMediaBackup"
                         block
                     >
-                        <sw-icon name="regular-image" small />
+                        <sw-loader v-if="isMediaBackupLoading" size="16px"></sw-loader>
+                        <sw-icon v-else name="regular-image" small />
                         {{ $tc('artissTools.backups.create.mediaBackup.button') }}
                     </sw-button>
                 </div>

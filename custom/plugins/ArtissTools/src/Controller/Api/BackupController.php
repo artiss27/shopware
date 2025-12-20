@@ -2,7 +2,6 @@
 
 namespace ArtissTools\Controller\Api;
 
-use ArtissTools\Service\BackupJobService;
 use ArtissTools\Service\BackupService;
 use Shopware\Core\Framework\Context;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +16,6 @@ class BackupController extends AbstractController
 {
     public function __construct(
         private readonly BackupService $backupService,
-        private readonly BackupJobService $backupJobService,
         private readonly string $projectDir
     ) {
     }
@@ -31,12 +29,10 @@ class BackupController extends AbstractController
     {
         try {
             $config = $this->backupService->getConfig();
-            
-            // Add computed paths (relative)
+
             $config['dbOutputDir'] = $this->backupService->getDbOutputDir();
             $config['mediaOutputDir'] = $this->backupService->getMediaOutputDir();
-            
-            // Add full paths for display
+
             $config['projectDir'] = $this->backupService->getProjectDir();
             $config['dbOutputDirFull'] = $this->backupService->getProjectDir() . '/' . $config['dbOutputDir'];
             $config['mediaOutputDirFull'] = $this->backupService->getProjectDir() . '/' . $config['mediaOutputDir'];
@@ -63,27 +59,25 @@ class BackupController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true) ?? [];
+            $config = $this->backupService->getConfig();
 
             $options = [
                 'type' => $data['type'] ?? 'smart',
                 'outputDir' => $data['outputDir'] ?? null,
-                'keep' => $data['keep'] ?? 3,
+                'keep' => $data['keep'] ?? $config['backupRetention'],
                 'gzip' => $data['gzip'] ?? true,
                 'comment' => $data['comment'] ?? null,
                 'ignoredTables' => $data['ignoredTables'] ?? null,
             ];
 
-            // Create background job
-            $jobId = $this->backupJobService->createJob('db', $options);
-
-            // Start backup in background
+            $jobId = 'db_' . uniqid('backup_', true);
             $this->startBackupInBackground($jobId, 'db', $options);
 
             return new JsonResponse([
                 'success' => true,
                 'data' => [
                     'jobId' => $jobId,
-                    'message' => 'Backup started in background',
+                    'message' => 'Database backup started',
                 ],
             ]);
 
@@ -104,27 +98,25 @@ class BackupController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true) ?? [];
+            $config = $this->backupService->getConfig();
 
             $options = [
                 'scope' => $data['scope'] ?? 'all',
                 'outputDir' => $data['outputDir'] ?? null,
-                'keep' => $data['keep'] ?? 3,
+                'keep' => $data['keep'] ?? $config['backupRetention'],
                 'compress' => $data['compress'] ?? false,
                 'excludeThumbnails' => $data['excludeThumbnails'] ?? true,
                 'comment' => $data['comment'] ?? null,
             ];
 
-            // Create background job
-            $jobId = $this->backupJobService->createJob('media', $options);
-
-            // Start backup in background
+            $jobId = 'media_' . uniqid('backup_', true);
             $this->startBackupInBackground($jobId, 'media', $options);
 
             return new JsonResponse([
                 'success' => true,
                 'data' => [
                     'jobId' => $jobId,
-                    'message' => 'Backup started in background',
+                    'message' => 'Media backup started',
                 ],
             ]);
 
@@ -375,30 +367,71 @@ class BackupController extends AbstractController
     }
 
     #[Route(
-        path: '/api/_action/artiss-tools/backup/job/{jobId}',
-        name: 'api.action.artiss_tools.backup.job_status',
+        path: '/api/_action/artiss-tools/backup/status/{jobId}',
+        name: 'api.action.artiss_tools.backup.status',
         methods: ['GET']
     )]
-    public function getJobStatus(string $jobId, Context $context): JsonResponse
+    public function getBackupStatus(string $jobId, Context $context): JsonResponse
     {
         try {
-            $job = $this->backupJobService->getJob($jobId);
+            $logFile = $this->projectDir . '/var/log/' . $jobId . '.log';
 
-            if (!$job) {
+            if (!file_exists($logFile)) {
                 return new JsonResponse([
-                    'success' => false,
-                    'error' => 'Job not found',
-                ], 404);
+                    'success' => true,
+                    'data' => [
+                        'status' => 'pending',
+                        'message' => 'Backup is starting...',
+                    ],
+                ]);
             }
 
-            // If completed, get last backup info
-            if ($job['status'] === 'completed' && isset($job['result']['type'])) {
-                $job['lastBackup'] = $this->backupService->getLastBackupInfo($job['result']['type']);
+            $log = file_get_contents($logFile);
+
+            if (strpos($log, '[ERROR]') !== false || strpos($log, 'Exception') !== false) {
+                return new JsonResponse([
+                    'success' => true,
+                    'data' => [
+                        'status' => 'failed',
+                        'error' => 'Backup failed. Check logs for details.',
+                    ],
+                ]);
+            }
+
+            if (strpos($log, 'backup created successfully') !== false ||
+                strpos($log, 'Backup created successfully') !== false) {
+
+                if (preg_match('/Output:\s+(.+\.(?:sql|sql\.gz|tar|tar\.gz))$/m', $log, $matches)) {
+                    $backupFile = trim($matches[1]);
+
+                    if (file_exists($backupFile)) {
+                        $fileSize1 = filesize($backupFile);
+                        usleep(500000);
+                        $fileSize2 = filesize($backupFile);
+
+                        if ($fileSize1 === $fileSize2 && $fileSize1 > 0) {
+                            $type = strpos($jobId, 'db_') === 0 ? 'db' : 'media';
+                            $lastBackup = $this->backupService->getLastBackupInfo($type);
+
+                            return new JsonResponse([
+                                'success' => true,
+                                'data' => [
+                                    'status' => 'completed',
+                                    'message' => 'Backup created successfully',
+                                    'lastBackup' => $lastBackup,
+                                ],
+                            ]);
+                        }
+                    }
+                }
             }
 
             return new JsonResponse([
                 'success' => true,
-                'data' => $job,
+                'data' => [
+                    'status' => 'running',
+                    'message' => 'Backup in progress...',
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -411,7 +444,6 @@ class BackupController extends AbstractController
 
     private function startBackupInBackground(string $jobId, string $type, array $options): void
     {
-        // Find correct PHP CLI binary (not php-fpm)
         $phpBinary = $this->findPhpBinary();
         $consolePath = $this->projectDir . '/bin/console';
 
@@ -421,30 +453,15 @@ class BackupController extends AbstractController
             default => throw new \InvalidArgumentException('Invalid backup type'),
         };
 
-        // Update job with command info
-        $this->backupJobService->updateJob($jobId, [
-            'status' => 'running',
-            'progress' => 10,
-            'message' => 'Backup in progress...',
-        ]);
-
-        // Start process in background and redirect output
-        $logFile = $this->projectDir . '/var/log/backup-' . $jobId . '.log';
+        $logFile = $this->projectDir . '/var/log/' . $jobId . '.log';
         $fullCommand = sprintf(
-            '%s %s > %s 2>&1 & echo $!',
+            '%s %s > %s 2>&1 &',
             $phpBinary,
             $command,
             escapeshellarg($logFile)
         );
 
-        $pid = shell_exec($fullCommand);
-
-        if ($pid) {
-            $this->backupJobService->updateJob($jobId, ['pid' => (int) trim($pid)]);
-        }
-
-        // Start monitoring process
-        $this->startJobMonitoring($jobId, $type, $logFile);
+        shell_exec($fullCommand);
     }
 
     private function buildDbBackupCommand(string $consolePath, array $options): string
@@ -507,142 +524,25 @@ class BackupController extends AbstractController
         return implode(' ', $args);
     }
 
-    private function startJobMonitoring(string $jobId, string $type, string $logFile): void
-    {
-        // Start a separate monitoring process
-        $phpBinary = $this->findPhpBinary();
-        $jobFile = $this->projectDir . '/var/artiss-backup-jobs/' . $jobId . '.json';
-
-        $monitorScript = <<<PHP
-<?php
-\$jobId = '{$jobId}';
-\$type = '{$type}';
-\$logFile = '{$logFile}';
-\$jobFile = '{$jobFile}';
-
-// Wait for job to complete (max 30 minutes)
-\$maxTime = time() + (30 * 60);
-\$startTime = time();
-
-while (time() < \$maxTime) {
-    sleep(3);
-
-    if (!file_exists(\$jobFile)) {
-        break;
-    }
-
-    \$job = json_decode(file_get_contents(\$jobFile), true);
-    if (!\$job) {
-        continue;
-    }
-
-    // Update progress based on time elapsed
-    \$elapsed = time() - \$startTime;
-    \$progress = min(90, 10 + (\$elapsed * 3));
-
-    if (\$progress != \$job['progress']) {
-        \$job['progress'] = \$progress;
-        \$job['updated_at'] = time();
-        file_put_contents(\$jobFile, json_encode(\$job, JSON_PRETTY_PRINT));
-    }
-
-    // Check if log file indicates completion
-    if (file_exists(\$logFile)) {
-        \$log = file_get_contents(\$logFile);
-
-        // Check for success markers
-        if (strpos(\$log, 'Backup created successfully') !== false ||
-            strpos(\$log, '[OK] Backup created successfully') !== false) {
-            // Success - found success message
-            \$job['status'] = 'completed';
-            \$job['progress'] = 100;
-            \$job['message'] = 'Backup completed successfully';
-            \$job['result'] = ['type' => \$type];
-            \$job['updated_at'] = time();
-            file_put_contents(\$jobFile, json_encode(\$job, JSON_PRETTY_PRINT));
-            break;
-        }
-    }
-
-    // Check if process is still running by PID
-    if (isset(\$job['pid']) && \$job['pid'] > 0) {
-        \$result = shell_exec('ps -p ' . \$job['pid'] . ' 2>&1');
-        if (empty(\$result) || strpos(\$result, (string)\$job['pid']) === false) {
-            // Process finished - check log for result
-            if (file_exists(\$logFile)) {
-                \$log = file_get_contents(\$logFile);
-                if (strpos(\$log, 'Backup created successfully') !== false ||
-                    strpos(\$log, '[OK] Backup created successfully') !== false) {
-                    // Success
-                    \$job['status'] = 'completed';
-                    \$job['progress'] = 100;
-                    \$job['message'] = 'Backup completed successfully';
-                    \$job['result'] = ['type' => \$type];
-                } else if (strpos(\$log, '[ERROR]') !== false ||
-                           strpos(\$log, 'Exception') !== false ||
-                           strpos(\$log, 'Fatal error') !== false) {
-                    // Failed with error
-                    \$job['status'] = 'failed';
-                    \$job['message'] = 'Backup failed';
-                    \$job['error'] = substr(\$log, -1000);
-                } else {
-                    // Process ended but unclear status - check if backup file was created
-                    \$job['status'] = 'completed';
-                    \$job['progress'] = 100;
-                    \$job['message'] = 'Backup process finished';
-                    \$job['result'] = ['type' => \$type];
-                }
-                \$job['updated_at'] = time();
-                file_put_contents(\$jobFile, json_encode(\$job, JSON_PRETTY_PRINT));
-            } else {
-                // No log file - assume failed
-                \$job['status'] = 'failed';
-                \$job['message'] = 'Backup failed - no log file';
-                \$job['updated_at'] = time();
-                file_put_contents(\$jobFile, json_encode(\$job, JSON_PRETTY_PRINT));
-            }
-            break;
-        }
-    }
-}
-PHP;
-
-        $monitorFile = $this->projectDir . '/var/log/monitor-' . $jobId . '.php';
-        file_put_contents($monitorFile, $monitorScript);
-
-        $command = sprintf(
-            '%s %s > /dev/null 2>&1 &',
-            $phpBinary,
-            escapeshellarg($monitorFile)
-        );
-
-        shell_exec($command);
-    }
-
     private function findPhpBinary(): string
     {
-        // Try to find PHP CLI binary (not php-fpm)
         $candidates = [
             '/usr/bin/php',
             '/usr/local/bin/php',
             '/opt/homebrew/bin/php',
         ];
 
-        // Try which command first
         $whichResult = trim(shell_exec('which php 2>/dev/null') ?? '');
         if (!empty($whichResult) && is_executable($whichResult)) {
             return $whichResult;
         }
 
-        // Try candidates
         foreach ($candidates as $candidate) {
             if (is_executable($candidate)) {
                 return $candidate;
             }
         }
 
-        // Fallback to just 'php' and hope it's in PATH
         return 'php';
     }
 }
-

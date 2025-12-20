@@ -14,20 +14,14 @@ Component.register('artiss-tools-backups', {
         return {
             activeTab: 'create',
             isConfigLoading: true,
-            // Plugin configuration
             pluginConfig: {
                 backupPath: 'artiss-backups',
                 backupRetention: 5,
                 dbOutputDir: 'artiss-backups/db',
                 mediaOutputDir: 'artiss-backups/media'
             },
-            // Create tab
             isDbBackupLoading: false,
             isMediaBackupLoading: false,
-            dbBackupProgress: 0,
-            mediaBackupProgress: 0,
-            dbBackupJobId: null,
-            mediaBackupJobId: null,
             lastDbBackup: null,
             lastMediaBackup: null,
             dbBackup: {
@@ -43,12 +37,10 @@ Component.register('artiss-tools-backups', {
                 excludeThumbnails: true,
                 comment: ''
             },
-            // Restore tab
             isLoadingDbList: false,
             isLoadingMediaList: false,
             dbBackupsList: [],
             mediaBackupsList: [],
-            // DB Restore modal
             showDbRestoreModal: false,
             selectedDbBackup: null,
             dbRestoreConfirmation: '',
@@ -56,7 +48,6 @@ Component.register('artiss-tools-backups', {
                 dropTables: false
             },
             isDbRestoring: false,
-            // Media Restore modal
             showMediaRestoreModal: false,
             selectedMediaBackup: null,
             mediaRestoreConfirmed: false,
@@ -64,7 +55,6 @@ Component.register('artiss-tools-backups', {
                 mode: 'add'
             },
             isMediaRestoring: false,
-            // Delete modal
             showDeleteModal: false,
             backupToDelete: null,
             backupToDeleteType: null,
@@ -148,8 +138,7 @@ Component.register('artiss-tools-backups', {
 
                 if (response.data.success && response.data.data) {
                     this.pluginConfig = response.data.data;
-                    
-                    // Apply config defaults to forms
+
                     this.dbBackup.outputDir = this.pluginConfig.dbOutputDir;
                     this.mediaBackup.outputDir = this.pluginConfig.mediaOutputDir;
                 }
@@ -250,7 +239,6 @@ Component.register('artiss-tools-backups', {
 
         async createDbBackup() {
             this.isDbBackupLoading = true;
-            this.dbBackupProgress = 0;
 
             try {
                 const response = await this.httpClient.post(
@@ -265,13 +253,7 @@ Component.register('artiss-tools-backups', {
                 );
 
                 if (response.data.success && response.data.data?.jobId) {
-                    this.dbBackupJobId = response.data.data.jobId;
-                    this.createNotificationInfo({
-                        message: 'Database backup started...'
-                    });
-
-                    // Start polling job status
-                    await this.pollJobStatus(this.dbBackupJobId, 'db');
+                    this.pollBackupStatus(response.data.data.jobId, 'db');
                 } else {
                     throw new Error(response.data.error || 'Unknown error');
                 }
@@ -280,13 +262,11 @@ Component.register('artiss-tools-backups', {
                     message: error.response?.data?.error || error.message || this.$tc('artissTools.backups.create.messages.dbError')
                 });
                 this.isDbBackupLoading = false;
-                this.dbBackupProgress = 0;
             }
         },
 
         async createMediaBackup() {
             this.isMediaBackupLoading = true;
-            this.mediaBackupProgress = 0;
 
             try {
                 const response = await this.httpClient.post(
@@ -302,13 +282,7 @@ Component.register('artiss-tools-backups', {
                 );
 
                 if (response.data.success && response.data.data?.jobId) {
-                    this.mediaBackupJobId = response.data.data.jobId;
-                    this.createNotificationInfo({
-                        message: 'Media backup started...'
-                    });
-
-                    // Start polling job status
-                    await this.pollJobStatus(this.mediaBackupJobId, 'media');
+                    this.pollBackupStatus(response.data.data.jobId, 'media');
                 } else {
                     throw new Error(response.data.error || 'Unknown error');
                 }
@@ -317,101 +291,95 @@ Component.register('artiss-tools-backups', {
                     message: error.response?.data?.error || error.message || this.$tc('artissTools.backups.create.messages.mediaError')
                 });
                 this.isMediaBackupLoading = false;
-                this.mediaBackupProgress = 0;
             }
         },
 
-        async pollJobStatus(jobId, type) {
-            const maxAttempts = 180; // 3 minutes max (180 * 1s)
+        pollBackupStatus(jobId, type) {
+            const maxAttempts = 120;
             let attempts = 0;
 
             const poll = async () => {
                 try {
                     const response = await this.httpClient.get(
-                        `/_action/artiss-tools/backup/job/${jobId}`,
+                        `/_action/artiss-tools/backup/status/${jobId}`,
                         { headers: this.getAuthHeaders() }
                     );
 
                     if (response.data.success && response.data.data) {
-                        const job = response.data.data;
+                        const status = response.data.data.status;
 
-                        // Update progress
-                        if (type === 'db') {
-                            this.dbBackupProgress = job.progress || 0;
-                        } else {
-                            this.mediaBackupProgress = job.progress || 0;
-                        }
-
-                        if (job.status === 'completed') {
-                            // Only mark as completed if progress is 100
-                            if (job.progress >= 100) {
-                                // Success!
-                                if (type === 'db') {
-                                    this.isDbBackupLoading = false;
-                                    this.dbBackupProgress = 100;
-                                    this.dbBackup.comment = '';
-                                    if (job.lastBackup) {
-                                        this.lastDbBackup = job.lastBackup;
-                                    }
-                                } else {
-                                    this.isMediaBackupLoading = false;
-                                    this.mediaBackupProgress = 100;
-                                    this.mediaBackup.comment = '';
-                                    if (job.lastBackup) {
-                                        this.lastMediaBackup = job.lastBackup;
-                                    }
+                        if (status === 'completed') {
+                            if (type === 'db') {
+                                this.isDbBackupLoading = false;
+                                this.dbBackup.comment = '';
+                                if (response.data.data.lastBackup) {
+                                    this.lastDbBackup = response.data.data.lastBackup;
                                 }
-
-                                this.createNotificationSuccess({
-                                    message: type === 'db'
-                                        ? this.$tc('artissTools.backups.create.messages.dbSuccess')
-                                        : this.$tc('artissTools.backups.create.messages.mediaSuccess')
-                                });
-
-                                return;
                             } else {
-                                // Status is completed but progress is not 100 yet, continue polling
-                                attempts++;
-                                if (attempts < maxAttempts) {
-                                    setTimeout(poll, 1000);
-                                } else {
-                                    throw new Error('Backup timed out');
+                                this.isMediaBackupLoading = false;
+                                this.mediaBackup.comment = '';
+                                if (response.data.data.lastBackup) {
+                                    this.lastMediaBackup = response.data.data.lastBackup;
                                 }
-                                return;
                             }
-                        } else if (job.status === 'failed') {
-                            // Failed
-                            throw new Error(job.error || 'Backup failed');
-                        } else if (job.status === 'running' || job.status === 'pending') {
-                            // Still running, continue polling
+
+                            this.createNotificationSuccess({
+                                message: type === 'db'
+                                    ? this.$tc('artissTools.backups.create.messages.dbSuccess')
+                                    : this.$tc('artissTools.backups.create.messages.mediaSuccess')
+                            });
+
+                            return;
+                        } else if (status === 'failed') {
+                            if (type === 'db') {
+                                this.isDbBackupLoading = false;
+                            } else {
+                                this.isMediaBackupLoading = false;
+                            }
+
+                            this.createNotificationError({
+                                message: response.data.data.error || 'Backup failed'
+                            });
+
+                            return;
+                        } else if (status === 'running' || status === 'pending') {
                             attempts++;
                             if (attempts < maxAttempts) {
-                                setTimeout(poll, 1000); // Poll every second
+                                setTimeout(poll, 1000);
                             } else {
-                                throw new Error('Backup timed out');
+                                if (type === 'db') {
+                                    this.isDbBackupLoading = false;
+                                } else {
+                                    this.isMediaBackupLoading = false;
+                                }
+
+                                this.createNotificationError({
+                                    message: 'Backup timed out'
+                                });
                             }
                         }
                     }
                 } catch (error) {
-                    if (type === 'db') {
-                        this.isDbBackupLoading = false;
-                        this.dbBackupProgress = 0;
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(poll, 1000);
                     } else {
-                        this.isMediaBackupLoading = false;
-                        this.mediaBackupProgress = 0;
-                    }
+                        if (type === 'db') {
+                            this.isDbBackupLoading = false;
+                        } else {
+                            this.isMediaBackupLoading = false;
+                        }
 
-                    this.createNotificationError({
-                        message: error.message || 'Failed to check backup status'
-                    });
+                        this.createNotificationError({
+                            message: error.message || 'Failed to check backup status'
+                        });
+                    }
                 }
             };
 
-            // Start polling
             poll();
         },
 
-        // DB Restore
         openDbRestoreModal(backup) {
             this.selectedDbBackup = backup;
             this.dbRestoreConfirmation = '';
@@ -460,7 +428,6 @@ Component.register('artiss-tools-backups', {
             }
         },
 
-        // Media Restore
         openMediaRestoreModal(backup) {
             this.selectedMediaBackup = backup;
             this.mediaRestoreConfirmed = false;
@@ -508,7 +475,6 @@ Component.register('artiss-tools-backups', {
             }
         },
 
-        // Delete backup
         confirmDeleteBackup(backup, type) {
             this.backupToDelete = backup;
             this.backupToDeleteType = type;
@@ -543,7 +509,6 @@ Component.register('artiss-tools-backups', {
                     this.createNotificationSuccess({
                         message: this.$tc('artissTools.backups.restore.messages.deleteSuccess')
                     });
-                    // Refresh the list
                     await this.loadBackupsList();
                 } else {
                     throw new Error(response.data.error || 'Unknown error');
@@ -570,7 +535,6 @@ Component.register('artiss-tools-backups', {
                     }
                 );
 
-                // Create download link
                 const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement('a');
                 link.href = url;
