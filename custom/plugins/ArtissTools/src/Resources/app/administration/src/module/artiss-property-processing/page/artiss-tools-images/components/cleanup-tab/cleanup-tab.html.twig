@@ -1,0 +1,157 @@
+<div class="artiss-images-cleanup-tab">
+    {# Media Library Size Block #}
+    <sw-card :title="$tc('artissTools.images.cleanup.mediaSize.title')">
+        <div class="artiss-images-cleanup-tab__media-size">
+            <div>
+                <div class="artiss-images-cleanup-tab__size-label">
+                    {{ $tc('artissTools.images.cleanup.mediaSize.label') }}
+                </div>
+                <div v-if="mediaLibrarySizeFormatted" class="artiss-images-cleanup-tab__size-value">
+                    {{ mediaLibrarySizeFormatted }}
+                </div>
+                <div v-else class="artiss-images-cleanup-tab__size-value">
+                    {{ $tc('artissTools.images.cleanup.mediaSize.notCalculated') }}
+                </div>
+            </div>
+            <sw-button
+                variant="ghost"
+                size="small"
+                :isLoading="isLoadingSize"
+                @click="calculateMediaLibrarySize"
+            >
+                {{ $tc('artissTools.images.cleanup.mediaSize.calculateButton') }}
+            </sw-button>
+        </div>
+    </sw-card>
+
+    {# Parameters #}
+    <sw-card :title="$tc('artissTools.images.cleanup.parameters.title')">
+        <div class="artiss-images-cleanup-tab__parameters">
+            <sw-container columns="1fr 1fr" gap="0 20px">
+                <sw-single-select
+                    v-model:value="folderEntity"
+                    :options="folderEntityOptions"
+                    :label="$tc('artissTools.images.cleanup.parameters.folderEntity.label')"
+                    :placeholder="$tc('artissTools.images.cleanup.parameters.folderEntity.placeholder')"
+                    valueProperty="value"
+                    labelProperty="label"
+                />
+                <sw-number-field
+                    v-model="gracePeriodDays"
+                    :label="$tc('artissTools.images.cleanup.parameters.gracePeriodDays.label')"
+                    :helpText="$tc('artissTools.images.cleanup.parameters.gracePeriodDays.helpText')"
+                    numberType="int"
+                    :min="0"
+                />
+            </sw-container>
+            
+            <sw-container columns="1fr 1fr" gap="0 20px" style="margin-top: 20px;">
+                <sw-number-field
+                    v-model="limit"
+                    :label="$tc('artissTools.images.cleanup.parameters.limit.label')"
+                    :helpText="$tc('artissTools.images.cleanup.parameters.limit.helpText')"
+                    numberType="int"
+                    :min="1"
+                />
+                <sw-checkbox-field
+                    v-model="dryRun"
+                    :label="$tc('artissTools.images.cleanup.parameters.dryRun.label')"
+                />
+            </sw-container>
+
+            <sw-container columns="1fr" gap="0" style="margin-top: 20px;">
+                <sw-checkbox-field
+                    v-model="report"
+                    :label="$tc('artissTools.images.cleanup.parameters.report.label')"
+                />
+            </sw-container>
+
+            {# Advanced options #}
+            <div style="margin-top: 20px;">
+                <sw-button
+                    variant="ghost"
+                    size="small"
+                    @click="showAdvanced = !showAdvanced"
+                >
+                    {{ showAdvanced ? $tc('artissTools.images.cleanup.parameters.hideAdvanced') : $tc('artissTools.images.cleanup.parameters.showAdvanced') }}
+                </sw-button>
+                
+                <div v-if="showAdvanced" style="margin-top: 15px;">
+                    <sw-number-field
+                        v-model="offset"
+                        :label="$tc('artissTools.images.cleanup.parameters.offset.label')"
+                        :helpText="$tc('artissTools.images.cleanup.parameters.offset.helpText')"
+                        numberType="int"
+                        :min="0"
+                    />
+                </div>
+            </div>
+        </div>
+    </sw-card>
+
+    {# Actions #}
+    <sw-card>
+        <div class="artiss-images-cleanup-tab__actions">
+            <sw-button
+                variant="primary"
+                :disabled="!canPreview"
+                :isLoading="isLoading"
+                @click="preview"
+            >
+                {{ $tc('artissTools.images.cleanup.buttons.preview') }}
+            </sw-button>
+            <sw-button
+                variant="danger"
+                :disabled="!canDelete"
+                :isLoading="isLoading"
+                @click="deleteUnusedMedia"
+            >
+                {{ $tc('artissTools.images.cleanup.buttons.delete') }}
+            </sw-button>
+        </div>
+    </sw-card>
+
+    {# Results - Show command output as is #}
+    <sw-card
+        v-if="showResults && commandResult && commandResult.output"
+        :title="$tc('artissTools.images.cleanup.results.title')"
+        :isLoading="isLoading"
+    >
+        <div class="artiss-images-cleanup-tab__results">
+            <div v-if="!commandResult.success" class="artiss-images-cleanup-tab__error">
+                <sw-alert variant="error" :title="$tc('artissTools.images.cleanup.results.errorTitle')">
+                    {{ commandResult.output }}
+                </sw-alert>
+            </div>
+            <pre class="artiss-images-cleanup-tab__command-output">{{ commandResult.output }}</pre>
+        </div>
+    </sw-card>
+
+    {# Confirmation Modal #}
+    <sw-modal
+        v-if="showConfirmModal"
+        :title="$tc('artissTools.images.cleanup.confirmModal.title')"
+        @modal-close="cancelDelete"
+    >
+        <div>
+            <sw-alert variant="warning">
+                {{ $tc('artissTools.images.cleanup.confirmModal.warning') }}
+            </sw-alert>
+            <p style="margin-top: 15px;">
+                {{ $tc('artissTools.images.cleanup.confirmModal.message') }}
+            </p>
+        </div>
+
+        <template #modal-footer>
+            <sw-button @click="cancelDelete">
+                {{ $tc('global.default.cancel') }}
+            </sw-button>
+            <sw-button
+                variant="primary"
+                @click="confirmDelete"
+            >
+                {{ $tc('artissTools.images.cleanup.confirmModal.confirmButton') }}
+            </sw-button>
+        </template>
+    </sw-modal>
+</div>

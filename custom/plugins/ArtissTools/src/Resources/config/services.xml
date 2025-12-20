@@ -169,6 +169,19 @@
             <tag name="console.command"/>
         </service>
 
+        <!-- Images Cleanup Service -->
+        <service id="ArtissTools\Service\ImagesCleanupService">
+            <argument type="service" id="kernel"/>
+        </service>
+
+        <!-- Images Cleanup Controller -->
+        <service id="ArtissTools\Controller\Api\ImagesCleanupController" public="true">
+            <argument type="service" id="ArtissTools\Service\ImagesCleanupService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
         <!-- Subscribers -->
         <service id="ArtissTools\Subscriber\PluginLifecycleSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>

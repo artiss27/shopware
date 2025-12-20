@@ -29,9 +29,10 @@
         </sw-tabs>
 
         <template v-if="activeTab === 'cleanup'">
-            <sw-card :title="$tc('artissTools.images.tabs.cleanup')">
-                <p>{{ $tc('artissTools.images.placeholders.cleanup') }}</p>
-            </sw-card>
+            <artiss-images-cleanup-tab
+                :httpClient="httpClient"
+                :getAuthHeaders="getAuthHeaders"
+            />
         </template>
 
         <template v-else>

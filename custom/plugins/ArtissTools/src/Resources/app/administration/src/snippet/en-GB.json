@@ -229,6 +229,64 @@
             "placeholders": {
                 "cleanup": "Image cleanup placeholder",
                 "duplicates": "Image duplicates placeholder"
+            },
+            "cleanup": {
+                "mediaSize": {
+                    "title": "Media Library Size",
+                    "label": "Current media folder size:",
+                    "notCalculated": "not calculated",
+                    "calculateButton": "Calculate now"
+                },
+                "parameters": {
+                    "title": "Parameters",
+                    "folderEntity": {
+                        "label": "Folder Entity",
+                        "placeholder": "Select folder entity...",
+                        "all": "All folders"
+                    },
+                    "gracePeriodDays": {
+                        "label": "Grace Period (days)",
+                        "helpText": "Do not delete files younger than X days"
+                    },
+                    "limit": {
+                        "label": "Limit",
+                        "helpText": "Maximum files to process in one run"
+                    },
+                    "offset": {
+                        "label": "Offset",
+                        "helpText": "Start from this position (for pagination)"
+                    },
+                    "dryRun": {
+                        "label": "Dry-run (Preview only)"
+                    },
+                    "report": {
+                        "label": "Report (Show file list)"
+                    },
+                    "showAdvanced": "Show advanced options",
+                    "hideAdvanced": "Hide advanced options"
+                },
+                "buttons": {
+                    "preview": "Preview (Dry-run)",
+                    "delete": "Delete unused media"
+                },
+                "results": {
+                    "title": "Command Output",
+                    "errorTitle": "Error"
+                },
+                "confirmModal": {
+                    "title": "Confirm Deletion",
+                    "warning": "WARNING: This operation cannot be undone! Physical files will be deleted.",
+                    "message": "Are you sure you want to delete unused media files? It is recommended to run Preview first.",
+                    "confirmButton": "Confirm delete"
+                },
+                "messages": {
+                    "deleteSuccess": "Unused media deleted successfully"
+                },
+                "errors": {
+                    "calculateSizeFailed": "Failed to calculate media size",
+                    "commandFailed": "Command execution failed",
+                    "deleteFailed": "Failed to delete unused media"
+                }
             }
         },
         "propertyProcessing": {
