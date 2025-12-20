@@ -211,22 +211,16 @@ class BackupController extends AbstractController
                 'noForeignChecks' => $data['noForeignChecks'] ?? true,
             ];
 
-            $result = $this->backupService->restoreDb($options);
-
-            if ($result['success']) {
-                return new JsonResponse([
-                    'success' => true,
-                    'data' => [
-                        'output' => $result['output'],
-                        'message' => 'Database restored successfully',
-                    ],
-                ]);
-            }
+            $jobId = 'restore_db_' . uniqid('', true);
+            $this->startRestoreInBackground($jobId, 'db', $options);
 
             return new JsonResponse([
-                'success' => false,
-                'error' => $result['error'] ?? $result['output'],
-            ], 500);
+                'success' => true,
+                'data' => [
+                    'jobId' => $jobId,
+                    'message' => 'Database restore started',
+                ],
+            ]);
 
         } catch (\Exception $e) {
             return new JsonResponse([
@@ -259,22 +253,16 @@ class BackupController extends AbstractController
                 'dryRun' => $data['dryRun'] ?? false,
             ];
 
-            $result = $this->backupService->restoreMedia($options);
-
-            if ($result['success']) {
-                return new JsonResponse([
-                    'success' => true,
-                    'data' => [
-                        'output' => $result['output'],
-                        'message' => 'Media restored successfully',
-                    ],
-                ]);
-            }
+            $jobId = 'restore_media_' . uniqid('', true);
+            $this->startRestoreInBackground($jobId, 'media', $options);
 
             return new JsonResponse([
-                'success' => false,
-                'error' => $result['error'] ?? $result['output'],
-            ], 500);
+                'success' => true,
+                'data' => [
+                    'jobId' => $jobId,
+                    'message' => 'Media restore started',
+                ],
+            ]);
 
         } catch (\Exception $e) {
             return new JsonResponse([
@@ -519,6 +507,124 @@ class BackupController extends AbstractController
 
         if (!empty($options['comment'])) {
             $args[] = '--comment=' . escapeshellarg($options['comment']);
+        }
+
+        return implode(' ', $args);
+    }
+
+    #[Route(
+        path: '/api/_action/artiss-tools/restore/status/{jobId}',
+        name: 'api.action.artiss_tools.restore.status',
+        methods: ['GET']
+    )]
+    public function getRestoreStatus(string $jobId, Context $context): JsonResponse
+    {
+        try {
+            $logFile = $this->projectDir . '/var/log/' . $jobId . '.log';
+
+            if (!file_exists($logFile)) {
+                return new JsonResponse([
+                    'success' => true,
+                    'data' => [
+                        'status' => 'pending',
+                        'message' => 'Restore is starting...',
+                    ],
+                ]);
+            }
+
+            $log = file_get_contents($logFile);
+
+            if (strpos($log, '[ERROR]') !== false || strpos($log, 'Exception') !== false) {
+                return new JsonResponse([
+                    'success' => true,
+                    'data' => [
+                        'status' => 'failed',
+                        'error' => 'Restore failed. Check logs for details.',
+                    ],
+                ]);
+            }
+
+            if (stripos($log, 'restore completed successfully') !== false ||
+                stripos($log, 'restored successfully') !== false) {
+                return new JsonResponse([
+                    'success' => true,
+                    'data' => [
+                        'status' => 'completed',
+                        'message' => 'Restore completed successfully',
+                    ],
+                ]);
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'data' => [
+                    'status' => 'running',
+                    'message' => 'Restore in progress...',
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function startRestoreInBackground(string $jobId, string $type, array $options): void
+    {
+        $phpBinary = $this->findPhpBinary();
+        $consolePath = $this->projectDir . '/bin/console';
+
+        $command = match($type) {
+            'db' => $this->buildDbRestoreCommand($consolePath, $options),
+            'media' => $this->buildMediaRestoreCommand($consolePath, $options),
+            default => throw new \InvalidArgumentException('Invalid restore type'),
+        };
+
+        $logFile = $this->projectDir . '/var/log/' . $jobId . '.log';
+        $fullCommand = sprintf(
+            '%s %s > %s 2>&1 &',
+            $phpBinary,
+            $command,
+            escapeshellarg($logFile)
+        );
+
+        shell_exec($fullCommand);
+    }
+
+    private function buildDbRestoreCommand(string $consolePath, array $options): string
+    {
+        $args = [
+            escapeshellarg($consolePath),
+            'artiss:restore:db',
+            escapeshellarg($options['backupFile']),
+            '--force',
+        ];
+
+        if ($options['dropTables']) {
+            $args[] = '--drop-tables';
+        }
+
+        if ($options['noForeignChecks']) {
+            $args[] = '--no-foreign-checks';
+        }
+
+        return implode(' ', $args);
+    }
+
+    private function buildMediaRestoreCommand(string $consolePath, array $options): string
+    {
+        $args = [
+            escapeshellarg($consolePath),
+            'artiss:restore:media',
+            escapeshellarg($options['backupFile']),
+            '--mode=' . escapeshellarg($options['mode']),
+            '--force',
+        ];
+
+        if ($options['dryRun']) {
+            $args[] = '--dry-run';
         }
 
         return implode(' ', $args);

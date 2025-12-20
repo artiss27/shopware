@@ -1,4 +1,5 @@
 import template from './artiss-tools-products.html.twig';
+import './components/product-merge-tab';
 
 const { Component } = Shopware;
 
@@ -9,6 +10,12 @@ Component.register('artiss-tools-products', {
         return {
             activeTab: 'merge'
         };
+    },
+
+    computed: {
+        httpClient() {
+            return Shopware.Application.getContainer('init').httpClient;
+        }
     },
 
     methods: {
@@ -22,6 +29,22 @@ Component.register('artiss-tools-products', {
             }
 
             this.activeTab = newTab;
+        },
+
+        getAuthHeaders() {
+            const loginService = Shopware.Service('loginService');
+            const token = loginService.getToken();
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            return headers;
         }
     }
 });

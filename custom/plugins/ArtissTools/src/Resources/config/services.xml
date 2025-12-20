@@ -91,6 +91,21 @@
             </call>
         </service>
 
+        <service id="ArtissTools\Service\ProductMergeService">
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="media.repository"/>
+            <argument type="service" id="property_group.repository"/>
+            <argument type="service" id="property_group_option.repository"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+
+        <service id="ArtissTools\Controller\Api\ProductMergeController" public="true">
+            <argument type="service" id="ArtissTools\Service\ProductMergeService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
         <!-- Property Group Commands -->
         <service id="ArtissTools\Command\PropertyGroupMergeCommand">
             <argument type="service" id="property_group.repository"/>

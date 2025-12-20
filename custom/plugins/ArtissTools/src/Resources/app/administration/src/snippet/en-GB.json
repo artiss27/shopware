@@ -21,6 +21,85 @@
             },
             "placeholders": {
                 "merge": "Merge products placeholder"
+            },
+            "merge": {
+                "mode": {
+                    "title": "Merge Mode",
+                    "label": "Select mode",
+                    "new": "Create new parent product",
+                    "existing": "Use existing parent product"
+                },
+                "targetParent": {
+                    "title": "Target Parent Product",
+                    "search": "Search parent product",
+                    "searchPlaceholder": "Search by name, product number or ID..."
+                },
+                "newParent": {
+                    "title": "Parent Product Name",
+                    "name": "Name",
+                    "namePlaceholder": "Enter parent product name",
+                    "hint": "Name will be automatically suggested based on common parts of selected product names"
+                },
+                "productsToMerge": {
+                    "title": "Products to Merge",
+                    "search": "Search products",
+                    "searchPlaceholder": "Search by name, product number or ID...",
+                    "resultsCount": "Found products: {count}"
+                },
+                "selectedProducts": {
+                    "title": "Selected Products ({count})",
+                    "empty": "No products selected"
+                },
+                "filters": {
+                    "category": "Category",
+                    "categoryPlaceholder": "Filter by category",
+                    "manufacturer": "Manufacturer",
+                    "manufacturerPlaceholder": "Filter by manufacturer"
+                },
+                "table": {
+                    "name": "Name",
+                    "productNumber": "Product Number",
+                    "actions": "Actions"
+                },
+                "buttons": {
+                    "select": "Select",
+                    "selectAll": "Select all on page",
+                    "addSelected": "Add selected to list",
+                    "preview": "Preview",
+                    "merge": "Merge",
+                    "cancel": "Cancel",
+                    "confirm": "Confirm",
+                    "find": "Find"
+                },
+                "modal": {
+                    "title": "Search Products",
+                    "filterName": "Filter by name",
+                    "filterNamePlaceholder": "Search by name or product number...",
+                    "resultsCount": "Showing: {filtered} of {total}",
+                    "noResults": "No products found",
+                    "loadMore": "Load more"
+                },
+                "preview": {
+                    "title": "Merge Preview",
+                    "parent": "Parent Product",
+                    "variants": "Variants",
+                    "variantFormingProperties": "Variant-forming Properties",
+                    "media": "Media",
+                    "mediaCommon": "Common images: {common}",
+                    "mediaUnique": "Unique images: {unique}"
+                },
+                "confirm": {
+                    "title": "Confirm Merge",
+                    "message": "Are you sure you want to merge the selected products? This action cannot be undone."
+                },
+                "messages": {
+                    "mergeSuccess": "Products merged successfully!"
+                },
+                "errors": {
+                    "searchFailed": "Failed to search products",
+                    "previewFailed": "Failed to generate preview",
+                    "mergeFailed": "Failed to merge products"
+                }
             }
         },
         "backups": {

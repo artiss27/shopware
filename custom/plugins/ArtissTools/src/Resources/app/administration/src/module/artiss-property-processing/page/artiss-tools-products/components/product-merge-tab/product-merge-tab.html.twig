@@ -1,0 +1,355 @@
+<div class="artiss-product-merge-tab">
+    {# Mode Selection #}
+    <sw-card :title="$tc('artissTools.products.merge.mode.title')">
+        <sw-radio-field
+            v-model:value="mode"
+            :options="[
+                { value: 'new', name: $tc('artissTools.products.merge.mode.new') },
+                { value: 'existing', name: $tc('artissTools.products.merge.mode.existing') }
+            ]"
+            :label="$tc('artissTools.products.merge.mode.label')"
+        />
+    </sw-card>
+
+    {# Target Parent Selection (for existing mode) #}
+    <sw-card
+        v-if="mode === 'existing'"
+        :title="$tc('artissTools.products.merge.targetParent.title')"
+        :isLoading="isLoading"
+    >
+        <sw-container columns="1fr 1fr" gap="0 20px">
+            <sw-entity-single-select
+                v-model:value="targetParentCategory"
+                entity="category"
+                :label="$tc('artissTools.products.merge.filters.category')"
+                :placeholder="$tc('artissTools.products.merge.filters.categoryPlaceholder')"
+            />
+            <sw-entity-single-select
+                v-model:value="targetParentManufacturer"
+                entity="product_manufacturer"
+                :label="$tc('artissTools.products.merge.filters.manufacturer')"
+                :placeholder="$tc('artissTools.products.merge.filters.manufacturerPlaceholder')"
+            />
+        </sw-container>
+
+        <sw-field
+            v-model:value="targetParentSearchTerm"
+            type="text"
+            :label="$tc('artissTools.products.merge.targetParent.search')"
+            :placeholder="$tc('artissTools.products.merge.targetParent.searchPlaceholder')"
+            @input="searchTargetParent"
+            class="sw-field--last"
+        />
+
+        <div v-if="targetParent" class="artiss-product-merge-tab__selected-parent">
+            <sw-label variant="success">
+                {{ targetParent.name }} ({{ targetParent.productNumber }})
+                <template #dismiss>
+                    <sw-icon name="regular-times" small @click="clearTargetParent" />
+                </template>
+            </sw-label>
+        </div>
+
+        <div v-if="showTargetParentResults && targetParentResults.length > 0" class="artiss-product-merge-tab__search-results">
+            <table class="sw-data-grid__table sw-table">
+                <thead>
+                    <tr>
+                        <th>{{ $tc('artissTools.products.merge.table.name') }}</th>
+                        <th>{{ $tc('artissTools.products.merge.table.productNumber') }}</th>
+                        <th>{{ $tc('artissTools.products.merge.table.actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="product in targetParentResults" :key="product.id">
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.productNumber }}</td>
+                        <td>
+                            <sw-button size="small" @click="selectTargetParent(product)">
+                                {{ $tc('artissTools.products.merge.buttons.select') }}
+                            </sw-button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </sw-card>
+
+    {# Products to Merge #}
+    <sw-card :title="$tc('artissTools.products.merge.productsToMerge.title')" :isLoading="isLoading">
+        <sw-container columns="1fr 1fr" gap="0 20px">
+            <sw-entity-single-select
+                v-model:value="mergeProductCategory"
+                entity="category"
+                :label="$tc('artissTools.products.merge.filters.category')"
+                :placeholder="$tc('artissTools.products.merge.filters.categoryPlaceholder')"
+            />
+            <sw-entity-single-select
+                v-model:value="mergeProductManufacturer"
+                entity="product_manufacturer"
+                :label="$tc('artissTools.products.merge.filters.manufacturer')"
+                :placeholder="$tc('artissTools.products.merge.filters.manufacturerPlaceholder')"
+            />
+        </sw-container>
+
+        <sw-button
+            variant="primary"
+            :disabled="isLoading"
+            @click="searchMergeProducts"
+            class="sw-field--last"
+        >
+            {{ $tc('artissTools.products.merge.buttons.find') }}
+        </sw-button>
+    </sw-card>
+
+    {# Selected Products List #}
+    <sw-card
+        :title="$tc('artissTools.products.merge.selectedProducts.title', selectedProducts.length, { count: selectedProducts.length })"
+    >
+        <sw-list
+            v-if="selectedProducts.length > 0"
+            :items="selectedProducts"
+            class="artiss-product-merge-tab__selected-list"
+        >
+            <template #item="{ item }">
+                <sw-list-item>
+                    <sw-label>
+                        {{ item.name }} ({{ item.productNumber }})
+                        <template #dismiss>
+                            <sw-icon name="regular-times" small @click="removeProduct(item.id)" />
+                        </template>
+                    </sw-label>
+                </sw-list-item>
+            </template>
+        </sw-list>
+        <div v-else class="artiss-product-merge-tab__empty-list">
+            {{ $tc('artissTools.products.merge.selectedProducts.empty') }}
+        </div>
+    </sw-card>
+
+    {# Parent Name (for new mode) - editable #}
+    <sw-card
+        v-if="mode === 'new' && selectedProducts.length >= 2"
+        :title="$tc('artissTools.products.merge.newParent.title')"
+    >
+        <sw-text-field
+            v-model="newParentName"
+            :label="$tc('artissTools.products.merge.newParent.name')"
+            :placeholder="$tc('artissTools.products.merge.newParent.namePlaceholder')"
+            required
+        />
+    </sw-card>
+
+    {# Variant-forming Properties Selection #}
+    <sw-card
+        v-if="selectedProducts.length >= (mode === 'existing' ? 1 : 2) && availableVariantFormingProperties.length > 0"
+        :title="$tc('artissTools.products.merge.variantProperties.title')"
+        :isLoading="isLoading"
+    >
+        <p class="artiss-product-merge-tab__variant-props-description">
+            {{ $tc('artissTools.products.merge.variantProperties.description') }}
+        </p>
+        
+        <div class="artiss-product-merge-tab__variant-props-actions">
+            <sw-button size="small" @click="selectAllVariantProperties">
+                {{ $tc('artissTools.products.merge.variantProperties.selectAll') }}
+            </sw-button>
+            <sw-button size="small" @click="deselectAllVariantProperties">
+                {{ $tc('artissTools.products.merge.variantProperties.deselectAll') }}
+            </sw-button>
+        </div>
+
+        <div class="artiss-product-merge-tab__variant-props-list">
+            <sw-checkbox-field
+                v-for="property in availableVariantFormingProperties"
+                :key="property.groupId"
+                :value="isVariantPropertySelected(property.groupId)"
+                :label="property.groupName"
+                @change="toggleVariantProperty(property.groupId)"
+            >
+                <template #hint>
+                    {{ property.options.map(opt => opt.name).join(', ') }}
+                </template>
+            </sw-checkbox-field>
+        </div>
+    </sw-card>
+
+    {# Actions #}
+    <sw-card
+        v-if="canPreview"
+        :title="$tc('artissTools.products.merge.actions.title')"
+        :isLoading="isLoading"
+    >
+        <sw-button
+            variant="primary"
+            :disabled="isLoading"
+            @click="generatePreview"
+        >
+            {{ $tc('artissTools.products.merge.buttons.preview') }}
+        </sw-button>
+
+        <sw-button
+            v-if="showPreview && previewData"
+            variant="danger"
+            :disabled="isLoading"
+            @click="executeMerge"
+            class="sw-button--left"
+        >
+            {{ $tc('artissTools.products.merge.buttons.merge') }}
+        </sw-button>
+    </sw-card>
+
+    {# Preview #}
+    <sw-card
+        v-if="showPreview && previewData"
+        :title="$tc('artissTools.products.merge.preview.title')"
+    >
+        <div class="artiss-product-merge-tab__preview">
+            <table class="sw-data-grid__table sw-table">
+                <tbody>
+                    <tr>
+                        <td class="artiss-product-merge-tab__preview-label">
+                            {{ $tc('artissTools.products.merge.preview.parent') }}
+                        </td>
+                        <td>
+                            <strong>{{ previewData.parent.name }}</strong>
+                            <span v-if="mode === 'existing' && previewData.parent.productNumber">
+                                ({{ previewData.parent.productNumber }})
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="artiss-product-merge-tab__preview-label">
+                            {{ $tc('artissTools.products.merge.preview.variants') }}
+                        </td>
+                        <td>
+                            {{ previewData.variants.length }}
+                        </td>
+                    </tr>
+                    <tr v-if="previewData.variantFormingProperties && previewData.variantFormingProperties.length > 0">
+                        <td class="artiss-product-merge-tab__preview-label">
+                            {{ $tc('artissTools.products.merge.preview.variantFormingProperties') }}
+                        </td>
+                        <td>
+                            <ul>
+                                <li v-for="property in previewData.variantFormingProperties" :key="property.groupId">
+                                    <strong>{{ property.groupName }}</strong>:
+                                    <span v-for="(option, index) in property.options" :key="option.id">
+                                        {{ option.name }}<span v-if="index < property.options.length - 1">, </span>
+                                    </span>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </sw-card>
+
+    {# Products Search Modal #}
+    <sw-modal
+        v-if="showMergeProductModal"
+        :title="$tc('artissTools.products.merge.modal.title')"
+        variant="large"
+        @modal-close="closeMergeProductModal"
+    >
+        <div class="artiss-product-merge-tab__modal-content">
+            <div class="artiss-product-merge-tab__modal-filter">
+                <sw-text-field
+                    v-model="modalFilterName"
+                    :label="$tc('artissTools.products.merge.modal.filterName')"
+                    :placeholder="$tc('artissTools.products.merge.modal.filterNamePlaceholder')"
+                />
+            </div>
+
+            <div class="artiss-product-merge-tab__modal-header">
+                <sw-button size="small" @click="selectAllOnPage">
+                    {{ $tc('artissTools.products.merge.buttons.selectAll') }}
+                </sw-button>
+                <span class="artiss-product-merge-tab__results-count">
+                    Показано: {{ filteredMergeProductResults.length }} из {{ mergeProductsTotal }}
+                </span>
+            </div>
+
+            <div class="artiss-product-merge-tab__modal-table">
+                <table class="sw-data-grid__table sw-table">
+                    <thead>
+                        <tr>
+                            <th width="50px"></th>
+                            <th>{{ $tc('artissTools.products.merge.table.name') }}</th>
+                            <th>{{ $tc('artissTools.products.merge.table.productNumber') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="product in filteredMergeProductResults" :key="product.id">
+                            <td>
+                                <sw-checkbox-field 
+                                    :value="isProductSelected(product.id)"
+                                    @change="toggleProductSelection(product.id)"
+                                />
+                            </td>
+                            <td>{{ product.name || product.translated?.name }}</td>
+                            <td>{{ product.productNumber }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div v-if="filteredMergeProductResults.length === 0" class="artiss-product-merge-tab__no-results">
+                    {{ $tc('artissTools.products.merge.modal.noResults') }}
+                </div>
+                <div v-if="hasMoreProducts" class="artiss-product-merge-tab__load-more">
+                    <sw-button 
+                        variant="ghost" 
+                        :disabled="isLoading"
+                        @click="loadMoreProducts"
+                    >
+                        {{ $tc('artissTools.products.merge.modal.loadMore') }} 
+                        ({{ mergeProductsTotal - mergeProductResults.length }})
+                    </sw-button>
+                </div>
+            </div>
+        </div>
+
+        <template #modal-footer>
+            <sw-button
+                variant="secondary"
+                @click="closeMergeProductModal"
+            >
+                {{ $tc('artissTools.products.merge.buttons.cancel') }}
+            </sw-button>
+
+            <sw-button
+                variant="primary"
+                :disabled="selectedProductIdsInModal.length === 0"
+                @click="addSelectedProducts"
+            >
+                {{ $tc('artissTools.products.merge.buttons.addSelected') }} ({{ selectedProductIdsInModal.length }})
+            </sw-button>
+        </template>
+    </sw-modal>
+
+    {# Confirm Modal #}
+    <sw-modal
+        v-if="showConfirmModal"
+        :title="$tc('artissTools.products.merge.confirm.title')"
+        variant="small"
+        @modal-close="showConfirmModal = false"
+    >
+        <p>{{ $tc('artissTools.products.merge.confirm.message') }}</p>
+
+        <template #modal-footer>
+            <sw-button
+                variant="secondary"
+                @click="showConfirmModal = false"
+            >
+                {{ $tc('artissTools.products.merge.buttons.cancel') }}
+            </sw-button>
+
+            <sw-button
+                variant="danger"
+                @click="confirmMerge"
+            >
+                {{ $tc('artissTools.products.merge.buttons.confirm') }}
+            </sw-button>
+        </template>
+    </sw-modal>
+</div>
+

@@ -1,0 +1,640 @@
+<?php declare(strict_types=1);
+
+namespace ArtissTools\Service;
+
+use Doctrine\DBAL\Connection;
+use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
+use Shopware\Core\Framework\Uuid\Uuid;
+
+class ProductMergeService
+{
+    public function __construct(
+        private readonly EntityRepository $productRepository,
+        private readonly EntityRepository $mediaRepository,
+        private readonly EntityRepository $propertyGroupRepository,
+        private readonly EntityRepository $propertyGroupOptionRepository,
+        private readonly Connection $connection
+    ) {
+    }
+
+    /**
+     * Generate preview data for product merge
+     */
+    public function generatePreview(
+        string $mode,
+        array $selectedProductIds,
+        ?string $targetParentId = null,
+        ?string $newParentName = null,
+        array $variantFormingPropertyGroupIds = [],
+        Context $context
+    ): array {
+        // Load all selected products with associations
+        $products = $this->loadProductsWithAssociations($selectedProductIds, $context);
+
+        if (empty($products)) {
+            throw new \InvalidArgumentException('No products found');
+        }
+
+        if ($mode === 'new' && count($products) < 2) {
+            throw new \InvalidArgumentException('At least 2 products required for new parent mode');
+        }
+
+        if ($mode === 'existing' && empty($targetParentId)) {
+            throw new \InvalidArgumentException('Target parent ID required for existing parent mode');
+        }
+
+        $targetParent = null;
+        if ($mode === 'existing') {
+            $targetProducts = $this->loadProductsWithAssociations([$targetParentId], $context);
+            $targetParent = $targetProducts[$targetParentId] ?? null;
+            if (!$targetParent) {
+                throw new \InvalidArgumentException('Target parent product not found');
+            }
+        } else {
+            // Use first product as base for new parent
+            $targetParent = reset($products);
+        }
+
+        // Analyze common and unique properties
+        $propertyAnalysis = $this->analyzeProperties($products, $targetParent, $mode, $context);
+
+        // Analyze custom fields
+        $customFieldsAnalysis = $this->analyzeCustomFields($products);
+
+        // Analyze media
+        $mediaAnalysis = $this->analyzeMedia($products, $targetParent, $mode);
+
+        // Generate variant-forming properties
+        $allVariantFormingProperties = $this->getVariantFormingPropertiesFromAnalysis($propertyAnalysis, $products, $targetParent, $mode, $context);
+        
+        // Filter by selected property group IDs if provided
+        $variantFormingProperties = $allVariantFormingProperties;
+        if (!empty($variantFormingPropertyGroupIds)) {
+            $variantFormingProperties = array_filter($allVariantFormingProperties, function ($prop) use ($variantFormingPropertyGroupIds) {
+                return in_array($prop['groupId'], $variantFormingPropertyGroupIds);
+            });
+        }
+
+        return [
+            'parent' => [
+                'id' => $targetParent->getId(),
+                'name' => $mode === 'new' ? ($newParentName ?: $targetParent->getName()) : $targetParent->getName(),
+                'productNumber' => $mode === 'existing' ? $targetParent->getProductNumber() : null
+            ],
+            'variants' => array_map(function (ProductEntity $product) {
+                return [
+                    'id' => $product->getId(),
+                    'name' => $product->getName(),
+                    'productNumber' => $product->getProductNumber()
+                ];
+            }, $products),
+            'variantFormingProperties' => array_values($variantFormingProperties),
+            'propertyAnalysis' => $propertyAnalysis,
+            'customFieldsAnalysis' => $customFieldsAnalysis
+        ];
+    }
+
+    /**
+     * Get variant-forming properties list for selection
+     */
+    public function getVariantFormingProperties(
+        string $mode,
+        array $selectedProductIds,
+        ?string $targetParentId = null,
+        Context $context
+    ): array {
+        // Load all selected products with associations
+        $products = $this->loadProductsWithAssociations($selectedProductIds, $context);
+
+        if (empty($products)) {
+            return [];
+        }
+
+        $targetParent = null;
+        if ($mode === 'existing' && $targetParentId) {
+            $targetProducts = $this->loadProductsWithAssociations([$targetParentId], $context);
+            $targetParent = $targetProducts[$targetParentId] ?? null;
+        } else {
+            $targetParent = reset($products);
+        }
+
+        // Analyze properties
+        $propertyAnalysis = $this->analyzeProperties($products, $targetParent, $mode, $context);
+
+        // Generate variant-forming properties
+        return $this->getVariantFormingPropertiesFromAnalysis($propertyAnalysis, $products, $targetParent, $mode, $context);
+    }
+
+    /**
+     * Execute product merge
+     */
+    public function merge(
+        string $mode,
+        array $selectedProductIds,
+        ?string $targetParentId = null,
+        ?string $newParentName = null,
+        array $variantFormingPropertyGroupIds = [],
+        Context $context
+    ): array {
+        $this->connection->beginTransaction();
+
+        try {
+            // Load all selected products with associations
+            $products = $this->loadProductsWithAssociations($selectedProductIds, $context);
+
+            if (empty($products)) {
+                throw new \InvalidArgumentException('No products found');
+            }
+
+            $targetParent = null;
+            $newParentId = null;
+
+            if ($mode === 'existing') {
+                if (empty($targetParentId)) {
+                    throw new \InvalidArgumentException('Target parent ID required for existing parent mode');
+                }
+                $targetProducts = $this->loadProductsWithAssociations([$targetParentId], $context);
+                $targetParent = $targetProducts[$targetParentId] ?? null;
+                if (!$targetParent) {
+                    throw new \InvalidArgumentException('Target parent product not found');
+                }
+                $newParentId = $targetParentId;
+            } else {
+                // Clone first product to create new parent
+                $firstProduct = reset($products);
+                $newParentId = $this->cloneProductForParent($firstProduct, $newParentName ?: $firstProduct->getName(), $context);
+                
+                // Load the newly created parent
+                $targetProducts = $this->loadProductsWithAssociations([$newParentId], $context);
+                $targetParent = $targetProducts[$newParentId] ?? null;
+                
+                if (!$targetParent) {
+                    throw new \RuntimeException('Failed to create new parent product');
+                }
+
+                // Process properties, custom fields, and media for new parent
+                $this->processNewParentData($targetParent, $products, $context);
+            }
+
+            // Set parent_id for all selected products
+            $updates = [];
+            foreach ($products as $product) {
+                $updates[] = [
+                    'id' => $product->getId(),
+                    'parentId' => $newParentId
+                ];
+            }
+
+            $this->productRepository->update($updates, $context);
+
+            // Process configurator settings with selected variant-forming properties
+            $this->processConfiguratorSettings($targetParent, $products, $variantFormingPropertyGroupIds, $context);
+
+            // Process media
+            $this->processMedia($targetParent, $products, $context);
+
+            $this->connection->commit();
+
+            return [
+                'success' => true,
+                'parentId' => $newParentId,
+                'variantsCount' => count($products)
+            ];
+        } catch (\Exception $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Load products with all necessary associations
+     */
+    private function loadProductsWithAssociations(array $productIds, Context $context): array
+    {
+        $criteria = new Criteria($productIds);
+        $criteria->addAssociations([
+            'properties',
+            'properties.group',
+            'properties.group.options',
+            'categories',
+            'media',
+            'cover',
+            'configuratorSettings',
+            'configuratorSettings.option',
+            'configuratorSettings.option.group',
+            'customFields',
+            'prices',
+            'tax',
+            'manufacturer'
+        ]);
+
+        $products = $this->productRepository->search($criteria, $context)->getEntities();
+
+        $result = [];
+        foreach ($products as $product) {
+            $result[$product->getId()] = $product;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Analyze properties across products
+     */
+    private function analyzeProperties(array $products, ?ProductEntity $targetParent, string $mode, Context $context): array
+    {
+        $allProperties = [];
+        foreach ($products as $product) {
+            $properties = $product->getProperties();
+            if ($properties) {
+                foreach ($properties as $property) {
+                    $groupId = $property->getGroupId();
+                    $optionId = $property->getId();
+                    
+                    if (!isset($allProperties[$groupId])) {
+                        $allProperties[$groupId] = [];
+                    }
+                    if (!isset($allProperties[$groupId][$optionId])) {
+                        $allProperties[$groupId][$optionId] = [];
+                    }
+                    $allProperties[$groupId][$optionId][] = $product->getId();
+                }
+            }
+        }
+
+        // Add existing parent properties if mode is 'existing'
+        if ($mode === 'existing' && $targetParent) {
+            $parentProducts = $this->loadProductsWithAssociations(
+                [$targetParent->getId()],
+                $context
+            );
+            $parentProduct = $parentProducts[$targetParent->getId()] ?? null;
+            
+            if ($parentProduct) {
+                $existingChildren = $this->getProductChildren($targetParent->getId(), $context);
+                foreach ($existingChildren as $child) {
+                    $properties = $child->getProperties();
+                    if ($properties) {
+                        foreach ($properties as $property) {
+                            $groupId = $property->getGroupId();
+                            $optionId = $property->getId();
+                            
+                            if (!isset($allProperties[$groupId])) {
+                                $allProperties[$groupId] = [];
+                            }
+                            if (!isset($allProperties[$groupId][$optionId])) {
+                                $allProperties[$groupId][$optionId] = [];
+                            }
+                            // Mark as existing child
+                            $allProperties[$groupId][$optionId][] = $child->getId();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Find common properties (present in all products)
+        $commonProperties = [];
+        $uniqueProperties = [];
+        $totalProducts = count($products);
+
+        foreach ($allProperties as $groupId => $options) {
+            foreach ($options as $optionId => $productIds) {
+                $uniqueProductIds = array_unique($productIds);
+                if (count($uniqueProductIds) === $totalProducts) {
+                    if (!isset($commonProperties[$groupId])) {
+                        $commonProperties[$groupId] = [];
+                    }
+                    $commonProperties[$groupId][] = $optionId;
+                } else {
+                    if (!isset($uniqueProperties[$groupId])) {
+                        $uniqueProperties[$groupId] = [];
+                    }
+                    $uniqueProperties[$groupId][] = $optionId;
+                }
+            }
+        }
+
+        return [
+            'common' => $commonProperties,
+            'unique' => $uniqueProperties,
+            'all' => $allProperties
+        ];
+    }
+
+    /**
+     * Analyze custom fields across products
+     */
+    private function analyzeCustomFields(array $products): array
+    {
+        $allCustomFields = [];
+        foreach ($products as $product) {
+            $customFields = $product->getCustomFields();
+            if ($customFields) {
+                foreach ($customFields as $key => $value) {
+                    if (!isset($allCustomFields[$key])) {
+                        $allCustomFields[$key] = [];
+                    }
+                    $allCustomFields[$key][] = [
+                        'productId' => $product->getId(),
+                        'value' => $value
+                    ];
+                }
+            }
+        }
+
+        $commonFields = [];
+        $uniqueFields = [];
+        $totalProducts = count($products);
+
+        foreach ($allCustomFields as $key => $values) {
+            $uniqueValues = array_unique(array_column($values, 'value'), SORT_REGULAR);
+            if (count($uniqueValues) === 1 && count($values) === $totalProducts) {
+                $commonFields[$key] = $uniqueValues[0];
+            } else {
+                $uniqueFields[$key] = $values;
+            }
+        }
+
+        return [
+            'common' => $commonFields,
+            'unique' => $uniqueFields
+        ];
+    }
+
+    /**
+     * Analyze media across products
+     */
+    private function analyzeMedia(array $products, ?ProductEntity $targetParent, string $mode): array
+    {
+        $allMedia = [];
+        foreach ($products as $product) {
+            $mediaCollection = $product->getMedia();
+            if ($mediaCollection) {
+                foreach ($mediaCollection as $media) {
+                    $mediaId = $media->getMediaId();
+                    if (!isset($allMedia[$mediaId])) {
+                        $allMedia[$mediaId] = [];
+                    }
+                    $allMedia[$mediaId][] = $product->getId();
+                }
+            }
+        }
+
+        // Add existing parent media if mode is 'existing'
+        if ($mode === 'existing' && $targetParent) {
+            $mediaCollection = $targetParent->getMedia();
+            if ($mediaCollection) {
+                foreach ($mediaCollection as $media) {
+                    $mediaId = $media->getMediaId();
+                    if (!isset($allMedia[$mediaId])) {
+                        $allMedia[$mediaId] = [];
+                    }
+                }
+            }
+        }
+
+        $totalProducts = count($products);
+        $commonMedia = [];
+        $uniqueMedia = [];
+
+        foreach ($allMedia as $mediaId => $productIds) {
+            $uniqueProductIds = array_unique($productIds);
+            if (count($uniqueProductIds) === $totalProducts) {
+                $commonMedia[] = $mediaId;
+            } else {
+                $uniqueMedia[] = $mediaId;
+            }
+        }
+
+        return [
+            'common' => count($commonMedia),
+            'unique' => count($uniqueMedia)
+        ];
+    }
+
+    /**
+     * Get variant-forming properties from analysis
+     */
+    private function getVariantFormingPropertiesFromAnalysis(
+        array $propertyAnalysis,
+        array $products,
+        ?ProductEntity $targetParent,
+        string $mode,
+        Context $context
+    ): array {
+        $variantForming = [];
+
+        // Find property groups where options differ between products
+        foreach ($propertyAnalysis['all'] as $groupId => $options) {
+            $optionIds = array_keys($options);
+            if (count($optionIds) > 1) {
+                // Get group and options info
+                $group = $this->getPropertyGroup($groupId, $context);
+                if ($group) {
+                    $groupOptions = [];
+                    foreach ($optionIds as $optionId) {
+                        $option = $this->getPropertyOption($optionId, $context);
+                        if ($option) {
+                            $groupOptions[] = [
+                                'id' => $optionId,
+                                'name' => $option->getTranslation('name') ?? $option->getName()
+                            ];
+                        }
+                    }
+                    
+                    $variantForming[] = [
+                        'groupId' => $groupId,
+                        'groupName' => $group->getTranslation('name') ?? $group->getName(),
+                        'options' => $groupOptions
+                    ];
+                }
+            }
+        }
+
+        return $variantForming;
+    }
+
+    /**
+     * Clone product to create new parent
+     */
+    private function cloneProductForParent(ProductEntity $sourceProduct, string $newName, Context $context): string
+    {
+        $newId = Uuid::randomHex();
+        $newProductNumber = $sourceProduct->getProductNumber() . '-PARENT-' . substr($newId, 0, 8);
+
+        $productData = [
+            'id' => $newId,
+            'name' => $newName,
+            'productNumber' => $newProductNumber,
+            'parentId' => null,
+            'taxId' => $sourceProduct->getTaxId(),
+            'stock' => 0,
+            'active' => $sourceProduct->getActive(),
+            'markAsTopseller' => $sourceProduct->getMarkAsTopseller(),
+        ];
+
+        // Copy categories
+        if ($sourceProduct->getCategories()) {
+            $productData['categories'] = array_map(function ($category) {
+                return ['id' => $category->getId()];
+            }, $sourceProduct->getCategories()->getElements());
+        }
+
+        // Copy manufacturer
+        if ($sourceProduct->getManufacturerId()) {
+            $productData['manufacturerId'] = $sourceProduct->getManufacturerId();
+        }
+
+        // Copy description
+        if ($sourceProduct->getDescription()) {
+            $productData['description'] = $sourceProduct->getDescription();
+        }
+
+        $this->productRepository->create([$productData], $context);
+
+        return $newId;
+    }
+
+    /**
+     * Process data for new parent (remove non-common properties, custom fields, etc.)
+     */
+    private function processNewParentData(ProductEntity $parent, array $products, Context $context): void
+    {
+        $propertyAnalysis = $this->analyzeProperties($products, $parent, 'new', $context);
+        $customFieldsAnalysis = $this->analyzeCustomFields($products);
+
+        // Set only common properties
+        $commonPropertyIds = [];
+        foreach ($propertyAnalysis['common'] as $groupId => $optionIds) {
+            $commonPropertyIds = array_merge($commonPropertyIds, $optionIds);
+        }
+
+        // Set only common custom fields
+        $commonCustomFields = $customFieldsAnalysis['common'];
+
+        $updateData = [
+            'id' => $parent->getId(),
+        ];
+
+        if (!empty($commonPropertyIds)) {
+            $updateData['properties'] = array_map(function ($id) {
+                return ['id' => $id];
+            }, $commonPropertyIds);
+        } else {
+            $updateData['properties'] = [];
+        }
+
+        if (!empty($commonCustomFields)) {
+            $updateData['customFields'] = $commonCustomFields;
+        }
+
+        $this->productRepository->update([$updateData], $context);
+    }
+
+    /**
+     * Process configurator settings for variant-forming properties
+     */
+    private function processConfiguratorSettings(ProductEntity $parent, array $products, array $selectedPropertyGroupIds, Context $context): void
+    {
+        if (empty($selectedPropertyGroupIds)) {
+            return;
+        }
+
+        $propertyAnalysis = $this->analyzeProperties($products, $parent, 'existing', $context);
+        $allVariantFormingProperties = $this->getVariantFormingPropertiesFromAnalysis($propertyAnalysis, $products, $parent, 'existing', $context);
+        
+        // Filter by selected property group IDs
+        $variantFormingProperties = array_filter($allVariantFormingProperties, function ($prop) use ($selectedPropertyGroupIds) {
+            return in_array($prop['groupId'], $selectedPropertyGroupIds);
+        });
+
+        $configuratorSettings = [];
+        foreach ($variantFormingProperties as $property) {
+            foreach ($property['options'] as $option) {
+                $configuratorSettings[] = [
+                    'id' => Uuid::randomHex(),
+                    'optionId' => $option['id']
+                ];
+            }
+        }
+
+        if (!empty($configuratorSettings)) {
+            $this->productRepository->update([
+                [
+                    'id' => $parent->getId(),
+                    'configuratorSettings' => $configuratorSettings
+                ]
+            ], $context);
+        }
+    }
+
+    /**
+     * Process media (move common to parent, keep unique on variants)
+     */
+    private function processMedia(ProductEntity $parent, array $products, Context $context): void
+    {
+        $mediaAnalysis = $this->analyzeMedia($products, $parent, 'existing');
+        
+        // This is a simplified version - in reality you'd need to:
+        // 1. Find common media IDs
+        // 2. Add them to parent if not already there
+        // 3. Remove duplicates from children
+        // This requires more complex logic with product_media table
+        
+        // For now, we'll just ensure parent has cover if any product has cover
+        foreach ($products as $product) {
+            if ($product->getCover()) {
+                $coverMediaId = $product->getCover()->getMediaId();
+                if ($coverMediaId && !$parent->getCover()) {
+                    $this->productRepository->update([
+                        [
+                            'id' => $parent->getId(),
+                            'coverId' => $product->getCoverId()
+                        ]
+                    ], $context);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get property group
+     */
+    private function getPropertyGroup(string $groupId, Context $context): ?object
+    {
+        $criteria = new Criteria([$groupId]);
+        $result = $this->propertyGroupRepository->search($criteria, $context);
+        return $result->first();
+    }
+
+    /**
+     * Get property option
+     */
+    private function getPropertyOption(string $optionId, Context $context): ?object
+    {
+        $criteria = new Criteria([$optionId]);
+        $result = $this->propertyGroupOptionRepository->search($criteria, $context);
+        return $result->first();
+    }
+
+    /**
+     * Get product children
+     */
+    private function getProductChildren(string $parentId, Context $context): array
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('parentId', $parentId));
+        $criteria->addAssociations(['properties', 'properties.group', 'properties.group.options']);
+
+        $children = $this->productRepository->search($criteria, $context)->getEntities();
+        return array_values($children->getElements());
+    }
+}
+

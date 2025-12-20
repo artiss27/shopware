@@ -411,11 +411,8 @@ Component.register('artiss-tools-backups', {
                     { headers: this.getAuthHeaders() }
                 );
 
-                if (response.data.success) {
-                    this.createNotificationSuccess({
-                        message: this.$tc('artissTools.backups.restore.messages.dbRestoreSuccess')
-                    });
-                    this.closeDbRestoreModal();
+                if (response.data.success && response.data.data?.jobId) {
+                    this.pollRestoreStatus(response.data.data.jobId, 'db');
                 } else {
                     throw new Error(response.data.error || 'Unknown error');
                 }
@@ -423,7 +420,6 @@ Component.register('artiss-tools-backups', {
                 this.createNotificationError({
                     message: error.response?.data?.error || error.message || this.$tc('artissTools.backups.restore.messages.dbRestoreError')
                 });
-            } finally {
                 this.isDbRestoring = false;
             }
         },
@@ -458,11 +454,8 @@ Component.register('artiss-tools-backups', {
                     { headers: this.getAuthHeaders() }
                 );
 
-                if (response.data.success) {
-                    this.createNotificationSuccess({
-                        message: this.$tc('artissTools.backups.restore.messages.mediaRestoreSuccess')
-                    });
-                    this.closeMediaRestoreModal();
+                if (response.data.success && response.data.data?.jobId) {
+                    this.pollRestoreStatus(response.data.data.jobId, 'media');
                 } else {
                     throw new Error(response.data.error || 'Unknown error');
                 }
@@ -470,9 +463,88 @@ Component.register('artiss-tools-backups', {
                 this.createNotificationError({
                     message: error.response?.data?.error || error.message || this.$tc('artissTools.backups.restore.messages.mediaRestoreError')
                 });
-            } finally {
                 this.isMediaRestoring = false;
             }
+        },
+
+        pollRestoreStatus(jobId, type) {
+            const maxAttempts = 300;
+            let attempts = 0;
+
+            const poll = async () => {
+                try {
+                    const response = await this.httpClient.get(
+                        `/_action/artiss-tools/restore/status/${jobId}`,
+                        { headers: this.getAuthHeaders() }
+                    );
+
+                    if (response.data.success && response.data.data) {
+                        const status = response.data.data.status;
+
+                        if (status === 'completed') {
+                            if (type === 'db') {
+                                this.isDbRestoring = false;
+                                this.closeDbRestoreModal();
+                            } else {
+                                this.isMediaRestoring = false;
+                                this.closeMediaRestoreModal();
+                            }
+
+                            this.createNotificationSuccess({
+                                message: type === 'db'
+                                    ? this.$tc('artissTools.backups.restore.messages.dbRestoreSuccess')
+                                    : this.$tc('artissTools.backups.restore.messages.mediaRestoreSuccess')
+                            });
+
+                            return;
+                        } else if (status === 'failed') {
+                            if (type === 'db') {
+                                this.isDbRestoring = false;
+                            } else {
+                                this.isMediaRestoring = false;
+                            }
+
+                            this.createNotificationError({
+                                message: response.data.data.error || 'Restore failed'
+                            });
+
+                            return;
+                        } else if (status === 'running' || status === 'pending') {
+                            attempts++;
+                            if (attempts < maxAttempts) {
+                                setTimeout(poll, 2000);
+                            } else {
+                                if (type === 'db') {
+                                    this.isDbRestoring = false;
+                                } else {
+                                    this.isMediaRestoring = false;
+                                }
+
+                                this.createNotificationError({
+                                    message: 'Restore timed out'
+                                });
+                            }
+                        }
+                    }
+                } catch (error) {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(poll, 2000);
+                    } else {
+                        if (type === 'db') {
+                            this.isDbRestoring = false;
+                        } else {
+                            this.isMediaRestoring = false;
+                        }
+
+                        this.createNotificationError({
+                            message: error.message || 'Failed to check restore status'
+                        });
+                    }
+                }
+            };
+
+            poll();
         },
 
         confirmDeleteBackup(backup, type) {

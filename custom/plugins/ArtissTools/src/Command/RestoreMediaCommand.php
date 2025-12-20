@@ -78,8 +78,8 @@ class RestoreMediaCommand extends Command
             return Command::FAILURE;
         }
 
-        if (!str_ends_with($filePath, '.tar.gz') && !str_ends_with($filePath, '.tgz')) {
-            $io->error('Backup file must be a .tar.gz archive.');
+        if (!str_ends_with($filePath, '.tar.gz') && !str_ends_with($filePath, '.tgz') && !str_ends_with($filePath, '.tar')) {
+            $io->error('Backup file must be a .tar or .tar.gz archive.');
             return Command::FAILURE;
         }
 

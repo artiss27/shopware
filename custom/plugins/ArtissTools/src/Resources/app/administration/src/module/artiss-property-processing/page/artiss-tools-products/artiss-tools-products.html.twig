@@ -25,9 +25,11 @@
             </sw-tabs-item>
         </sw-tabs>
 
-        <sw-card :title="$tc('artissTools.products.tabs.merge')" :isLoading="false">
-            <p>{{ $tc('artissTools.products.placeholders.merge') }}</p>
-        </sw-card>
+        <artiss-product-merge-tab
+            v-if="activeTab === 'merge'"
+            :httpClient="httpClient"
+            :getAuthHeaders="getAuthHeaders"
+        />
     </template>
 </sw-page>
 {% endblock %}
