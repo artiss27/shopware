@@ -35,10 +35,11 @@
             />
         </template>
 
-        <template v-else>
-            <sw-card :title="$tc('artissTools.images.tabs.duplicates')">
-                <p>{{ $tc('artissTools.images.placeholders.duplicates') }}</p>
-            </sw-card>
+        <template v-else-if="activeTab === 'duplicates'">
+            <artiss-images-duplicates-tab
+                :httpClient="httpClient"
+                :getAuthHeaders="getAuthHeaders"
+            />
         </template>
     </template>
 </sw-page>

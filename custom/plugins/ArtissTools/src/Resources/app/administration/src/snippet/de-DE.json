@@ -148,6 +148,54 @@
             "placeholders": {
                 "cleanup": "Platzhalter für Bildbereinigung",
                 "duplicates": "Platzhalter für Bildduplikate"
+            },
+            "duplicates": {
+                "hashStatus": {
+                    "title": "Medien-Hashes",
+                    "lastUpdate": "Zuletzt aktualisiert",
+                    "notCalculated": "Noch nicht berechnet",
+                    "files": "Dateien",
+                    "updateButton": "Medien-Hashes aktualisieren",
+                    "recalculateAll": "Alle neu berechnen"
+                },
+                "searchArea": {
+                    "title": "Suchbereich",
+                    "folderEntity": {
+                        "label": "Medienkategorie",
+                        "placeholder": "Medienkategorie auswählen..."
+                    }
+                },
+                "buttons": {
+                    "findNext": "Nächste Duplikate finden",
+                    "merge": "Diesen Satz zusammenführen",
+                    "skip": "Diesen Satz überspringen"
+                },
+                "duplicateSet": {
+                    "title": "Duplikatsatz"
+                },
+                "table": {
+                    "preview": "Vorschau",
+                    "status": "Basis",
+                    "mediaId": "Medien-ID",
+                    "fileName": "Dateiname",
+                    "folder": "Ordner",
+                    "createdAt": "Erstellt",
+                    "usage": "Verwendung",
+                    "parentProduct": "Übergeordnetes Produkt"
+                },
+                "messages": {
+                    "hashUpdateStarted": "Medien-Hash-Aktualisierung gestartet",
+                    "processing": "Verarbeitung",
+                    "hashUpdateComplete": "Hash-Aktualisierung abgeschlossen! Verarbeitet",
+                    "noNewFiles": "Alle Mediendateien haben bereits Hashes",
+                    "noDuplicates": "Keine Duplikate gefunden",
+                    "mergeSuccess": "Erfolgreich zusammengeführt! {count} Referenzen aktualisiert"
+                },
+                "errors": {
+                    "hashUpdateFailed": "Medien-Hashes konnten nicht aktualisiert werden",
+                    "searchFailed": "Duplikate konnten nicht gefunden werden",
+                    "mergeFailed": "Duplikate konnten nicht zusammengeführt werden"
+                }
             }
         },
         "propertyProcessing": {

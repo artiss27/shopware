@@ -297,6 +297,54 @@
                     "commandFailed": "Ошибка выполнения команды",
                     "deleteFailed": "Не удалось удалить неиспользуемые медиа"
                 }
+            },
+            "duplicates": {
+                "hashStatus": {
+                    "title": "Хэши медиа",
+                    "lastUpdate": "Последнее обновление",
+                    "notCalculated": "Ещё не рассчитано",
+                    "files": "файлов",
+                    "updateButton": "Обновить хэши медиа",
+                    "recalculateAll": "Пересчитать все"
+                },
+                "searchArea": {
+                    "title": "Область поиска",
+                    "folderEntity": {
+                        "label": "Категория медиа",
+                        "placeholder": "Выберите категорию медиа..."
+                    }
+                },
+                "buttons": {
+                    "findNext": "Найти следующий набор дублей",
+                    "merge": "Объединить этот набор",
+                    "skip": "Пропустить этот набор"
+                },
+                "duplicateSet": {
+                    "title": "Набор дублей"
+                },
+                "table": {
+                    "preview": "Превью",
+                    "status": "База",
+                    "mediaId": "ID медиа",
+                    "fileName": "Имя файла",
+                    "folder": "Папка",
+                    "createdAt": "Создано",
+                    "usage": "Использование",
+                    "parentProduct": "Родительский товар"
+                },
+                "messages": {
+                    "hashUpdateStarted": "Обновление хэшей медиа запущено",
+                    "processing": "Обработка",
+                    "hashUpdateComplete": "Обновление хэшей завершено! Обработано",
+                    "noNewFiles": "Все медиа файлы уже имеют хэши",
+                    "noDuplicates": "Дубли не найдены",
+                    "mergeSuccess": "Успешно объединено! Обновлено {count} ссылок"
+                },
+                "errors": {
+                    "hashUpdateFailed": "Не удалось обновить хэши медиа",
+                    "searchFailed": "Не удалось найти дубли",
+                    "mergeFailed": "Не удалось объединить дубли"
+                }
             }
         },
         "propertyProcessing": {

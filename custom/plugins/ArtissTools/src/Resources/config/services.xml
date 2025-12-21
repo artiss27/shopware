@@ -182,6 +182,42 @@
             </call>
         </service>
 
+        <!-- Media Hash Service -->
+        <service id="ArtissTools\Service\MediaHashService">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="media.repository"/>
+            <argument type="service" id="kernel"/>
+        </service>
+
+        <!-- Media Duplicates Service -->
+        <service id="ArtissTools\Service\MediaDuplicatesService">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="media.repository"/>
+        </service>
+
+        <!-- Media Duplicates Controller -->
+        <service id="ArtissTools\Controller\Api\MediaDuplicatesController" public="true">
+            <argument type="service" id="ArtissTools\Service\MediaHashService"/>
+            <argument type="service" id="ArtissTools\Service\MediaDuplicatesService"/>
+            <argument type="service" id="messenger.default_bus"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <!-- Message Handler for async hash updates -->
+        <service id="ArtissTools\MessageHandler\UpdateMediaHashesMessageHandler">
+            <argument type="service" id="ArtissTools\Service\MediaHashService"/>
+            <argument type="service" id="messenger.default_bus"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <!-- Update Media Hashes Command -->
+        <service id="ArtissTools\Command\UpdateMediaHashesCommand">
+            <argument type="service" id="ArtissTools\Service\MediaHashService"/>
+            <tag name="console.command"/>
+        </service>
+
         <!-- Subscribers -->
         <service id="ArtissTools\Subscriber\PluginLifecycleSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>

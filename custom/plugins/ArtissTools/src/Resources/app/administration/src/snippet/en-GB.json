@@ -288,6 +288,54 @@
                     "commandFailed": "Command execution failed",
                     "deleteFailed": "Failed to delete unused media"
                 }
+            },
+            "duplicates": {
+                "hashStatus": {
+                    "title": "Media Hashes",
+                    "lastUpdate": "Last updated",
+                    "notCalculated": "Not yet calculated",
+                    "files": "files",
+                    "updateButton": "Update media hashes",
+                    "recalculateAll": "Recalculate all"
+                },
+                "searchArea": {
+                    "title": "Search Area",
+                    "folderEntity": {
+                        "label": "Media Category",
+                        "placeholder": "Select media category..."
+                    }
+                },
+                "buttons": {
+                    "findNext": "Find next duplicate set",
+                    "merge": "Merge this set",
+                    "skip": "Skip this set"
+                },
+                "duplicateSet": {
+                    "title": "Duplicate Set"
+                },
+                "table": {
+                    "preview": "Preview",
+                    "status": "Main",
+                    "mediaId": "Media ID",
+                    "fileName": "File Name",
+                    "folder": "Folder",
+                    "createdAt": "Created",
+                    "usage": "Usage",
+                    "parentProduct": "Parent Product"
+                },
+                "messages": {
+                    "hashUpdateStarted": "Media hash update started",
+                    "processing": "Processing",
+                    "hashUpdateComplete": "Hash update complete! Processed",
+                    "noNewFiles": "All media files already have hashes",
+                    "noDuplicates": "No duplicates found",
+                    "mergeSuccess": "Successfully merged! Updated {count} references"
+                },
+                "errors": {
+                    "hashUpdateFailed": "Failed to update media hashes",
+                    "searchFailed": "Failed to search for duplicates",
+                    "mergeFailed": "Failed to merge duplicates"
+                }
             }
         },
         "propertyProcessing": {

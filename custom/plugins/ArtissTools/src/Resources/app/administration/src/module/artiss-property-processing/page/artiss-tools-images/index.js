@@ -1,5 +1,6 @@
 import template from './artiss-tools-images.html.twig';
 import './components/cleanup-tab';
+import './components/duplicates-tab';
 
 const { Component } = Shopware;
 

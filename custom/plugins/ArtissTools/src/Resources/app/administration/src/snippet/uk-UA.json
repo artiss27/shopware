@@ -148,6 +148,54 @@
             "placeholders": {
                 "cleanup": "Заглушка очищення зображень",
                 "duplicates": "Заглушка пошуку дублікатів зображень"
+            },
+            "duplicates": {
+                "hashStatus": {
+                    "title": "Хеші медіа",
+                    "lastUpdate": "Останнє оновлення",
+                    "notCalculated": "Ще не розраховано",
+                    "files": "файлів",
+                    "updateButton": "Оновити хеші медіа",
+                    "recalculateAll": "Перерахувати все"
+                },
+                "searchArea": {
+                    "title": "Область пошуку",
+                    "folderEntity": {
+                        "label": "Категорія медіа",
+                        "placeholder": "Виберіть категорію медіа..."
+                    }
+                },
+                "buttons": {
+                    "findNext": "Знайти наступний набір дублікатів",
+                    "merge": "Об'єднати цей набір",
+                    "skip": "Пропустити цей набір"
+                },
+                "duplicateSet": {
+                    "title": "Набір дублікатів"
+                },
+                "table": {
+                    "preview": "Попередній перегляд",
+                    "status": "База",
+                    "mediaId": "ID медіа",
+                    "fileName": "Ім'я файлу",
+                    "folder": "Папка",
+                    "createdAt": "Створено",
+                    "usage": "Використання",
+                    "parentProduct": "Батьківський товар"
+                },
+                "messages": {
+                    "hashUpdateStarted": "Оновлення хешів медіа запущено",
+                    "processing": "Обробка",
+                    "hashUpdateComplete": "Оновлення хешів завершено! Оброблено",
+                    "noNewFiles": "Всі медіа файли вже мають хеші",
+                    "noDuplicates": "Дублікати не знайдено",
+                    "mergeSuccess": "Успішно об'єднано! Оновлено {count} посилань"
+                },
+                "errors": {
+                    "hashUpdateFailed": "Не вдалося оновити хеші медіа",
+                    "searchFailed": "Не вдалося знайти дублікати",
+                    "mergeFailed": "Не вдалося об'єднати дублікати"
+                }
             }
         },
         "propertyProcessing": {

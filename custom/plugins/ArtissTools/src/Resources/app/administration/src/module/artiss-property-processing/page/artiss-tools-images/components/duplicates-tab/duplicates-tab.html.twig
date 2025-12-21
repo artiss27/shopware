@@ -1,0 +1,153 @@
+<div class="artiss-images-duplicates-tab">
+    {# Hash Status Block #}
+    <sw-card :title="$tc('artissTools.images.duplicates.hashStatus.title')">
+        <div class="artiss-images-duplicates-tab__hash-status">
+            <div>
+                <div class="artiss-images-duplicates-tab__status-label">
+                    {{ hashStatusText }}
+                </div>
+                <sw-checkbox-field
+                    v-model="recalculateAll"
+                    :label="$tc('artissTools.images.duplicates.hashStatus.recalculateAll')"
+                    :disabled="isUpdatingHashes"
+                    style="margin-top: 10px;"
+                />
+            </div>
+            <sw-button
+                variant="ghost"
+                size="small"
+                :isLoading="isUpdatingHashes"
+                @click="updateHashes"
+            >
+                {{ $tc('artissTools.images.duplicates.hashStatus.updateButton') }}
+            </sw-button>
+        </div>
+    </sw-card>
+
+    {# Search Parameters #}
+    <sw-card :title="$tc('artissTools.images.duplicates.searchArea.title')">
+        <div class="artiss-images-duplicates-tab__search-area">
+            <sw-single-select
+                v-model:value="folderEntity"
+                :options="folderEntityOptions"
+                :label="$tc('artissTools.images.duplicates.searchArea.folderEntity.label')"
+                :placeholder="$tc('artissTools.images.duplicates.searchArea.folderEntity.placeholder')"
+                valueProperty="value"
+                labelProperty="label"
+            />
+        </div>
+
+        <div class="artiss-images-duplicates-tab__actions" style="margin-top: 20px;">
+            <sw-button
+                variant="primary"
+                :disabled="!canSearch"
+                :isLoading="isLoading"
+                @click="findNextDuplicate"
+            >
+                {{ $tc('artissTools.images.duplicates.buttons.findNext') }}
+            </sw-button>
+        </div>
+    </sw-card>
+
+    {# Duplicate Set Display #}
+    <sw-card
+        v-if="showDuplicateSet && currentDuplicateSet"
+        :title="$tc('artissTools.images.duplicates.duplicateSet.title')"
+        :isLoading="isLoading"
+    >
+        <div class="artiss-images-duplicates-tab__duplicate-set">
+            {# Preview Image #}
+            <div class="artiss-images-duplicates-tab__preview">
+                <img
+                    v-if="currentDuplicateSet.mediaList[0]"
+                    :src="`/${currentDuplicateSet.mediaList[0].path}`"
+                    :alt="currentDuplicateSet.mediaList[0].fileName"
+                    class="artiss-images-duplicates-tab__preview-image"
+                />
+            </div>
+
+            {# Media List Table #}
+            <div class="artiss-images-duplicates-tab__media-list">
+                <table class="artiss-images-duplicates-tab__table">
+                    <thead>
+                        <tr>
+                            <th>{{ $tc('artissTools.images.duplicates.table.preview') }}</th>
+                            <th>{{ $tc('artissTools.images.duplicates.table.status') }}</th>
+                            <th>{{ $tc('artissTools.images.duplicates.table.mediaId') }}</th>
+                            <th>{{ $tc('artissTools.images.duplicates.table.fileName') }}</th>
+                            <th>{{ $tc('artissTools.images.duplicates.table.folder') }}</th>
+                            <th>{{ $tc('artissTools.images.duplicates.table.createdAt') }}</th>
+                            <th>{{ $tc('artissTools.images.duplicates.table.usage') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for="media in currentDuplicateSet.mediaList"
+                            :key="media.id"
+                            :class="{ 'is-keeper': isKeeperMedia(media.id) }"
+                        >
+                            <td>
+                                <img
+                                    :src="`/${media.path}`"
+                                    :alt="media.fileName"
+                                    class="artiss-images-duplicates-tab__thumbnail"
+                                />
+                            </td>
+                            <td style="text-align: center;">
+                                <sw-icon
+                                        v-if="isKeeperMedia(media.id)"
+                                        name="checkmark"
+                                        variant="regular"
+                                        size="24"
+                                        color="#37d046"
+                                />
+                            </td>
+                            <td>
+                                <code class="artiss-images-duplicates-tab__media-id">{{ media.id }}</code>
+                            </td>
+                            <td>{{ media.fileName }}</td>
+                            <td>{{ media.folder || '-' }}</td>
+                            <td>{{ formatDate(media.createdAt) }}</td>
+                            <td>
+                                <div class="artiss-images-duplicates-tab__usage">
+                                    <span v-if="media.usage.product > 0">
+                                        Product: {{ media.usage.product }}
+                                    </span>
+                                    <span v-if="media.usage.productCover > 0">
+                                        Cover: {{ media.usage.productCover }}
+                                    </span>
+                                    <span v-if="media.usage.category > 0">
+                                        Category: {{ media.usage.category }}
+                                    </span>
+                                    <span v-if="media.usage.cms > 0">
+                                        CMS: {{ media.usage.cms }}
+                                    </span>
+                                    <span v-if="media.usage.total === 0">-</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {# Actions #}
+            <div class="artiss-images-duplicates-tab__set-actions">
+                <sw-button
+                    variant="primary"
+                    :disabled="!canMerge"
+                    :isLoading="isLoading"
+                    @click="mergeDuplicateSet"
+                >
+                    {{ $tc('artissTools.images.duplicates.buttons.merge') }}
+                </sw-button>
+                <sw-button
+                    variant="ghost"
+                    :disabled="isLoading"
+                    @click="skipDuplicateSet"
+                >
+                    {{ $tc('artissTools.images.duplicates.buttons.skip') }}
+                </sw-button>
+            </div>
+        </div>
+    </sw-card>
+</div>
