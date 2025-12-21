@@ -36,11 +36,6 @@ Component.register('artiss-images-cleanup-tab', {
             folderEntity: 'product', // Default to product, null = all folders
             gracePeriodDays: 20,
             limit: 100,
-            offset: 0,
-            dryRun: true,
-            report: true,
-            showAdvanced: false,
-            
             // Folder entity options (loaded from repository)
             folderEntityOptions: [],
             
@@ -63,7 +58,7 @@ Component.register('artiss-images-cleanup-tab', {
         },
 
         canDelete() {
-            return !this.dryRun && !this.isLoading;
+            return !this.isLoading;
         }
     },
 
@@ -109,9 +104,7 @@ Component.register('artiss-images-cleanup-tab', {
                     folderEntity: this.folderEntity || null,
                     gracePeriodDays: this.gracePeriodDays,
                     limit: this.limit,
-                    offset: this.offset,
-                    dryRun: true,
-                    report: this.report
+                    dryRun: true
                 };
 
                 const response = await this.httpClient.post(
@@ -158,9 +151,7 @@ Component.register('artiss-images-cleanup-tab', {
                     folderEntity: this.folderEntity || null,
                     gracePeriodDays: this.gracePeriodDays,
                     limit: this.limit,
-                    offset: this.offset,
-                    dryRun: false,
-                    report: this.report
+                    dryRun: false
                 };
 
                 const response = await this.httpClient.post(

@@ -280,6 +280,7 @@
                 },
                 "results": {
                     "title": "Вывод команды",
+                    "command": "Выполненная команда",
                     "errorTitle": "Ошибка"
                 },
                 "confirmModal": {

@@ -45,7 +45,7 @@
                 />
             </sw-container>
             
-            <sw-container columns="1fr 1fr" gap="0 20px" style="margin-top: 20px;">
+            <sw-container columns="1fr" gap="0" style="margin-top: 20px;">
                 <sw-number-field
                     v-model="limit"
                     :label="$tc('artissTools.images.cleanup.parameters.limit.label')"
@@ -53,39 +53,8 @@
                     numberType="int"
                     :min="1"
                 />
-                <sw-checkbox-field
-                    v-model="dryRun"
-                    :label="$tc('artissTools.images.cleanup.parameters.dryRun.label')"
-                />
             </sw-container>
 
-            <sw-container columns="1fr" gap="0" style="margin-top: 20px;">
-                <sw-checkbox-field
-                    v-model="report"
-                    :label="$tc('artissTools.images.cleanup.parameters.report.label')"
-                />
-            </sw-container>
-
-            {# Advanced options #}
-            <div style="margin-top: 20px;">
-                <sw-button
-                    variant="ghost"
-                    size="small"
-                    @click="showAdvanced = !showAdvanced"
-                >
-                    {{ showAdvanced ? $tc('artissTools.images.cleanup.parameters.hideAdvanced') : $tc('artissTools.images.cleanup.parameters.showAdvanced') }}
-                </sw-button>
-                
-                <div v-if="showAdvanced" style="margin-top: 15px;">
-                    <sw-number-field
-                        v-model="offset"
-                        :label="$tc('artissTools.images.cleanup.parameters.offset.label')"
-                        :helpText="$tc('artissTools.images.cleanup.parameters.offset.helpText')"
-                        numberType="int"
-                        :min="0"
-                    />
-                </div>
-            </div>
         </div>
     </sw-card>
 
@@ -113,17 +82,21 @@
 
     {# Results - Show command output as is #}
     <sw-card
-        v-if="showResults && commandResult && commandResult.output"
+        v-if="showResults && commandResult"
         :title="$tc('artissTools.images.cleanup.results.title')"
         :isLoading="isLoading"
     >
         <div class="artiss-images-cleanup-tab__results">
-            <div v-if="!commandResult.success" class="artiss-images-cleanup-tab__error">
+            <div v-if="commandResult.command" class="artiss-images-cleanup-tab__command-info" style="margin-bottom: 15px;">
+                <strong>{{ $tc('artissTools.images.cleanup.results.command') }}:</strong>
+                <code style="display: block; margin-top: 5px; padding: 8px; background: #f5f5f5; border-radius: 4px;">{{ commandResult.command }}</code>
+            </div>
+            <div v-if="!commandResult.success && commandResult.output" class="artiss-images-cleanup-tab__error">
                 <sw-alert variant="error" :title="$tc('artissTools.images.cleanup.results.errorTitle')">
                     {{ commandResult.output }}
                 </sw-alert>
             </div>
-            <pre class="artiss-images-cleanup-tab__command-output">{{ commandResult.output }}</pre>
+            <pre v-if="commandResult.output" class="artiss-images-cleanup-tab__command-output">{{ commandResult.output }}</pre>
         </div>
     </sw-card>
 

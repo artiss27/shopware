@@ -271,6 +271,7 @@
                 },
                 "results": {
                     "title": "Command Output",
+                    "command": "Executed command",
                     "errorTitle": "Error"
                 },
                 "confirmModal": {
