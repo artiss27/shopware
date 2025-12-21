@@ -308,7 +308,7 @@
                 "buttons": {
                     "findNext": "Find next duplicate set",
                     "merge": "Merge this set",
-                    "skip": "Skip this set"
+                    "mergeAll": "Merge all automatically"
                 },
                 "duplicateSet": {
                     "title": "Duplicate Set"
@@ -329,7 +329,11 @@
                     "hashUpdateComplete": "Hash update complete! Processed",
                     "noNewFiles": "All media files already have hashes",
                     "noDuplicates": "No duplicates found",
-                    "mergeSuccess": "Successfully merged! Updated {count} references"
+                    "mergeSuccess": "Successfully merged! Updated {count} references",
+                    "autoMergeProgress": "Auto-merging duplicates",
+                    "autoMergeComplete": "Auto-merge complete",
+                    "sets": "sets",
+                    "references": "references"
                 },
                 "errors": {
                     "hashUpdateFailed": "Failed to update media hashes",

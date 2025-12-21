@@ -168,7 +168,7 @@
                 "buttons": {
                     "findNext": "Nächste Duplikate finden",
                     "merge": "Diesen Satz zusammenführen",
-                    "skip": "Diesen Satz überspringen"
+                    "mergeAll": "Alle automatisch zusammenführen"
                 },
                 "duplicateSet": {
                     "title": "Duplikatsatz"
@@ -189,7 +189,11 @@
                     "hashUpdateComplete": "Hash-Aktualisierung abgeschlossen! Verarbeitet",
                     "noNewFiles": "Alle Mediendateien haben bereits Hashes",
                     "noDuplicates": "Keine Duplikate gefunden",
-                    "mergeSuccess": "Erfolgreich zusammengeführt! {count} Referenzen aktualisiert"
+                    "mergeSuccess": "Erfolgreich zusammengeführt! {count} Referenzen aktualisiert",
+                    "autoMergeProgress": "Automatisches Zusammenführen von Duplikaten",
+                    "autoMergeComplete": "Automatisches Zusammenführen abgeschlossen",
+                    "sets": "Sätze",
+                    "references": "Referenzen"
                 },
                 "errors": {
                     "hashUpdateFailed": "Medien-Hashes konnten nicht aktualisiert werden",

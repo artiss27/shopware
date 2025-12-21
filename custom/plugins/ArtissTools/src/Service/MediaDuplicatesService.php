@@ -30,28 +30,35 @@ class MediaDuplicatesService
         }
 
         // Build SQL to find duplicate groups
-        $sql = '
-            SELECT h.hash, h.size, COUNT(*) as duplicate_count
-            FROM art_media_hash h
-        ';
-
+//        $sql = '
+//            SELECT h.hash, h.size, COUNT(*) as duplicate_count
+//            FROM art_media_hash h
+//        ';
+//
         $params = [];
+//
+//        if ($folderEntity) {
+//            // Join with media and media_folder to filter by folder entity
+//            $sql .= '
+//                INNER JOIN media m ON h.media_id = m.id
+//                INNER JOIN media_folder mf ON m.media_folder_id = mf.id
+//                INNER JOIN media_default_folder mdf ON mf.default_folder_id = mdf.id
+//                WHERE mdf.entity = :folder_entity
+//            ';
+//            $params['folder_entity'] = $folderEntity;
+//        }
 
-        if ($folderEntity) {
-            // Join with media and media_folder to filter by folder entity
-            $sql .= '
-                INNER JOIN media m ON h.media_id = m.id
-                INNER JOIN media_folder mf ON m.media_folder_id = mf.id
-                INNER JOIN media_default_folder mdf ON mf.default_folder_id = mdf.id
-                WHERE mdf.entity = :folder_entity
-            ';
-            $params['folder_entity'] = $folderEntity;
-        }
-
-        $sql .= '
+        $sql = '
+            SELECT h.hash, h.size, COUNT(*) AS duplicate_count
+            FROM art_media_hash h
+            WHERE 
+                EXISTS (SELECT 1 FROM product_media pm WHERE pm.media_id = h.media_id)
+                OR EXISTS (SELECT 1 FROM theme_media tm WHERE tm.media_id = h.media_id)
+                OR EXISTS (SELECT 1 FROM mail_template_media mm WHERE mm.media_id = h.media_id)
             GROUP BY h.hash, h.size
             HAVING COUNT(*) > 1
-            LIMIT 1
+            ORDER BY duplicate_count DESC
+            LIMIT 1;
         ';
 
         $duplicateGroup = $this->connection->fetchAssociative($sql, $params);
@@ -99,8 +106,7 @@ class MediaDuplicatesService
             ];
         }
 
-        // Determine keeper media ID (по логике из ТЗ)
-        $keeperMediaId = $this->determineKeeperMedia($mediaData);
+        $keeperMediaId = $mediaData[0]['id'];
 
         return [
             'hash' => $duplicateGroup['hash'],
@@ -164,26 +170,6 @@ class MediaDuplicatesService
             'total' => $productMediaCount + $productCoverCount + $categoryCount + $cmsCount,
             'usedInParentProduct' => $usedInParentProduct
         ];
-    }
-
-    /**
-     * Determine keeper media based on TZ logic:
-     * 1. If есть media used in parent product -> oldest createdAt among them
-     * 2. Else -> oldest createdAt in group
-     */
-    private function determineKeeperMedia(array $mediaData): string
-    {
-        // Sort by: usedInParentProduct DESC, createdAt ASC
-        usort($mediaData, function ($a, $b) {
-            // First priority: used in parent product
-            if ($a['usedInParentProduct'] !== $b['usedInParentProduct']) {
-                return $b['usedInParentProduct'] <=> $a['usedInParentProduct'];
-            }
-            // Second priority: oldest createdAt
-            return $a['createdAt'] <=> $b['createdAt'];
-        });
-
-        return $mediaData[0]['id'];
     }
 
     /**

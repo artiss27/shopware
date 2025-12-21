@@ -85,6 +85,8 @@ class MediaHashService
         if ($force && $offset === 0) {
             $this->clearAllHashes();
             $onlyMissing = true;
+        } else {
+            $onlyMissing = true;
         }
 
         $criteria = new Criteria();

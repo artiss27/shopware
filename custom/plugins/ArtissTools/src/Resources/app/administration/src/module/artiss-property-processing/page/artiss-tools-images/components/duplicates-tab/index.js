@@ -25,6 +25,7 @@ Component.register('artiss-images-duplicates-tab', {
         return {
             isLoading: false,
             isUpdatingHashes: false,
+            isAutoMerging: false,
 
             // Hash status
             hashStatus: null,
@@ -237,9 +238,91 @@ Component.register('artiss-images-duplicates-tab', {
             }
         },
 
-        skipDuplicateSet() {
-            this.currentDuplicateSet = null;
-            this.showDuplicateSet = false;
+        async mergeAllDuplicates() {
+            this.isAutoMerging = true;
+            let totalMerged = 0;
+            let totalUpdatedReferences = 0;
+
+            try {
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    // Find next duplicate set
+                    const payload = {
+                        folderEntity: this.folderEntity || null
+                    };
+
+                    const findResponse = await this.httpClient.post(
+                        '/_action/artiss-tools/images/find-next-duplicate',
+                        payload,
+                        {
+                            headers: this.getAuthHeaders()
+                        }
+                    );
+
+                    if (!findResponse.data.success || findResponse.data.data === null) {
+                        // No more duplicates
+                        break;
+                    }
+
+                    const duplicateSet = findResponse.data.data;
+
+                    // Merge this set
+                    const keeperMediaId = duplicateSet.keeperMediaId;
+                    const duplicateMediaIds = duplicateSet.mediaList
+                        .filter(m => m.id !== keeperMediaId)
+                        .map(m => m.id);
+
+                    const mergePayload = {
+                        keeperMediaId: keeperMediaId,
+                        duplicateMediaIds: duplicateMediaIds
+                    };
+
+                    const mergeResponse = await this.httpClient.post(
+                        '/_action/artiss-tools/images/merge-duplicates',
+                        mergePayload,
+                        {
+                            headers: this.getAuthHeaders()
+                        }
+                    );
+
+                    if (mergeResponse.data.success) {
+                        totalMerged++;
+                        totalUpdatedReferences += mergeResponse.data.data.updatedReferencesCount;
+
+                        // Update progress notification
+                        this.createNotificationInfo({
+                            message: `${this.$tc('artissTools.images.duplicates.messages.autoMergeProgress')}: ${totalMerged} ${this.$tc('artissTools.images.duplicates.messages.sets')}`
+                        });
+                    } else {
+                        this.createNotificationError({
+                            message: mergeResponse.data.error || this.$tc('artissTools.images.duplicates.errors.mergeFailed')
+                        });
+                        break;
+                    }
+                }
+
+                // Final notification
+                if (totalMerged > 0) {
+                    this.createNotificationSuccess({
+                        message: `${this.$tc('artissTools.images.duplicates.messages.autoMergeComplete')}: ${totalMerged} ${this.$tc('artissTools.images.duplicates.messages.sets')}, ${totalUpdatedReferences} ${this.$tc('artissTools.images.duplicates.messages.references')}`
+                    });
+                } else {
+                    this.createNotificationInfo({
+                        message: this.$tc('artissTools.images.duplicates.messages.noDuplicates')
+                    });
+                }
+
+                // Clear current set and try to find next
+                this.currentDuplicateSet = null;
+                this.showDuplicateSet = false;
+
+            } catch (error) {
+                this.createNotificationError({
+                    message: error.response?.data?.error || error.message || this.$tc('artissTools.images.duplicates.errors.mergeFailed')
+                });
+            } finally {
+                this.isAutoMerging = false;
+            }
         },
 
         formatDate(dateString) {

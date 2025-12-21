@@ -6,6 +6,7 @@
                 <div class="artiss-images-duplicates-tab__status-label">
                     {{ hashStatusText }}
                 </div>
+                <br>
                 <sw-checkbox-field
                     v-model="recalculateAll"
                     :label="$tc('artissTools.images.duplicates.hashStatus.recalculateAll')"
@@ -26,16 +27,16 @@
 
     {# Search Parameters #}
     <sw-card :title="$tc('artissTools.images.duplicates.searchArea.title')">
-        <div class="artiss-images-duplicates-tab__search-area">
-            <sw-single-select
-                v-model:value="folderEntity"
-                :options="folderEntityOptions"
-                :label="$tc('artissTools.images.duplicates.searchArea.folderEntity.label')"
-                :placeholder="$tc('artissTools.images.duplicates.searchArea.folderEntity.placeholder')"
-                valueProperty="value"
-                labelProperty="label"
-            />
-        </div>
+{#        <div class="artiss-images-duplicates-tab__search-area">#}
+{#            <sw-single-select#}
+{#                v-model:value="folderEntity"#}
+{#                :options="folderEntityOptions"#}
+{#                :label="$tc('artissTools.images.duplicates.searchArea.folderEntity.label')"#}
+{#                :placeholder="$tc('artissTools.images.duplicates.searchArea.folderEntity.placeholder')"#}
+{#                valueProperty="value"#}
+{#                labelProperty="label"#}
+{#            />#}
+{#        </div>#}
 
         <div class="artiss-images-duplicates-tab__actions" style="margin-top: 20px;">
             <sw-button
@@ -141,11 +142,12 @@
                     {{ $tc('artissTools.images.duplicates.buttons.merge') }}
                 </sw-button>
                 <sw-button
-                    variant="ghost"
+                    variant="primary"
                     :disabled="isLoading"
-                    @click="skipDuplicateSet"
+                    :isLoading="isAutoMerging"
+                    @click="mergeAllDuplicates"
                 >
-                    {{ $tc('artissTools.images.duplicates.buttons.skip') }}
+                    {{ $tc('artissTools.images.duplicates.buttons.mergeAll') }}
                 </sw-button>
             </div>
         </div>
