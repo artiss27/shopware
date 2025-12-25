@@ -270,6 +270,7 @@ class BackupDbCommand extends Command
     private function getExistingTables(array $dbParams): array
     {
         $mysqldumpPath = $this->findMysqldump();
+
         // Use mysql/mariadb client to get table list
         $mysqlPath = str_replace('-dump', '', $mysqldumpPath);
         if (!file_exists($mysqlPath)) {
@@ -385,7 +386,6 @@ class BackupDbCommand extends Command
 
     private function runMysqldump(array $cmd, string $outputFile, bool $append = false): void
     {
-        // Try mysqldump first, then mariadb-dump
         $mysqldumpPath = $this->findMysqldump();
         $cmd[0] = $mysqldumpPath;
 
@@ -396,7 +396,7 @@ class BackupDbCommand extends Command
         ];
 
         $process = proc_open($cmd, $descriptorSpec, $pipes);
-        
+
         if (!is_resource($process)) {
             throw new \RuntimeException('Failed to start mysqldump process');
         }
@@ -404,7 +404,7 @@ class BackupDbCommand extends Command
         fclose($pipes[0]);
         $stderr = stream_get_contents($pipes[2]);
         fclose($pipes[2]);
-        
+
         $returnCode = proc_close($process);
 
         if ($returnCode !== 0) {
@@ -442,9 +442,37 @@ class BackupDbCommand extends Command
             }
         }
 
-        throw new \RuntimeException(
-            'mysqldump or mariadb-dump not found. Please ensure MySQL/MariaDB client tools are installed.'
-        );
+        // Provide helpful error message for Docker users
+        $errorMsg = 'mysqldump or mariadb-dump not found. ';
+        if ($this->isDockerEnvironment()) {
+            $errorMsg .= "\n\nFor Docker environments, install MySQL client tools in the web container:\n";
+            $errorMsg .= "  apt-get update && apt-get install -y mariadb-client\n\n";
+            $errorMsg .= "Or run backups from the host machine using:\n";
+            $errorMsg .= "  make backup  (or docker compose exec database mariadb-dump ...)";
+        } else {
+            $errorMsg .= 'Please ensure MySQL/MariaDB client tools are installed.';
+        }
+
+        throw new \RuntimeException($errorMsg);
+    }
+
+    private function isDockerEnvironment(): bool
+    {
+        // Check if docker-compose.yml or compose.yaml exists
+        $dockerComposeFiles = [
+            $this->projectDir . '/docker-compose.yml',
+            $this->projectDir . '/docker-compose.yaml',
+            $this->projectDir . '/compose.yml',
+            $this->projectDir . '/compose.yaml',
+        ];
+
+        foreach ($dockerComposeFiles as $file) {
+            if (file_exists($file)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function generateHeader(string $type, ?string $comment, array $ignoredTables = []): string
