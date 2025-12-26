@@ -8,6 +8,16 @@
 
         {% block supplier_detail_actions %}
             <template #smart-bar-actions>
+                {% block supplier_detail_actions_update_prices %}
+                    <sw-button
+                        v-if="supplier && supplier.id"
+                        :routerLink="{ name: 'supplier.price.update.index', query: { supplierId: supplier.id } }"
+                        variant="ghost"
+                    >
+                        {{ $tc('supplier.detail.buttonUpdatePrices') }}
+                    </sw-button>
+                {% endblock %}
+
                 {% block supplier_detail_actions_cancel %}
                     <sw-button
                         :routerLink="{ name: 'artiss.supplier.index' }"

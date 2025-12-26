@@ -1,0 +1,152 @@
+{% block price_template_apply %}
+    <sw-page class="price-template-apply">
+        <template #smart-bar-header>
+            <h2>{{ template ? template.name : $tc('supplier.priceUpdate.apply.title') }}</h2>
+        </template>
+
+        <template #smart-bar-actions>
+            <sw-button :routerLink="{ name: 'supplier.price.update.index' }">
+                {{ $tc('supplier.priceUpdate.apply.buttonCancel') }}
+            </sw-button>
+            <sw-button
+                variant="primary"
+                :disabled="!canApply"
+                :isLoading="isApplying"
+                @click="onApply"
+            >
+                {{ $tc('supplier.priceUpdate.apply.buttonApply') }}
+            </sw-button>
+        </template>
+
+        <template #content>
+            <sw-loader v-if="isLoading" />
+
+            <div v-else-if="template" class="price-template-apply-content">
+                <sw-card :title="$tc('supplier.priceUpdate.apply.cardTitleSummary')">
+                    <div class="summary-stats">
+                        <div class="stat">
+                            <div class="stat-value">{{ matchedCount }}</div>
+                            <div class="stat-label">{{ $tc('supplier.priceUpdate.apply.statMatched') }}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">{{ unmatchedCount }}</div>
+                            <div class="stat-label">{{ $tc('supplier.priceUpdate.apply.statUnmatched') }}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">{{ matchedCount + unmatchedCount }}</div>
+                            <div class="stat-label">{{ $tc('supplier.priceUpdate.apply.statTotal') }}</div>
+                        </div>
+                    </div>
+                </sw-card>
+
+                <sw-loader v-if="isParsing" />
+
+                <sw-card v-else :title="$tc('supplier.priceUpdate.apply.cardTitleProducts')">
+                    <template #toolbar>
+                        <sw-tabs class="price-template-apply-tabs">
+                            <sw-tabs-item
+                                :active="activeTab === 'matched'"
+                                @click="activeTab = 'matched'"
+                            >
+                                {{ $tc('supplier.priceUpdate.apply.tabMatched') }} ({{ matchedCount }})
+                            </sw-tabs-item>
+                            <sw-tabs-item
+                                :active="activeTab === 'unmatched'"
+                                @click="activeTab = 'unmatched'"
+                            >
+                                {{ $tc('supplier.priceUpdate.apply.tabUnmatched') }} ({{ unmatchedCount }})
+                            </sw-tabs-item>
+                        </sw-tabs>
+                    </template>
+
+                    <!-- Matched Products Tab -->
+                    <div v-if="activeTab === 'matched'" class="matched-products">
+                        <sw-data-grid
+                            v-if="matchedProducts.length > 0"
+                            :dataSource="matchedProducts"
+                            :columns="matchedColumns"
+                            :showSelection="false"
+                        >
+                            <template #column-code="{ item }">
+                                {{ item.code || '-' }}
+                            </template>
+
+                            <template #column-name="{ item }">
+                                {{ item.name || '-' }}
+                            </template>
+
+                            <template #column-matched_product="{ item }">
+                                <sw-entity-single-select
+                                    v-if="item.product_id"
+                                    :value="item.product_id"
+                                    entity="product"
+                                    @change="onProductChange(item, $event)"
+                                >
+                                    <template #result-item="{ item: product }">
+                                        {{ product.name }} ({{ product.productNumber }})
+                                    </template>
+                                </sw-entity-single-select>
+                                <span v-else>-</span>
+                            </template>
+
+                            <template #column-price_1="{ item }">
+                                {{ item.price_1 ? item.price_1.toFixed(2) : '-' }}
+                            </template>
+
+                            <template #column-price_2="{ item }">
+                                {{ item.price_2 ? item.price_2.toFixed(2) : '-' }}
+                            </template>
+
+                            <template #column-confidence="{ item }">
+                                <sw-label
+                                    v-if="item.confidence"
+                                    :variant="getConfidenceBadgeVariant(item.confidence)"
+                                    size="small"
+                                >
+                                    {{ getConfidenceLabel(item.confidence) }}
+                                </sw-label>
+                            </template>
+                        </sw-data-grid>
+
+                        <sw-empty-state
+                            v-else
+                            :title="$tc('supplier.priceUpdate.apply.emptyMatchedTitle')"
+                        />
+                    </div>
+
+                    <!-- Unmatched Items Tab -->
+                    <div v-if="activeTab === 'unmatched'" class="unmatched-items">
+                        <sw-data-grid
+                            v-if="unmatchedItems.length > 0"
+                            :dataSource="unmatchedItems"
+                            :columns="unmatchedColumns"
+                            :showSelection="false"
+                        >
+                            <template #column-code="{ item }">
+                                {{ item.code || '-' }}
+                            </template>
+
+                            <template #column-name="{ item }">
+                                {{ item.name || '-' }}
+                            </template>
+
+                            <template #column-price_1="{ item }">
+                                {{ item.price_1 ? item.price_1.toFixed(2) : '-' }}
+                            </template>
+
+                            <template #column-price_2="{ item }">
+                                {{ item.price_2 ? item.price_2.toFixed(2) : '-' }}
+                            </template>
+                        </sw-data-grid>
+
+                        <sw-empty-state
+                            v-else
+                            :title="$tc('supplier.priceUpdate.apply.emptyUnmatchedTitle')"
+                            :subline="$tc('supplier.priceUpdate.apply.emptyUnmatchedDescription')"
+                        />
+                    </div>
+                </sw-card>
+            </div>
+        </template>
+    </sw-page>
+{% endblock %}

@@ -1,0 +1,176 @@
+.price-template-create {
+    .price-template-wizard {
+        .wizard-steps {
+            margin-bottom: 20px;
+
+            .step-indicator {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+
+                .step {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    flex: 1;
+                    position: relative;
+
+                    &:not(:last-child)::after {
+                        content: '';
+                        position: absolute;
+                        top: 20px;
+                        left: 50%;
+                        right: -50%;
+                        height: 2px;
+                        background-color: #d1d9e0;
+                        z-index: -1;
+                    }
+
+                    &.completed {
+                        .step-number {
+                            background-color: #37d046;
+                            color: white;
+                        }
+
+                        &::after {
+                            background-color: #37d046;
+                        }
+                    }
+
+                    &.active {
+                        .step-number {
+                            background-color: #189eff;
+                            color: white;
+                        }
+                    }
+
+                    .step-number {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        background-color: #d1d9e0;
+                        color: #52667a;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 18px;
+                        margin-bottom: 8px;
+                        position: relative;
+                        z-index: 1;
+                    }
+
+                    .step-label {
+                        font-size: 14px;
+                        color: #52667a;
+                        text-align: center;
+                        max-width: 120px;
+                    }
+                }
+            }
+        }
+
+        .uploaded-file-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f7fa;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            p {
+                margin: 0;
+                font-weight: 500;
+            }
+        }
+
+        .file-preview {
+            margin: 20px 0;
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #d1d9e0;
+            border-radius: 4px;
+
+            h4 {
+                margin: 0 0 10px 0;
+                padding: 10px;
+                background-color: #f5f7fa;
+                border-bottom: 1px solid #d1d9e0;
+                position: sticky;
+                top: 0;
+                z-index: 1;
+            }
+
+            .preview-table {
+                width: 100%;
+                border-collapse: collapse;
+
+                th,
+                td {
+                    padding: 8px 12px;
+                    border: 1px solid #d1d9e0;
+                    text-align: left;
+                    font-size: 13px;
+                }
+
+                th {
+                    background-color: #f5f7fa;
+                    font-weight: 600;
+                    position: sticky;
+                    top: 41px;
+                    z-index: 1;
+                }
+
+                tbody tr:hover {
+                    background-color: #f9fafb;
+                }
+            }
+        }
+
+        .column-mapping {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f5f7fa;
+            border-radius: 4px;
+
+            h4 {
+                margin: 0 0 20px 0;
+            }
+
+            .sw-field {
+                margin-bottom: 20px;
+            }
+        }
+
+        .template-summary {
+            h4 {
+                margin: 30px 0 15px 0;
+                color: #52667a;
+                font-size: 16px;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+
+            dl {
+                display: grid;
+                grid-template-columns: 200px 1fr;
+                gap: 10px 20px;
+                margin: 0;
+
+                dt {
+                    font-weight: 600;
+                    color: #52667a;
+                }
+
+                dd {
+                    margin: 0;
+                    color: #52667a;
+                }
+            }
+        }
+    }
+}

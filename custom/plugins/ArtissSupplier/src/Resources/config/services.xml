@@ -12,7 +12,68 @@
             <tag name="shopware.entity.definition" entity="art_supplier_media"/>
         </service>
 
+        <service id="Artiss\Supplier\Core\Content\PriceTemplate\PriceTemplateDefinition">
+            <tag name="shopware.entity.definition" entity="art_supplier_price_template"/>
+        </service>
+
         <!-- ProductSupplierExtension removed: using customFields instead of DB column -->
+
+        <!-- Price Parsers -->
+        <service id="Artiss\Supplier\Service\Parser\ExcelParser">
+            <tag name="artiss.price_parser"/>
+        </service>
+
+        <service id="Artiss\Supplier\Service\Parser\CsvParser">
+            <tag name="artiss.price_parser"/>
+        </service>
+
+        <service id="Artiss\Supplier\Service\Parser\AiParser">
+            <tag name="artiss.price_parser"/>
+        </service>
+
+        <service id="Artiss\Supplier\Service\Parser\WordParser">
+            <tag name="artiss.price_parser"/>
+        </service>
+
+        <service id="Artiss\Supplier\Service\Parser\ParserRegistry">
+            <argument type="tagged_iterator" tag="artiss.price_parser"/>
+        </service>
+
+        <!-- Product Matchers -->
+        <service id="Artiss\Supplier\Service\Matcher\ExactCodeMatcher">
+            <tag name="artiss.product_matcher"/>
+        </service>
+
+        <service id="Artiss\Supplier\Service\Matcher\FuzzyNameMatcher">
+            <tag name="artiss.product_matcher"/>
+        </service>
+
+        <service id="Artiss\Supplier\Service\Matcher\MatcherChain">
+            <argument type="tagged_iterator" tag="artiss.product_matcher"/>
+        </service>
+
+        <!-- Price Calculator -->
+        <service id="Artiss\Supplier\Service\Calculator\PriceCalculator"/>
+
+        <!-- Price Update Service -->
+        <service id="Artiss\Supplier\Service\PriceUpdate\PriceUpdateService">
+            <argument type="service" id="Artiss\Supplier\Service\Parser\ParserRegistry"/>
+            <argument type="service" id="Artiss\Supplier\Service\Matcher\MatcherChain"/>
+            <argument type="service" id="Artiss\Supplier\Service\Calculator\PriceCalculator"/>
+            <argument type="service" id="art_supplier_price_template.repository"/>
+            <argument type="service" id="media.repository"/>
+            <argument type="service" id="product.repository"/>
+        </service>
+
+        <!-- API Controllers -->
+        <service id="Artiss\Supplier\Core\Api\PriceUpdateController" public="true">
+            <argument type="service" id="Artiss\Supplier\Service\PriceUpdate\PriceUpdateService"/>
+            <argument type="service" id="Artiss\Supplier\Service\Parser\ParserRegistry"/>
+            <argument type="service" id="media.repository"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
 
         <service id="Artiss\Supplier\Service\CustomFieldInstaller">
             <argument type="service" id="custom_field_set.repository"/>

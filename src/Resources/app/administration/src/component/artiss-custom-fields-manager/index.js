@@ -51,14 +51,18 @@ Component.register('artiss-custom-fields-manager', {
          * Get all custom fields from all sets
          */
         allCustomFields() {
+            console.log('🔍 allCustomFields - sets:', this.sets?.length);
             const fields = [];
-            
+
             this.sets.forEach((set) => {
+                console.log(`🔍 Set: ${set.name}, has customFields:`, !!set.customFields);
                 if (set.customFields) {
                     // Check if it's an array or object
                     const customFieldsArray = Array.isArray(set.customFields)
                         ? set.customFields
                         : (set.customFields.elements || Object.values(set.customFields));
+
+                    console.log(`🔍 Set ${set.name} - fields length:`, customFieldsArray?.length);
 
                     if (customFieldsArray && customFieldsArray.length > 0) {
                         customFieldsArray.forEach(field => {
@@ -73,6 +77,7 @@ Component.register('artiss-custom-fields-manager', {
                 }
             });
 
+            console.log('🔍 Total fields:', fields.length);
             return fields;
         },
 

@@ -11,6 +11,15 @@
 
         {% block supplier_list_smart_bar_actions %}
             <template #smart-bar-actions>
+                {% block supplier_list_smart_bar_actions_update_prices %}
+                    <sw-button
+                        :routerLink="{ name: 'supplier.price.update.index' }"
+                        variant="ghost"
+                    >
+                        {{ $tc('supplier.list.buttonUpdatePrices') }}
+                    </sw-button>
+                {% endblock %}
+
                 {% block supplier_list_smart_bar_actions_delete %}
                     <sw-button
                         v-if="selectionCount > 0"
@@ -65,6 +74,14 @@
                         @page-change="onPageChange"
                         @selection-change="onSelectionChanged"
                     >
+                        <template #column-manufacturerIds="{ item }">
+                            {{ formatManufacturers(item.manufacturerIds) }}
+                        </template>
+
+                        <template #column-alternativeManufacturerIds="{ item }">
+                            {{ formatManufacturers(item.alternativeManufacturerIds) }}
+                        </template>
+
                         <template #column-updatedAt="{ item }">
                             <template v-if="item.updatedAt">
                                 {{ formatDate(item.updatedAt) }}

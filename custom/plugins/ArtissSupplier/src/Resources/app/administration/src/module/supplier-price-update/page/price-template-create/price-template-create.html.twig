@@ -1,0 +1,267 @@
+{% block price_template_create %}
+    <sw-page class="price-template-create">
+        <template #smart-bar-header>
+            <h2>{{ isEdit ? 'Edit Price Template' : $tc('supplier.priceUpdate.wizard.title') }}</h2>
+        </template>
+
+        <template #smart-bar-actions>
+            <sw-button :routerLink="{ name: 'supplier.price.update.index' }">
+                {{ $tc('supplier.priceUpdate.wizard.buttonCancel') }}
+            </sw-button>
+            <sw-button
+                v-if="currentStep > 1"
+                @click="previousStep"
+            >
+                {{ $tc('supplier.priceUpdate.wizard.buttonBack') }}
+            </sw-button>
+            <sw-button
+                v-if="currentStep < 4"
+                variant="primary"
+                :disabled="!canProceedToNextStep"
+                @click="nextStep"
+            >
+                {{ $tc('supplier.priceUpdate.wizard.buttonNext') }}
+            </sw-button>
+            <sw-button
+                v-if="currentStep === 4"
+                variant="primary"
+                :isLoading="isSaving"
+                @click="onSave"
+            >
+                {{ $tc('supplier.priceUpdate.wizard.buttonSave') }}
+            </sw-button>
+        </template>
+
+        <template #content>
+            <sw-loader v-if="isLoading" />
+
+            <div v-else-if="template" class="price-template-wizard">
+                <!-- Step Indicator -->
+                <sw-card class="wizard-steps">
+                    <div class="step-indicator">
+                        <div
+                            v-for="step in 4"
+                            :key="step"
+                            class="step"
+                            :class="{ active: step === currentStep, completed: step < currentStep }"
+                        >
+                            <div class="step-number">{{ step }}</div>
+                            <div class="step-label">{{ $tc(`supplier.priceUpdate.wizard.step${step}Label`) }}</div>
+                        </div>
+                    </div>
+                </sw-card>
+
+                <!-- Step 1: General -->
+                <sw-card v-if="currentStep === 1" :title="$tc('supplier.priceUpdate.wizard.step1Title')">
+                    <sw-text-field
+                        v-model:value="template.name"
+                        :label="$tc('supplier.priceUpdate.wizard.labelName')"
+                        required
+                    />
+
+                    <sw-entity-single-select
+                        v-model="template.supplierId"
+                        entity="art_supplier"
+                        :label="$tc('supplier.priceUpdate.wizard.labelSupplier')"
+                        required
+                    />
+                </sw-card>
+
+                <!-- Step 2: File & Mapping -->
+                <sw-card v-if="currentStep === 2" :title="$tc('supplier.priceUpdate.wizard.step2Title')">
+                    <sw-upload-listener
+                        :uploadTag="uploadTag"
+                        autoUpload
+                        @media-upload-finish="onMediaUploadFinish"
+                    />
+                    <sw-media-upload-v2
+                        variant="regular"
+                        :uploadTag="uploadTag"
+                        :label="$tc('supplier.priceUpdate.wizard.labelUploadFile')"
+                        :defaultFolder="'supplier_price_list'"
+                        @media-upload-sidebar-open="onMediaUploadSidebarOpen"
+                    />
+
+                    <div v-if="uploadedMedia" class="uploaded-file-info">
+                        <p>{{ $tc('supplier.priceUpdate.wizard.uploadedFile') }}: {{ uploadedMedia.fileName }}</p>
+                        <sw-button size="small" @click="previewFile">
+                            {{ $tc('supplier.priceUpdate.wizard.buttonPreviewFile') }}
+                        </sw-button>
+                    </div>
+
+                    <div v-if="filePreview" class="file-preview">
+                        <h4>{{ $tc('supplier.priceUpdate.wizard.previewTitle') }}</h4>
+                        <table class="preview-table">
+                            <thead>
+                                <tr>
+                                    <th v-for="(col, idx) in filePreview.headers" :key="idx">
+                                        {{ columnIndexToLetter(idx) }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, rowIdx) in filePreview.rows" :key="rowIdx">
+                                    <td v-for="(cell, colIdx) in row" :key="colIdx">
+                                        {{ cell }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div v-if="uploadedMedia" class="column-mapping">
+                        <h4>{{ $tc('supplier.priceUpdate.wizard.columnMappingTitle') }}</h4>
+
+                        <sw-number-field
+                            v-model:value="template.config.mapping.start_row"
+                            :label="$tc('supplier.priceUpdate.wizard.labelStartRow')"
+                            :helpText="$tc('supplier.priceUpdate.wizard.helpStartRow')"
+                            numberType="int"
+                        />
+
+                        <sw-text-field
+                            v-model:value="template.config.mapping.code_column"
+                            :label="$tc('supplier.priceUpdate.wizard.labelCodeColumn')"
+                            :placeholder="$tc('supplier.priceUpdate.wizard.placeholderColumn')"
+                        />
+
+                        <sw-text-field
+                            v-model:value="template.config.mapping.name_column"
+                            :label="$tc('supplier.priceUpdate.wizard.labelNameColumn')"
+                            :placeholder="$tc('supplier.priceUpdate.wizard.placeholderColumn')"
+                        />
+
+                        <sw-text-field
+                            v-model:value="template.config.mapping.price_column_1"
+                            :label="$tc('supplier.priceUpdate.wizard.labelPriceColumn1')"
+                            :placeholder="$tc('supplier.priceUpdate.wizard.placeholderColumn')"
+                            required
+                        />
+
+                        <sw-text-field
+                            v-model:value="template.config.mapping.price_column_2"
+                            :label="$tc('supplier.priceUpdate.wizard.labelPriceColumn2')"
+                            :placeholder="$tc('supplier.priceUpdate.wizard.placeholderColumn')"
+                        />
+                    </div>
+                </sw-card>
+
+                <!-- Step 3: Price Rules & Filters -->
+                <sw-card v-if="currentStep === 3" :title="$tc('supplier.priceUpdate.wizard.step3Title')">
+                    <h4>{{ $tc('supplier.priceUpdate.wizard.priceRulesTitle') }}</h4>
+
+                    <sw-single-select
+                        v-model:value="template.config.price_rules.mode"
+                        :label="$tc('supplier.priceUpdate.wizard.labelPriceMode')"
+                        :options="priceModeOptions"
+                        required
+                    />
+
+                    <div v-if="template.config.price_rules.mode === 'dual'">
+                        <sw-single-select
+                            v-model:value="template.config.price_rules.price_1_is"
+                            :label="$tc('supplier.priceUpdate.wizard.labelPrice1Is')"
+                            :options="priceTypeOptions"
+                        />
+
+                        <sw-single-select
+                            v-model:value="template.config.price_rules.price_2_is"
+                            :label="$tc('supplier.priceUpdate.wizard.labelPrice2Is')"
+                            :options="priceTypeOptions"
+                        />
+                    </div>
+
+                    <div v-else>
+                        <sw-single-select
+                            v-model:value="template.config.price_rules.single_price_is"
+                            :label="$tc('supplier.priceUpdate.wizard.labelSinglePriceIs')"
+                            :options="priceTypeOptions"
+                        />
+                    </div>
+
+                    <h4>{{ $tc('supplier.priceUpdate.wizard.modifiersTitle') }}</h4>
+
+                    <sw-single-select
+                        v-model:value="template.config.price_rules.purchase_modifier_type"
+                        :label="$tc('supplier.priceUpdate.wizard.labelPurchaseModifierType')"
+                        :options="modifierTypeOptions"
+                    />
+
+                    <sw-number-field
+                        v-if="template.config.price_rules.purchase_modifier_type !== 'none'"
+                        v-model:value="template.config.price_rules.purchase_modifier_value"
+                        :label="$tc('supplier.priceUpdate.wizard.labelPurchaseModifierValue')"
+                    />
+
+                    <sw-single-select
+                        v-model:value="template.config.price_rules.retail_modifier_type"
+                        :label="$tc('supplier.priceUpdate.wizard.labelRetailModifierType')"
+                        :options="modifierTypeOptions"
+                    />
+
+                    <sw-number-field
+                        v-if="template.config.price_rules.retail_modifier_type !== 'none'"
+                        v-model:value="template.config.price_rules.retail_modifier_value"
+                        :label="$tc('supplier.priceUpdate.wizard.labelRetailModifierValue')"
+                    />
+
+                    <h4>{{ $tc('supplier.priceUpdate.wizard.filtersTitle') }}</h4>
+
+                    <sw-entity-multi-select
+                        :value="template.config.filters.categories"
+                        @update:value="template.config.filters.categories = $event"
+                        entity="category"
+                        :label="$tc('supplier.priceUpdate.wizard.labelFilterCategories')"
+                    />
+
+                    <sw-entity-multi-select
+                        :value="template.config.filters.manufacturers"
+                        @update:value="template.config.filters.manufacturers = $event"
+                        entity="product_manufacturer"
+                        :label="$tc('supplier.priceUpdate.wizard.labelFilterManufacturers')"
+                    />
+
+                    <sw-entity-multi-select
+                        :value="template.config.filters.equipment_types"
+                        @update:value="template.config.filters.equipment_types = $event"
+                        entity="art_equipment_type"
+                        :label="$tc('supplier.priceUpdate.wizard.labelFilterEquipmentTypes')"
+                    />
+                </sw-card>
+
+                <!-- Step 4: Review -->
+                <sw-card v-if="currentStep === 4" :title="$tc('supplier.priceUpdate.wizard.step4Title')">
+                    <div class="template-summary">
+                        <h4>{{ $tc('supplier.priceUpdate.wizard.summaryGeneral') }}</h4>
+                        <dl>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelName') }}:</dt>
+                            <dd>{{ template.name }}</dd>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelSupplier') }}:</dt>
+                            <dd>{{ getSupplierName() }}</dd>
+                        </dl>
+
+                        <h4>{{ $tc('supplier.priceUpdate.wizard.summaryMapping') }}</h4>
+                        <dl>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelStartRow') }}:</dt>
+                            <dd>{{ template.config.mapping.start_row }}</dd>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelCodeColumn') }}:</dt>
+                            <dd>{{ template.config.mapping.code_column || '-' }}</dd>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelNameColumn') }}:</dt>
+                            <dd>{{ template.config.mapping.name_column || '-' }}</dd>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelPriceColumn1') }}:</dt>
+                            <dd>{{ template.config.mapping.price_column_1 }}</dd>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelPriceColumn2') }}:</dt>
+                            <dd>{{ template.config.mapping.price_column_2 || '-' }}</dd>
+                        </dl>
+
+                        <h4>{{ $tc('supplier.priceUpdate.wizard.summaryPriceRules') }}</h4>
+                        <dl>
+                            <dt>{{ $tc('supplier.priceUpdate.wizard.labelPriceMode') }}:</dt>
+                            <dd>{{ getPriceModeName() }}</dd>
+                        </dl>
+                    </div>
+                </sw-card>
+            </div>
+        </template>
+    </sw-page>
+{% endblock %}

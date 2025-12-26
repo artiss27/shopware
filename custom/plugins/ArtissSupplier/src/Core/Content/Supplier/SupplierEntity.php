@@ -2,6 +2,7 @@
 
 namespace Artiss\Supplier\Core\Content\Supplier;
 
+use Artiss\Supplier\Core\Content\PriceTemplate\PriceTemplateCollection;
 use Shopware\Core\Content\Media\MediaCollection;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
@@ -28,6 +29,8 @@ class SupplierEntity extends Entity
     protected ?ProductCollection $products = null;
 
     protected ?MediaCollection $media = null;
+
+    protected ?PriceTemplateCollection $priceTemplates = null;
 
     public function getName(): string
     {
@@ -97,5 +100,15 @@ class SupplierEntity extends Entity
     public function setMedia(?MediaCollection $media): void
     {
         $this->media = $media;
+    }
+
+    public function getPriceTemplates(): ?PriceTemplateCollection
+    {
+        return $this->priceTemplates;
+    }
+
+    public function setPriceTemplates(?PriceTemplateCollection $priceTemplates): void
+    {
+        $this->priceTemplates = $priceTemplates;
     }
 }

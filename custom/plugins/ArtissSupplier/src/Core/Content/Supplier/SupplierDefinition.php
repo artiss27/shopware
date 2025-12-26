@@ -17,6 +17,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 use Artiss\Supplier\Core\Content\Supplier\Aggregate\SupplierMedia\SupplierMediaDefinition;
+use Artiss\Supplier\Core\Content\PriceTemplate\PriceTemplateDefinition;
 
 class SupplierDefinition extends EntityDefinition
 {
@@ -65,6 +66,9 @@ class SupplierDefinition extends EntityDefinition
 
             // Price lists (media files)
             (new ManyToManyAssociationField('media', MediaDefinition::class, SupplierMediaDefinition::class, 'supplier_id', 'media_id'))->addFlags(new ApiAware()),
+
+            // Price import templates
+            (new OneToManyAssociationField('priceTemplates', PriceTemplateDefinition::class, 'supplier_id', 'id'))->addFlags(new ApiAware()),
         ]);
     }
 }

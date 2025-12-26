@@ -1,0 +1,114 @@
+{% block price_template_list %}
+    <sw-page class="price-template-list">
+        {% block price_template_list_smart_bar_header %}
+            <template #smart-bar-header>
+                <h2>
+                    {{ $tc('supplier.priceUpdate.general.mainMenuItemGeneral') }}
+                    <span v-if="!isLoading" class="sw-page__smart-bar-amount">({{ total }})</span>
+                </h2>
+            </template>
+        {% endblock %}
+
+        {% block price_template_list_smart_bar_actions %}
+            <template #smart-bar-actions>
+                <sw-button
+                    variant="primary"
+                    @click="onCreate"
+                >
+                    {{ $tc('supplier.priceUpdate.list.buttonCreate') }}
+                </sw-button>
+            </template>
+        {% endblock %}
+
+        {% block price_template_list_content %}
+            <template #content>
+                <sw-card :title="$tc('supplier.priceUpdate.list.filterTitle')">
+                    <sw-select-field
+                        v-model="filterSupplierId"
+                        :label="$tc('supplier.priceUpdate.list.filterSupplier')"
+                        :placeholder="$tc('supplier.priceUpdate.list.filterSupplierPlaceholder')"
+                        @change="onSupplierFilterChange"
+                    >
+                        <option :value="null">{{ $tc('supplier.priceUpdate.list.filterSupplierAll') }}</option>
+                        <option
+                            v-for="supplier in supplierOptions"
+                            :key="supplier.value"
+                            :value="supplier.value"
+                        >
+                            {{ supplier.label }}
+                        </option>
+                    </sw-select-field>
+                </sw-card>
+
+                <sw-card
+                    v-if="templates && templates.length > 0"
+                    class="price-template-list__grid"
+                >
+                    <div class="price-template-grid">
+                        <sw-card
+                            v-for="template in templates"
+                            :key="template.id"
+                            class="price-template-card"
+                        >
+                            <div class="template-header">
+                                <h3>{{ template.name }}</h3>
+                                <sw-label
+                                    :variant="getStatusColor(template)"
+                                    size="small"
+                                >
+                                    {{ getStatusLabel(template) }}
+                                </sw-label>
+                            </div>
+
+                            <div class="template-info">
+                                <p><strong>{{ $tc('supplier.priceUpdate.list.supplier') }}:</strong> {{ template.supplier?.name || '-' }}</p>
+                                <p v-if="template.appliedByUser">
+                                    <strong>{{ $tc('supplier.priceUpdate.list.lastUpdatedBy') }}:</strong>
+                                    {{ template.appliedByUser.username }}
+                                </p>
+                                <p v-if="template.createdAt">
+                                    <strong>{{ $tc('supplier.priceUpdate.list.createdAt') }}:</strong>
+                                    {{ formatDate(template.createdAt) }}
+                                </p>
+                            </div>
+
+                            <div class="template-actions">
+                                <sw-button
+                                    variant="primary"
+                                    size="small"
+                                    @click="onUpdatePrices(template)"
+                                >
+                                    {{ $tc('supplier.priceUpdate.list.buttonUpdatePrices') }}
+                                </sw-button>
+                                <sw-button
+                                    variant="ghost"
+                                    size="small"
+                                    @click="onDelete(template.id)"
+                                >
+                                    {{ $tc('supplier.priceUpdate.list.buttonDelete') }}
+                                </sw-button>
+                            </div>
+                        </sw-card>
+                    </div>
+
+                    <sw-pagination
+                        :page="page"
+                        :limit="limit"
+                        :total="total"
+                        @page-change="onPageChange"
+                    />
+                </sw-card>
+
+                <sw-empty-state
+                    v-else-if="!isLoading"
+                    :title="$tc('supplier.priceUpdate.list.emptyTitle')"
+                    icon="regular-file-text"
+                >
+                    {{ $tc('supplier.priceUpdate.list.emptyDescription') }}
+                </sw-empty-state>
+
+                <sw-loader v-if="isLoading" />
+            </template>
+        {% endblock %}
+    </sw-page>
+{% endblock %}

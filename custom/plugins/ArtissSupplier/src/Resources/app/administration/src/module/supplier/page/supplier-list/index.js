@@ -20,7 +20,8 @@ Component.register('supplier-list', {
             page: 1,
             limit: 25,
             selection: {},
-            term: ''
+            term: '',
+            manufacturers: []
         };
     },
 
@@ -35,6 +36,10 @@ Component.register('supplier-list', {
             return this.repositoryFactory.create('art_supplier');
         },
 
+        manufacturerRepository() {
+            return this.repositoryFactory.create('product_manufacturer');
+        },
+
         supplierColumns() {
             return [
                 {
@@ -45,6 +50,20 @@ Component.register('supplier-list', {
                     inlineEdit: 'string',
                     allowResize: true,
                     primary: true
+                },
+                {
+                    property: 'manufacturerIds',
+                    dataIndex: 'manufacturerIds',
+                    label: this.$tc('supplier.list.columnManufacturers'),
+                    allowResize: true,
+                    sortable: false
+                },
+                {
+                    property: 'alternativeManufacturerIds',
+                    dataIndex: 'alternativeManufacturerIds',
+                    label: this.$tc('supplier.list.columnAlternativeManufacturers'),
+                    allowResize: true,
+                    sortable: false
                 },
                 {
                     property: 'updatedAt',
@@ -62,10 +81,37 @@ Component.register('supplier-list', {
     },
 
     created() {
+        this.loadManufacturers();
         this.getList();
     },
 
     methods: {
+        async loadManufacturers() {
+            try {
+                const allManufacturers = [];
+                let page = 1;
+                const limit = 500;
+                let hasMore = true;
+
+                while (hasMore) {
+                    const criteria = new Criteria(page, limit);
+                    criteria.addSorting(Criteria.sort('name', 'ASC'));
+
+                    const result = await this.manufacturerRepository.search(criteria);
+                    allManufacturers.push(...result);
+
+                    hasMore = result.total > page * limit;
+                    page++;
+
+                    if (page > 20) break;
+                }
+
+                this.manufacturers = allManufacturers;
+            } catch (error) {
+                console.error('Error loading manufacturers:', error);
+            }
+        },
+
         async getList() {
             this.isLoading = true;
 
@@ -143,6 +189,25 @@ Component.register('supplier-list', {
                 minute: '2-digit'
             };
             return date.toLocaleString('ru-RU', options);
+        },
+
+        formatManufacturers(manufacturerIds) {
+            if (!manufacturerIds || !Array.isArray(manufacturerIds) || manufacturerIds.length === 0) {
+                return '-';
+            }
+
+            const manufacturerNames = manufacturerIds
+                .map(id => {
+                    const manufacturer = this.manufacturers.find(m => m.id === id);
+                    return manufacturer ? manufacturer.name : null;
+                })
+                .filter(name => name !== null);
+
+            if (manufacturerNames.length === 0) {
+                return '-';
+            }
+
+            return manufacturerNames.join(', ');
         }
     }
 });
