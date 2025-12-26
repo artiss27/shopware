@@ -131,10 +131,25 @@ class PriceUpdateService
         // Get normalized data (parse if needed)
         $normalizedData = $template->getNormalizedData();
         $priceData = [];
-        
+
         if ($normalizedData !== null && $normalizedData !== '') {
             $priceData = json_decode($normalizedData, true);
             if (!is_array($priceData)) {
+                $priceData = [];
+            }
+        }
+
+        // If no data, try to parse
+        if (empty($priceData) && $config['selected_media_id']) {
+            try {
+                $priceData = $this->parseAndNormalize(
+                    $templateId,
+                    $config['selected_media_id'],
+                    false,
+                    $context
+                );
+            } catch (\Exception $e) {
+                // If parsing fails, continue with empty data
                 $priceData = [];
             }
         }
@@ -171,7 +186,7 @@ class PriceUpdateService
             $productId = $product->getId();
             $customFields = $product->getCustomFields() ?? [];
             $kodPostavschika = $customFields['kod_postavschika'] ?? '';
-            
+
             // Try to find matching price data
             $matchedPriceData = null;
             $confidence = 'none';
@@ -191,12 +206,13 @@ class PriceUpdateService
                     $matchedCount++;
                 }
             }
-            
+
             // 2. Try kod_postavschika
             if (!$matchedPriceData && $kodPostavschika) {
-                if (isset($priceDataByCode[$kodPostavschika])) {
-                    $matchedPriceData = $priceDataByCode[$kodPostavschika];
-                    $supplierCode = $kodPostavschika;
+                $normalizedKod = strtoupper(trim($kodPostavschika));
+                if (isset($priceDataByCode[$normalizedKod])) {
+                    $matchedPriceData = $priceDataByCode[$normalizedKod];
+                    $supplierCode = $normalizedKod;
                     $confidence = 'high';
                     $method = 'kod_postavschika';
                     $isConfirmed = false;
@@ -233,10 +249,12 @@ class PriceUpdateService
                 'list' => null,
             ];
 
+            $availability = null;
             if ($matchedPriceData) {
                 $calculatedPrices = $this->applyModifiers($matchedPriceData, $modifiers);
                 $newPrices = $calculatedPrices;
                 $supplierName = $matchedPriceData['name'] ?? '';
+                $availability = $matchedPriceData['availability'] ?? null;
             }
 
             if (!$matchedPriceData) {
@@ -248,7 +266,7 @@ class PriceUpdateService
                 'supplier_name' => $supplierName,
                 'product_id' => $productId,
                 'product_name' => $product->getTranslated()['name'] ?? $product->getName() ?? '',
-                'product_number' => $product->getProductNumber() ?? '',
+                'current_kod_postavschika' => $kodPostavschika,
                 'current_prices' => [
                     'purchase' => $currentPurchasePrice,
                     'retail' => $currentRetailPrice,
@@ -261,6 +279,8 @@ class PriceUpdateService
                     'retail' => $this->getPriceChange($currentRetailPrice, $newPrices['retail']),
                     'list' => $this->getPriceChange($currentListPrice, $newPrices['list']),
                 ],
+                'availability' => $availability,
+                'current_stock' => $product->getStock() ?? 0,
                 'confidence' => $confidence,
                 'method' => $method,
                 'is_confirmed' => $isConfirmed,
@@ -558,14 +578,53 @@ class PriceUpdateService
                 $productPrices['list_price_currency'] = $currencies['list'];
             }
 
-            // Update product custom fields
-            $updateData[] = [
+            // Prepare update data
+            $productUpdate = [
                 'id' => $productId,
                 'customFields' => [
                     'product_prices' => $productPrices,
                     'kod_postavschika' => $supplierCode,
                 ],
             ];
+
+            // Handle stock/availability update
+            $availabilityAction = $config['filters']['availability_action'] ?? 'dont_change';
+            $columnMapping = $config['column_mapping'] ?? [];
+
+            // Check if availability column is mapped
+            $isAvailabilityMapped = false;
+            foreach ($columnMapping as $types) {
+                if (is_array($types) && in_array('availability', $types, true)) {
+                    $isAvailabilityMapped = true;
+                    break;
+                }
+            }
+
+            // Apply availability logic based on action
+            if ($availabilityAction === 'set_from_price') {
+                // Use value from price list if available
+                if (isset($match['availability']) && $match['availability'] !== null && $match['availability'] !== '') {
+                    $stock = max(0, (int) $match['availability']);
+                    $productUpdate['stock'] = $stock;
+                } else {
+                    // No availability in price list - set to 0
+                    $productUpdate['stock'] = 0;
+                }
+            } elseif ($availabilityAction === 'set_zero_if_missing') {
+                // Set to 0 if product not in price list or no availability
+                if (!isset($match['availability']) || $match['availability'] === null || $match['availability'] === '') {
+                    $productUpdate['stock'] = 0;
+                } elseif (isset($match['availability'])) {
+                    $stock = max(0, (int) $match['availability']);
+                    $productUpdate['stock'] = $stock;
+                }
+            } elseif ($availabilityAction === 'set_1000') {
+                // Always set to 1000
+                $productUpdate['stock'] = 1000;
+            }
+            // If availabilityAction is 'dont_change', don't add stock to update
+
+            $updateData[] = $productUpdate;
 
             $stats['updated']++;
         }

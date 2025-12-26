@@ -228,11 +228,30 @@ class PriceUpdateController extends AbstractController
             return new JsonResponse(['error' => 'templateId is required'], 400);
         }
 
-        if (empty($confirmedMatches)) {
-            return new JsonResponse(['error' => 'confirmedMatches are required'], 400);
-        }
-
         try {
+            // If no confirmedMatches provided, get all matched from preview
+            if (empty($confirmedMatches)) {
+                $preview = $this->priceUpdateService->matchProductsPreview($templateId, $context);
+                $confirmedMatches = [];
+
+                foreach ($preview['matched'] as $match) {
+                    // Include all matched items (status === 'matched' and has product_id)
+                    if ($match['status'] === 'matched' && $match['product_id']) {
+                        $confirmedMatches[] = [
+                            'product_id' => $match['product_id'],
+                            'supplier_code' => $match['supplier_code'],
+                            'new_prices' => $match['new_prices'],
+                            'availability' => $match['availability'] ?? null,
+                            'is_confirmed' => true, // Mark all as confirmed to save mapping
+                        ];
+                    }
+                }
+            }
+
+            if (empty($confirmedMatches)) {
+                return new JsonResponse(['error' => 'No matched products to apply'], 400);
+            }
+
             $stats = $this->priceUpdateService->applyPrices(
                 $templateId,
                 $confirmedMatches,

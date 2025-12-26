@@ -26,28 +26,35 @@ Component.register('price-template-create', {
             filePreview: null,
             isLoadingPreview: false,
             previewOffset: 0,
-            previewLimit: 50,
+            previewLimit: 30,
             saveSuccess: false,
             matchPreviewData: null,
             isLoadingMatchPreview: false,
             isAutoMatching: false,
             isApplyingPrices: false,
+            previewPage: 1,
+            previewLimit: 100,
+            previewTotal: 0,
+            allPreviewData: null,
             equipmentTypes: [],
             equipmentTypePropertyGroupId: '20836795-aab8-97d8-c709-a2535f197268',
             hasRedirected: false,
-            columnTypeOptions: [
-                { value: 'product_code', label: this.$tc('supplier.priceUpdate.wizard.columnTypeProductCode') },
-                { value: 'product_name', label: this.$tc('supplier.priceUpdate.wizard.columnTypeProductName') },
-                { value: 'purchase_price', label: this.$tc('supplier.priceUpdate.wizard.columnTypePurchasePrice') },
-                { value: 'retail_price', label: this.$tc('supplier.priceUpdate.wizard.columnTypeRetailPrice') },
-                { value: 'list_price', label: this.$tc('supplier.priceUpdate.wizard.columnTypeListPrice') }
-            ],
             currencyOptions: [],
             allSelectedColumnTypes: new Set() // Track all selected column types across all columns
         };
     },
 
     computed: {
+        columnTypeOptions() {
+            return [
+                { value: 'product_code', label: this.$tc('supplier.priceUpdate.wizard.columnTypeProductCode') },
+                { value: 'product_name', label: this.$tc('supplier.priceUpdate.wizard.columnTypeProductName') },
+                { value: 'purchase_price', label: this.$tc('supplier.priceUpdate.wizard.columnTypePurchasePrice') },
+                { value: 'retail_price', label: this.$tc('supplier.priceUpdate.wizard.columnTypeRetailPrice') },
+                { value: 'list_price', label: this.$tc('supplier.priceUpdate.wizard.columnTypeListPrice') },
+                { value: 'availability', label: this.$tc('supplier.priceUpdate.wizard.columnTypeAvailability') }
+            ];
+        },
         templateRepository() {
             return this.repositoryFactory.create('art_supplier_price_template');
         },
@@ -149,7 +156,6 @@ Component.register('price-template-create', {
 
         modifierTypeOptions() {
             return [
-                { value: 'none', label: this.$tc('supplier.priceUpdate.wizard.modifierTypeNone') },
                 { value: 'percentage', label: this.$tc('supplier.priceUpdate.wizard.modifierTypePercentage') },
                 { value: 'fixed', label: this.$tc('supplier.priceUpdate.wizard.modifierTypeFixed') }
             ];
@@ -160,6 +166,25 @@ Component.register('price-template-create', {
                 value: option.id,
                 label: option.translated?.name || option.name || option.id
             }));
+        },
+
+        availabilityActionOptions() {
+            return [
+                { value: 'set_from_price', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionSetFromPrice') },
+                { value: 'dont_change', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionDontChange') },
+                { value: 'set_zero_if_missing', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionSetZeroIfMissing') },
+                { value: 'set_1000', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionSet1000') }
+            ];
+        },
+
+        isAvailabilityMapped() {
+            const columnMapping = this.template?.config?.column_mapping || {};
+            for (const types of Object.values(columnMapping)) {
+                if (Array.isArray(types) && types.includes('availability')) {
+                    return true;
+                }
+            }
+            return false;
         },
 
         safeEquipmentTypeIds: {
@@ -194,31 +219,57 @@ Component.register('price-template-create', {
         matchPreviewColumns() {
             return [
                 {
-                    property: 'code',
-                    label: this.$tc('supplier.priceUpdate.apply.columnCode'),
+                    property: 'status',
+                    label: this.$tc('supplier.priceUpdate.wizard.columnStatus'),
+                    allowResize: true,
+                    width: '120px'
+                },
+                {
+                    property: 'product_name',
+                    label: this.$tc('supplier.priceUpdate.wizard.columnProductName'),
+                    allowResize: true,
+                    primary: true
+                },
+                {
+                    property: 'current_kod_postavschika',
+                    label: 'Код пост. (тек)',
+                    allowResize: true,
+                    width: '150px'
+                },
+                {
+                    property: 'supplier_code',
+                    label: this.$tc('supplier.priceUpdate.wizard.columnSupplierCode'),
+                    allowResize: true,
+                    width: '150px'
+                },
+                {
+                    property: 'supplier_name',
+                    label: this.$tc('supplier.priceUpdate.wizard.columnSupplierName'),
                     allowResize: true
                 },
                 {
-                    property: 'name',
-                    label: this.$tc('supplier.priceUpdate.apply.columnName'),
-                    allowResize: true
+                    property: 'prices',
+                    label: this.$tc('supplier.priceUpdate.wizard.columnPrices'),
+                    allowResize: true,
+                    width: '200px'
                 },
                 {
-                    property: 'product',
-                    label: this.$tc('supplier.priceUpdate.apply.columnProduct'),
-                    allowResize: true
+                    property: 'availability',
+                    label: this.$tc('supplier.priceUpdate.wizard.columnAvailability'),
+                    allowResize: true,
+                    width: '120px'
                 },
                 {
-                    property: 'price1',
-                    label: this.$tc('supplier.priceUpdate.apply.columnPrice1'),
-                    allowResize: true
-                },
-                {
-                    property: 'price2',
-                    label: this.$tc('supplier.priceUpdate.apply.columnPrice2'),
-                    allowResize: true
+                    property: 'actions',
+                    label: 'Привязка',
+                    allowResize: false,
+                    width: '80px'
                 }
             ];
+        },
+
+        productRepository() {
+            return this.repositoryFactory.create('product');
         },
 
         ...mapPropertyErrors('template', ['name', 'supplierId'])
@@ -299,9 +350,23 @@ Component.register('price-template-create', {
                 filters: {
                     categories: [],
                     manufacturers: [],
-                    equipment_types: []
+                    equipment_types: [],
+                    availability_action: 'dont_change'
                 }
             };
+        },
+
+        updateAvailabilityActionDefault() {
+            // Set default based on whether availability is mapped
+            if (this.isAvailabilityMapped) {
+                if (this.template.config.filters.availability_action === 'dont_change') {
+                    this.template.config.filters.availability_action = 'set_from_price';
+                }
+            } else {
+                if (this.template.config.filters.availability_action === 'set_from_price') {
+                    this.template.config.filters.availability_action = 'dont_change';
+                }
+            }
         },
 
         async nextStep() {
@@ -656,6 +721,9 @@ Component.register('price-template-create', {
                 delete this.template.config.column_mapping[colLetter];
             }
 
+            // Update availability_action default based on mapping
+            this.updateAvailabilityActionDefault();
+
             await this.autoSaveTemplate();
         },
 
@@ -707,7 +775,7 @@ Component.register('price-template-create', {
             if (availableType) {
                 this.template.config.modifiers.push({
                     price_type: availableType,
-                    modifier_type: 'none',
+                    modifier_type: 'percentage',
                     value: 0
                 });
                 this.autoSaveTemplate();
@@ -745,7 +813,14 @@ Component.register('price-template-create', {
             this.isLoadingMatchPreview = true;
             try {
                 const result = await this.priceUpdateService.matchPreview(this.template.id);
-                this.matchPreviewData = result.matched || [];
+                const allData = result.matched || [];
+
+                // Store all data
+                this.allPreviewData = allData;
+                this.previewTotal = allData.length;
+
+                // Apply pagination
+                this.applyPreviewPagination();
             } catch (error) {
                 console.error('Error loading match preview:', error);
                 this.createNotificationError({
@@ -753,6 +828,55 @@ Component.register('price-template-create', {
                 });
             } finally {
                 this.isLoadingMatchPreview = false;
+            }
+        },
+
+        applyPreviewPagination() {
+            if (!this.allPreviewData) {
+                this.matchPreviewData = [];
+                return;
+            }
+
+            const start = (this.previewPage - 1) * this.previewLimit;
+            const end = start + this.previewLimit;
+            this.matchPreviewData = this.allPreviewData.slice(start, end);
+        },
+
+        onPreviewPageChange({ page, limit }) {
+            this.previewPage = page;
+            this.previewLimit = limit;
+            this.applyPreviewPagination();
+        },
+
+        async onManualMatch(item) {
+            // Open modal to manually select product for this price list item
+            // For now, just show a simple prompt
+            this.$emit('manual-match-requested', item);
+        },
+
+        async updateManualMatch(item, productId) {
+            if (!this.template.id || !item.supplier_code || !productId) {
+                return;
+            }
+
+            try {
+                await this.priceUpdateService.updateMatch(
+                    this.template.id,
+                    productId,
+                    item.supplier_code
+                );
+
+                this.createNotificationSuccess({
+                    message: 'Привязка обновлена'
+                });
+
+                // Reload preview
+                await this.loadMatchPreview();
+            } catch (error) {
+                console.error('Error updating manual match:', error);
+                this.createNotificationError({
+                    message: 'Ошибка обновления привязки'
+                });
             }
         },
 

@@ -49,9 +49,23 @@ abstract class AbstractPriceParser implements PriceParserInterface
     /**
      * Normalize price value (remove currency symbols, parse float)
      */
-    protected function normalizePrice(?string $value): ?float
+    protected function normalizePrice(mixed $value): ?float
     {
-        if ($value === null || trim($value) === '') {
+        // Handle null or empty
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        // If already a number (from Excel), return it
+        if (is_numeric($value)) {
+            $floatValue = (float) $value;
+            return $floatValue > 0 ? $floatValue : null;
+        }
+
+        // Convert to string for text processing
+        $value = (string) $value;
+
+        if (trim($value) === '') {
             return null;
         }
 
@@ -74,9 +88,16 @@ abstract class AbstractPriceParser implements PriceParserInterface
     /**
      * Normalize product code (trim, uppercase)
      */
-    protected function normalizeCode(?string $value): ?string
+    protected function normalizeCode(mixed $value): ?string
     {
-        if ($value === null || trim($value) === '') {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        // Convert to string if needed
+        $value = (string) $value;
+
+        if (trim($value) === '') {
             return null;
         }
 
@@ -86,9 +107,16 @@ abstract class AbstractPriceParser implements PriceParserInterface
     /**
      * Normalize product name (trim)
      */
-    protected function normalizeName(?string $value): ?string
+    protected function normalizeName(mixed $value): ?string
     {
-        if ($value === null || trim($value) === '') {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        // Convert to string if needed
+        $value = (string) $value;
+
+        if (trim($value) === '') {
             return null;
         }
 

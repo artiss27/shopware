@@ -148,6 +148,7 @@
         "columnTypePurchasePrice": "Purchase Price",
         "columnTypeRetailPrice": "Retail Price",
         "columnTypeListPrice": "List Price",
+        "columnTypeAvailability": "Availability (Stock)",
         "summaryGeneral": "General Information",
         "summaryMapping": "Column Mapping",
         "summaryPriceRules": "Price Rules",

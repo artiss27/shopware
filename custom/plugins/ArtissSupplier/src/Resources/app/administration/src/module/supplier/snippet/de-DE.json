@@ -134,6 +134,7 @@
         "columnTypePurchasePrice": "Einkaufspreis",
         "columnTypeRetailPrice": "Einzelhandelspreis",
         "columnTypeListPrice": "Listenpreis",
+        "columnTypeAvailability": "Verfügbarkeit (Bestand)",
         "summaryGeneral": "Allgemeine Informationen",
         "summaryMapping": "Spaltenzuordnung",
         "summaryPriceRules": "Preisregeln",

@@ -181,26 +181,28 @@
                         <div class="currency-selection">
                             <h4>{{ $tc('supplier.priceUpdate.wizard.currenciesTitle') }}</h4>
 
-                            <sw-single-select
-                                v-model:value="template.config.price_currencies.purchase"
-                                :options="currencyOptions"
-                                :label="$tc('supplier.priceUpdate.wizard.labelPurchaseCurrency')"
-                                @update:value="autoSaveTemplate"
-                            />
+                            <div class="currency-row">
+                                <sw-single-select
+                                    v-model:value="template.config.price_currencies.purchase"
+                                    :options="currencyOptions"
+                                    :label="$tc('supplier.priceUpdate.wizard.labelPurchaseCurrency')"
+                                    @update:value="autoSaveTemplate"
+                                />
 
-                            <sw-single-select
-                                v-model:value="template.config.price_currencies.retail"
-                                :options="currencyOptions"
-                                :label="$tc('supplier.priceUpdate.wizard.labelRetailCurrency')"
-                                @update:value="autoSaveTemplate"
-                            />
+                                <sw-single-select
+                                    v-model:value="template.config.price_currencies.retail"
+                                    :options="currencyOptions"
+                                    :label="$tc('supplier.priceUpdate.wizard.labelRetailCurrency')"
+                                    @update:value="autoSaveTemplate"
+                                />
 
-                            <sw-single-select
-                                v-model:value="template.config.price_currencies.list"
-                                :options="currencyOptions"
-                                :label="$tc('supplier.priceUpdate.wizard.labelListCurrency')"
-                                @update:value="autoSaveTemplate"
-                            />
+                                <sw-single-select
+                                    v-model:value="template.config.price_currencies.list"
+                                    :options="currencyOptions"
+                                    :label="$tc('supplier.priceUpdate.wizard.labelListCurrency')"
+                                    @update:value="autoSaveTemplate"
+                                />
+                            </div>
                         </div>
 
                         <!-- Modifiers -->
@@ -227,13 +229,15 @@
                                     v-model:value="modifier.value"
                                     :label="$tc('supplier.priceUpdate.wizard.labelModifierValue')"
                                     @update:value="autoSaveTemplate"
+                                    class="modifier-value-field"
                                 />
 
                                 <sw-button
                                     variant="danger"
                                     size="small"
+                                    square
                                     @click="removeModifier(idx)">
-                                    {{ $tc('supplier.priceUpdate.wizard.buttonRemove') }}
+                                    <sw-icon name="regular-times-s" small />
                                 </sw-button>
                             </div>
 
@@ -276,6 +280,13 @@
                             valueProperty="value"
                         />
 
+                        <sw-single-select
+                            v-model:value="template.config.filters.availability_action"
+                            :options="availabilityActionOptions"
+                            :label="$tc('supplier.priceUpdate.wizard.labelAvailabilityAction')"
+                            @update:value="autoSaveTemplate"
+                        />
+
                         <sw-button
                             variant="primary"
                             @click="loadMatchPreview"
@@ -307,21 +318,56 @@
                             :columns="matchPreviewColumns"
                             :showSelection="false"
                             :isLoading="isLoadingMatchPreview"
+                            :allowInlineEdit="false"
+                            :allowColumnEdit="false"
+                            :total="previewTotal"
+                            @page-change="onPreviewPageChange"
                         >
-                            <template #column-code="{ item }">
-                                {{ item.code || '-' }}
+                            <template #column-product_name="{ item }">
+                                {{ item.product_name || '-' }}
                             </template>
-                            <template #column-name="{ item }">
-                                {{ item.name || '-' }}
+                            <template #column-current_kod_postavschika="{ item }">
+                                {{ item.current_kod_postavschika || '-' }}
                             </template>
-                            <template #column-product="{ item }">
-                                {{ item.product?.name || '-' }}
+                            <template #column-status="{ item }">
+                                <sw-label
+                                    :variant="item.status === 'matched' ? 'success' : 'warning'"
+                                    size="small">
+                                    {{ item.status === 'matched' ? 'Найден' : 'Не найден' }}
+                                </sw-label>
                             </template>
-                            <template #column-price1="{ item }">
-                                {{ item.price_1 ? item.price_1.toFixed(2) : '-' }}
+                            <template #column-supplier_code="{ item }">
+                                {{ item.supplier_code || '-' }}
                             </template>
-                            <template #column-price2="{ item }">
-                                {{ item.price_2 ? item.price_2.toFixed(2) : '-' }}
+                            <template #column-supplier_name="{ item }">
+                                {{ item.supplier_name || '-' }}
+                            </template>
+                            <template #column-prices="{ item }">
+                                <div v-if="item.new_prices">
+                                    <div v-if="item.new_prices.purchase">
+                                        Зак: {{ item.new_prices.purchase.toFixed(2) }}
+                                    </div>
+                                    <div v-if="item.new_prices.retail">
+                                        Розн: {{ item.new_prices.retail.toFixed(2) }}
+                                    </div>
+                                    <div v-if="item.new_prices.list">
+                                        Прайс: {{ item.new_prices.list.toFixed(2) }}
+                                    </div>
+                                </div>
+                                <span v-else>-</span>
+                            </template>
+                            <template #column-availability="{ item }">
+                                <span v-if="item.availability !== null && item.availability !== undefined">
+                                    {{ item.availability }} (тек: {{ item.current_stock || 0 }})
+                                </span>
+                                <span v-else>-</span>
+                            </template>
+                            <template #column-actions="{ item }">
+                                <sw-context-button v-if="item.status === 'unmatched' && item.supplier_code">
+                                    <sw-context-menu-item @click="onManualMatch(item)">
+                                        Привязать
+                                    </sw-context-menu-item>
+                                </sw-context-button>
                             </template>
                         </sw-data-grid>
 

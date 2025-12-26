@@ -195,5 +195,78 @@
                 }
             }
         }
+
+        .modifiers-section {
+            margin-top: 20px;
+
+            h4 {
+                margin-bottom: 15px;
+            }
+
+            .modifier-row {
+                display: flex;
+                gap: 12px;
+                align-items: flex-end;
+                margin-bottom: 15px;
+
+                .sw-field,
+                .sw-single-select,
+                .sw-number-field {
+                    flex: 1;
+                    margin-bottom: 0;
+                }
+
+                .modifier-value-field {
+                    margin-top: 0 !important;
+                    margin-bottom: 0 !important;
+                    width: auto;
+
+                    // Remove mt-field class styles completely
+                    :deep(.mt-field) {
+                        margin-top: 0 !important;
+                        margin-bottom: 0 !important;
+                        padding: 0 !important;
+                    }
+
+                    // Also target the field wrapper directly
+                    :deep(.sw-field) {
+                        margin-top: 0 !important;
+                        margin-bottom: 0 !important;
+                    }
+
+                    // Remove any container styles
+                    :deep(.sw-field__label) {
+                        margin-bottom: 0 !important;
+                    }
+                }
+
+                .sw-button {
+                    flex-shrink: 0;
+                    margin-bottom: 0;
+                }
+                .mt-button {
+                    margin-bottom: 9px;
+                }
+            }
+        }
+
+        .currency-selection {
+            margin-bottom: 30px;
+
+            h4 {
+                margin-bottom: 15px;
+            }
+
+            .currency-row {
+                display: flex;
+                gap: 12px;
+                align-items: flex-end;
+
+                .sw-single-select {
+                    flex: 1;
+                    margin-bottom: 0;
+                }
+            }
+        }
     }
 }
