@@ -63,7 +63,15 @@
         "emptyDescription": "Erstellen Sie Ihre erste Preisaktualisierungsvorlage",
         "errorLoad": "Fehler beim Laden der Vorlagen",
         "successDelete": "Vorlage gelöscht",
-        "errorDelete": "Fehler beim Löschen der Vorlage"
+        "errorDelete": "Fehler beim Löschen der Vorlage",
+        "buttonRecalculatePrices": "Preise neu berechnen",
+        "successRecalculate": "Preise für {count} Produkte neu berechnet",
+        "errorRecalculate": "Fehler beim Neuberechnen der Preise",
+        "columnName": "Name",
+        "columnSupplier": "Lieferant",
+        "columnStatus": "Status",
+        "columnAppliedAt": "Angewendet am",
+        "columnCreatedAt": "Erstellt am"
       },
       "wizard": {
         "title": "Preisaktualisierungsvorlage erstellen",
@@ -117,6 +125,15 @@
         "labelFilterManufacturers": "Hersteller",
         "labelFilterEquipmentTypes": "Gerätetypen",
         "placeholderEquipmentTypes": "Gerätetypen auswählen...",
+        "columnActive": "Aktiv",
+        "columnFileName": "Dateiname",
+        "columnUploadDate": "Hochladedatum",
+        "columnFileSize": "Dateigröße",
+        "columnTypeProductCode": "Produktcode",
+        "columnTypeProductName": "Produktname",
+        "columnTypePurchasePrice": "Einkaufspreis",
+        "columnTypeRetailPrice": "Einzelhandelspreis",
+        "columnTypeListPrice": "Listenpreis",
         "summaryGeneral": "Allgemeine Informationen",
         "summaryMapping": "Spaltenzuordnung",
         "summaryPriceRules": "Preisregeln",
@@ -125,7 +142,13 @@
         "errorPreview": "Fehler bei der Dateivorschau",
         "errorValidation": "Bitte füllen Sie die Pflichtfelder aus",
         "errorSave": "Fehler beim Speichern der Vorlage",
-        "successSave": "Vorlage erfolgreich gespeichert"
+        "successSave": "Vorlage erfolgreich gespeichert",
+        "errorNoTemplateOrMedia": "Vorlage oder Mediendatei fehlt",
+        "errorNoTemplate": "Vorlage fehlt",
+        "emptyMatchPreviewTitle": "Keine Übereinstimmungen gefunden",
+        "emptyMatchPreviewDescription": "Keine Produkte wurden zugeordnet. Bitte überprüfen Sie Ihre Filter und versuchen Sie es erneut.",
+        "errorApplyPrices": "Fehler beim Anwenden der Preise",
+        "successApplyPrices": "Preise erfolgreich angewendet"
       },
       "apply": {
         "title": "Preisaktualisierungsvorlage anwenden",

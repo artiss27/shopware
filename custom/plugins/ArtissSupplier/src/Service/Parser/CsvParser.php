@@ -24,20 +24,10 @@ class CsvParser extends AbstractPriceParser
         $filePath = $this->getMediaFilePath($media);
         $this->validateFile($filePath);
 
-        $startRow = $config['start_row'] ?? 1;
-        $codeColumn = $config['code_column'] ?? 0; // CSV typically uses numeric indices
-        $nameColumn = $config['name_column'] ?? 1;
-        $priceColumn1 = $config['price_column_1'] ?? 2;
-        $priceColumn2 = $config['price_column_2'] ?? null;
+        $startRow = $config['start_row'] ?? 2;
+        $columnMapping = $config['column_mapping'] ?? [];
         $maxRows = $config['max_rows'] ?? null;
         $delimiter = $config['delimiter'] ?? null; // Auto-detect if not provided
-
-        $codeIndex = is_numeric($codeColumn) ? (int) $codeColumn : $this->columnToIndex($codeColumn);
-        $nameIndex = is_numeric($nameColumn) ? (int) $nameColumn : $this->columnToIndex($nameColumn);
-        $price1Index = is_numeric($priceColumn1) ? (int) $priceColumn1 : $this->columnToIndex($priceColumn1);
-        $price2Index = $priceColumn2 !== null
-            ? (is_numeric($priceColumn2) ? (int) $priceColumn2 : $this->columnToIndex($priceColumn2))
-            : null;
 
         // Auto-detect delimiter if not provided
         if ($delimiter === null) {
@@ -66,36 +56,89 @@ class CsvParser extends AbstractPriceParser
                 break;
             }
 
-            // Skip group headers
-            if ($this->isGroupHeader($data, $codeColumn, $priceColumn1)) {
+            // Convert array data to associative array with column letters
+            $rowData = [];
+            foreach ($data as $colIndex => $value) {
+                $colLetter = $this->indexToColumn($colIndex);
+                $rowData[$colLetter] = $value;
+            }
+
+            // Map columns to data structure using new column_mapping
+            $item = $this->mapRowData($rowData, $columnMapping);
+
+            // Skip empty rows
+            if (empty($item['code']) && empty($item['purchase_price']) && empty($item['retail_price']) && empty($item['list_price'])) {
                 continue;
             }
 
-            // Check if this is a valid data row
-            if (!$this->isDataRow($data, $codeColumn, $priceColumn1)) {
-                continue;
-            }
-
-            $code = $this->normalizeCode($data[$codeIndex] ?? null);
-            $name = $this->normalizeName($data[$nameIndex] ?? null);
-            $price1 = $this->normalizePrice($data[$price1Index] ?? null);
-            $price2 = $price2Index !== null
-                ? $this->normalizePrice($data[$price2Index] ?? null)
-                : null;
-
-            $result[] = [
-                'code' => $code,
-                'name' => $name,
-                'price_1' => $price1,
-                'price_2' => $price2,
-            ];
-
+            $result[] = $item;
             $parsedRows++;
         }
 
         fclose($handle);
 
         return $result;
+    }
+
+    /**
+     * Map row data using column mapping configuration
+     */
+    private function mapRowData(array $rowData, array $columnMapping): array
+    {
+        $item = [
+            'code' => null,
+            'name' => null,
+            'purchase_price' => null,
+            'retail_price' => null,
+            'list_price' => null,
+            'availability' => null,
+        ];
+
+        foreach ($columnMapping as $colLetter => $types) {
+            if (!is_array($types)) {
+                $types = [$types];
+            }
+
+            $cellValue = $rowData[$colLetter] ?? null;
+
+            foreach ($types as $type) {
+                switch ($type) {
+                    case 'product_code':
+                        $item['code'] = $this->normalizeCode($cellValue);
+                        break;
+                    case 'product_name':
+                        $item['name'] = $this->normalizeName($cellValue);
+                        break;
+                    case 'purchase_price':
+                        $item['purchase_price'] = $this->normalizePrice($cellValue);
+                        break;
+                    case 'retail_price':
+                        $item['retail_price'] = $this->normalizePrice($cellValue);
+                        break;
+                    case 'list_price':
+                        $item['list_price'] = $this->normalizePrice($cellValue);
+                        break;
+                    case 'availability':
+                        $item['availability'] = $this->normalizeAvailability($cellValue);
+                        break;
+                    // 'ignore' type - do nothing
+                }
+            }
+        }
+
+        return $item;
+    }
+
+    /**
+     * Normalize availability value
+     */
+    private function normalizeAvailability($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     public function preview(MediaEntity $media, int $previewRows = 5): array

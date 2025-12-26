@@ -148,6 +148,69 @@ class PriceUpdateController extends AbstractController
     }
 
     /**
+     * Auto-match products by name similarity
+     */
+    #[Route(
+        path: '/api/_action/supplier/price-update/auto-match',
+        name: 'api.supplier.price_update.auto_match',
+        methods: ['POST']
+    )]
+    public function autoMatch(Request $request, Context $context): JsonResponse
+    {
+        $templateId = $request->request->get('templateId');
+
+        if (!$templateId) {
+            return new JsonResponse(['error' => 'templateId is required'], 400);
+        }
+
+        try {
+            $result = $this->priceUpdateService->autoMatchProducts($templateId, $context);
+
+            return new JsonResponse([
+                'success' => true,
+                'matches' => $result['matches'],
+                'stats' => $result['stats'],
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Confirm all pending matches
+     */
+    #[Route(
+        path: '/api/_action/supplier/price-update/confirm-matches',
+        name: 'api.supplier.price_update.confirm_matches',
+        methods: ['POST']
+    )]
+    public function confirmMatches(Request $request, Context $context): JsonResponse
+    {
+        $templateId = $request->request->get('templateId');
+        $matchesToConfirm = $request->request->all('matches') ?? [];
+
+        if (!$templateId) {
+            return new JsonResponse(['error' => 'templateId is required'], 400);
+        }
+
+        try {
+            $result = $this->priceUpdateService->confirmAllMatches(
+                $templateId,
+                $matchesToConfirm,
+                $context
+            );
+
+            return new JsonResponse([
+                'success' => true,
+                'confirmed' => $result['confirmed'],
+                'total_mappings' => $result['total_mappings'],
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Apply prices to products
      */
     #[Route(
@@ -158,18 +221,51 @@ class PriceUpdateController extends AbstractController
     public function apply(Request $request, Context $context): JsonResponse
     {
         $templateId = $request->request->get('templateId');
-        $confirmedMatches = $request->request->all('confirmedMatches');
-        $userId = $context->getSource()->getUserId() ?? 'unknown';
+        $confirmedMatches = $request->request->all('confirmedMatches') ?? [];
+        $userId = $context->getSource()->getUserId() ?? null;
 
-        if (!$templateId || empty($confirmedMatches)) {
-            return new JsonResponse(['error' => 'templateId and confirmedMatches are required'], 400);
+        if (!$templateId) {
+            return new JsonResponse(['error' => 'templateId is required'], 400);
+        }
+
+        if (empty($confirmedMatches)) {
+            return new JsonResponse(['error' => 'confirmedMatches are required'], 400);
         }
 
         try {
             $stats = $this->priceUpdateService->applyPrices(
                 $templateId,
                 $confirmedMatches,
-                $userId,
+                $userId ?? 'unknown',
+                $context
+            );
+
+            return new JsonResponse([
+                'success' => true,
+                'stats' => $stats,
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Recalculate prices from custom fields using current exchange rates
+     */
+    #[Route(
+        path: '/api/_action/supplier/price-update/recalculate',
+        name: 'api.supplier.price_update.recalculate',
+        methods: ['POST']
+    )]
+    public function recalculatePrices(Request $request, Context $context): JsonResponse
+    {
+        $priceType = $request->request->get('priceType', 'retail');
+        $limit = $request->request->get('limit');
+
+        try {
+            $stats = $this->priceUpdateService->recalculatePricesFromCustomFields(
+                $priceType,
+                $limit ? (int) $limit : null,
                 $context
             );
 

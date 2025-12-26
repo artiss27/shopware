@@ -26,17 +26,9 @@ class ExcelParser extends AbstractPriceParser
         $filePath = $this->getMediaFilePath($media);
         $this->validateFile($filePath);
 
-        $startRow = $config['start_row'] ?? 1;
-        $codeColumn = $config['code_column'] ?? 'A';
-        $nameColumn = $config['name_column'] ?? 'B';
-        $priceColumn1 = $config['price_column_1'] ?? 'C';
-        $priceColumn2 = $config['price_column_2'] ?? null;
+        $startRow = $config['start_row'] ?? 2;
+        $columnMapping = $config['column_mapping'] ?? [];
         $maxRows = $config['max_rows'] ?? null;
-
-        $codeIndex = $this->columnToIndex($codeColumn);
-        $nameIndex = $this->columnToIndex($nameColumn);
-        $price1Index = $this->columnToIndex($priceColumn1);
-        $price2Index = $priceColumn2 !== null ? $this->columnToIndex($priceColumn2) : null;
 
         // Use read filter for memory efficiency with large files
         $reader = IOFactory::createReaderForFile($filePath);
@@ -49,42 +41,99 @@ class ExcelParser extends AbstractPriceParser
         $highestRow = $worksheet->getHighestRow();
         $endRow = $maxRows !== null ? min($startRow + $maxRows - 1, $highestRow) : $highestRow;
 
-        $maxColumns = max($codeIndex, $nameIndex, $price1Index, $price2Index ?? 0) + 5;
+        // Determine max column index from mapping
+        $maxColIndex = 0;
+        foreach (array_keys($columnMapping) as $colLetter) {
+            $colIndex = $this->columnToIndex($colLetter);
+            $maxColIndex = max($maxColIndex, $colIndex);
+        }
+        $maxColIndex += 5; // Add buffer for safety
 
         for ($row = $startRow; $row <= $endRow; $row++) {
-            // Read row data into array for validation
+            // Read entire row
             $rowData = [];
-            for ($col = 0; $col <= $maxColumns; $col++) {
-                $rowData[$col] = $worksheet->getCellByColumnAndRow($col + 1, $row)->getValue();
+            for ($col = 0; $col <= $maxColIndex; $col++) {
+                $colLetter = $this->indexToColumn($col);
+                $cellValue = $worksheet->getCellByColumnAndRow($col + 1, $row)->getValue();
+                $rowData[$colLetter] = $cellValue;
             }
 
-            // Skip group headers (e.g., "Группа товаров 1")
-            if ($this->isGroupHeader($rowData, $codeColumn, $priceColumn1)) {
+            // Map columns to data structure using new column_mapping
+            $item = $this->mapRowData($rowData, $columnMapping);
+
+            // Skip empty rows (no code or all prices empty)
+            if (empty($item['code']) && empty($item['purchase_price']) && empty($item['retail_price']) && empty($item['list_price'])) {
                 continue;
             }
 
-            // Check if this is a valid data row
-            if (!$this->isDataRow($rowData, $codeColumn, $priceColumn1)) {
-                continue;
-            }
-
-            $code = $this->normalizeCode($rowData[$codeIndex]);
-            $name = $this->normalizeName($rowData[$nameIndex]);
-            $price1 = $this->normalizePrice($rowData[$price1Index]);
-            $price2 = $price2Index !== null ? $this->normalizePrice($rowData[$price2Index]) : null;
-
-            $result[] = [
-                'code' => $code,
-                'name' => $name,
-                'price_1' => $price1,
-                'price_2' => $price2,
-            ];
+            $result[] = $item;
         }
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
         return $result;
+    }
+
+    /**
+     * Map row data using column mapping configuration
+     */
+    private function mapRowData(array $rowData, array $columnMapping): array
+    {
+        $item = [
+            'code' => null,
+            'name' => null,
+            'purchase_price' => null,
+            'retail_price' => null,
+            'list_price' => null,
+            'availability' => null,
+        ];
+
+        foreach ($columnMapping as $colLetter => $types) {
+            if (!is_array($types)) {
+                $types = [$types];
+            }
+
+            $cellValue = $rowData[$colLetter] ?? null;
+
+            foreach ($types as $type) {
+                switch ($type) {
+                    case 'product_code':
+                        $item['code'] = $this->normalizeCode($cellValue);
+                        break;
+                    case 'product_name':
+                        $item['name'] = $this->normalizeName($cellValue);
+                        break;
+                    case 'purchase_price':
+                        $item['purchase_price'] = $this->normalizePrice($cellValue);
+                        break;
+                    case 'retail_price':
+                        $item['retail_price'] = $this->normalizePrice($cellValue);
+                        break;
+                    case 'list_price':
+                        $item['list_price'] = $this->normalizePrice($cellValue);
+                        break;
+                    case 'availability':
+                        $item['availability'] = $this->normalizeAvailability($cellValue);
+                        break;
+                    // 'ignore' type - do nothing
+                }
+            }
+        }
+
+        return $item;
+    }
+
+    /**
+     * Normalize availability value
+     */
+    private function normalizeAvailability($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     public function preview(MediaEntity $media, int $previewRows = 5): array

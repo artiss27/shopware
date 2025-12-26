@@ -6,7 +6,10 @@ const { Criteria } = Shopware.Data;
 Component.register('price-template-list', {
     template,
 
-    inject: ['repositoryFactory'],
+    inject: [
+        'repositoryFactory',
+        'priceUpdateService'
+    ],
 
     mixins: [
         Mixin.getByName('notification')
@@ -15,8 +18,8 @@ Component.register('price-template-list', {
     data() {
         return {
             templates: null,
-            suppliers: null,
             isLoading: false,
+            isRecalculating: false,
             filterSupplierId: null,
             page: 1,
             limit: 25,
@@ -33,36 +36,58 @@ Component.register('price-template-list', {
             return this.repositoryFactory.create('art_supplier');
         },
 
-        supplierOptions() {
-            if (!this.suppliers) return [];
+        templateColumns() {
+            return [
+                {
+                    property: 'name',
+                    dataIndex: 'name',
+                    label: this.$tc('supplier.priceUpdate.list.columnName'),
+                    routerLink: 'supplier.price.update.edit',
+                    allowResize: true,
+                    primary: true
+                },
+                {
+                    property: 'supplier',
+                    dataIndex: 'supplier',
+                    label: this.$tc('supplier.priceUpdate.list.columnSupplier'),
+                    allowResize: true
+                },
+                {
+                    property: 'status',
+                    dataIndex: 'status',
+                    label: this.$tc('supplier.priceUpdate.list.columnStatus'),
+                    allowResize: true
+                },
+                {
+                    property: 'appliedAt',
+                    dataIndex: 'appliedAt',
+                    label: this.$tc('supplier.priceUpdate.list.columnAppliedAt'),
+                    allowResize: true
+                },
+                {
+                    property: 'createdAt',
+                    dataIndex: 'createdAt',
+                    label: this.$tc('supplier.priceUpdate.list.columnCreatedAt'),
+                    allowResize: true
+                }
+            ];
+        }
+    },
 
-            return this.suppliers.map(supplier => ({
-                value: supplier.id,
-                label: supplier.name
-            }));
+    watch: {
+        '$route.query.supplierId'(newValue) {
+            this.filterSupplierId = newValue || null;
+            this.page = 1;
+            this.loadTemplates();
         }
     },
 
     created() {
         this.filterSupplierId = this.$route.query.supplierId || null;
-        this.loadSuppliers();
         this.loadTemplates();
     },
 
     methods: {
-        async loadSuppliers() {
-            try {
-                const criteria = new Criteria();
-                criteria.addSorting(Criteria.sort('name', 'ASC'));
-                criteria.setLimit(500);
-
-                const result = await this.supplierRepository.search(criteria, Shopware.Context.api);
-                this.suppliers = Array.from(result);
-            } catch (error) {
-                console.error('Error loading suppliers:', error);
-                this.suppliers = [];
-            }
-        },
 
         async loadTemplates() {
             this.isLoading = true;
@@ -79,7 +104,7 @@ Component.register('price-template-list', {
                     );
                 }
 
-                const result = await this.templateRepository.search(criteria);
+                const result = await this.templateRepository.search(criteria, Shopware.Context.api);
                 this.templates = result;
                 this.total = result.total;
             } catch (error) {
@@ -92,8 +117,15 @@ Component.register('price-template-list', {
         },
 
         onSupplierFilterChange(supplierId) {
-            this.filterSupplierId = supplierId;
+            this.filterSupplierId = supplierId || null;
             this.page = 1;
+            
+            // Update URL query parameter
+            this.$router.replace({
+                name: 'supplier.price.update.index',
+                query: supplierId ? { supplierId: supplierId } : {}
+            });
+            
             this.loadTemplates();
         },
 
@@ -109,7 +141,7 @@ Component.register('price-template-list', {
 
         onUpdatePrices(template) {
             this.$router.push({
-                name: 'supplier.price.update.apply',
+                name: 'supplier.price.update.edit',
                 params: { id: template.id }
             });
         },
@@ -152,6 +184,27 @@ Component.register('price-template-list', {
             return this.$tc('supplier.priceUpdate.list.statusApplied', 0, {
                 date: this.formatDate(template.appliedAt)
             });
+        },
+
+        async onRecalculatePrices() {
+            this.isRecalculating = true;
+
+            try {
+                const response = await this.priceUpdateService.recalculatePrices();
+
+                this.createNotificationSuccess({
+                    message: this.$tc('supplier.priceUpdate.list.successRecalculate', 0, {
+                        count: response.stats?.updated || 0
+                    })
+                });
+            } catch (error) {
+                console.error('Error recalculating prices:', error);
+                this.createNotificationError({
+                    message: this.$tc('supplier.priceUpdate.list.errorRecalculate')
+                });
+            } finally {
+                this.isRecalculating = false;
+            }
         }
     }
 });

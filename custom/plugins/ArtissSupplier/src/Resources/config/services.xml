@@ -39,27 +39,9 @@
             <argument type="tagged_iterator" tag="artiss.price_parser"/>
         </service>
 
-        <!-- Product Matchers -->
-        <service id="Artiss\Supplier\Service\Matcher\ExactCodeMatcher">
-            <tag name="artiss.product_matcher"/>
-        </service>
-
-        <service id="Artiss\Supplier\Service\Matcher\FuzzyNameMatcher">
-            <tag name="artiss.product_matcher"/>
-        </service>
-
-        <service id="Artiss\Supplier\Service\Matcher\MatcherChain">
-            <argument type="tagged_iterator" tag="artiss.product_matcher"/>
-        </service>
-
-        <!-- Price Calculator -->
-        <service id="Artiss\Supplier\Service\Calculator\PriceCalculator"/>
-
         <!-- Price Update Service -->
         <service id="Artiss\Supplier\Service\PriceUpdate\PriceUpdateService">
             <argument type="service" id="Artiss\Supplier\Service\Parser\ParserRegistry"/>
-            <argument type="service" id="Artiss\Supplier\Service\Matcher\MatcherChain"/>
-            <argument type="service" id="Artiss\Supplier\Service\Calculator\PriceCalculator"/>
             <argument type="service" id="art_supplier_price_template.repository"/>
             <argument type="service" id="media.repository"/>
             <argument type="service" id="product.repository"/>
@@ -97,6 +79,12 @@
             <argument type="service" id="media.repository"/>
             <argument type="service" id="media_folder.repository"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Artiss\Supplier\Command\RecalculatePricesCommand">
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="currency.repository"/>
             <tag name="console.command"/>
         </service>
     </services>

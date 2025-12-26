@@ -74,6 +74,20 @@ class PriceUpdateService extends ApiService {
                 return ApiService.handleResponse(response);
             });
     }
+
+    recalculatePrices(priceType = 'retail', limit = null) {
+        const headers = this.getBasicHeaders();
+
+        return this.httpClient
+            .post(
+                `/_action/${this.getApiBasePath()}/price-update/recalculate`,
+                { priceType, limit },
+                { headers }
+            )
+            .then((response) => {
+                return ApiService.handleResponse(response);
+            });
+    }
 }
 
 export default PriceUpdateService;
