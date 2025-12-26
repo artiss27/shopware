@@ -1,0 +1,67 @@
+{% block artiss_product_custom_fields_tabs %}
+    <div class="artiss-product-custom-fields-tabs">
+        {# If we have both sets, show tabs #}
+        <template v-if="showTabs">
+            {% block artiss_product_custom_fields_tabs_navigation %}
+                <sw-tabs class="artiss-product-custom-fields-tabs__navigation">
+                    <sw-tabs-item
+                        :active-tab="activeTab"
+                        name="properties"
+                        @click="activeTab = 'properties'"
+                        :title="$tc('artiss-custom-fields.tabs.properties')">
+                        {{ $tc('artiss-custom-fields.tabs.properties') }}
+                    </sw-tabs-item>
+                    <sw-tabs-item
+                        :active-tab="activeTab"
+                        name="prices"
+                        @click="activeTab = 'prices'"
+                        :title="$tc('artiss-custom-fields.tabs.prices')">
+                        {{ $tc('artiss-custom-fields.tabs.prices') }}
+                    </sw-tabs-item>
+                </sw-tabs>
+            {% endblock %}
+
+            {% block artiss_product_custom_fields_tabs_content %}
+                {# Tab 1: Properties - use smart manager #}
+                <div v-show="activeTab === 'properties'" class="artiss-product-custom-fields-tabs__content">
+                    <artiss-custom-fields-manager
+                        :entity="entity"
+                        :sets="propertiesSets">
+                    </artiss-custom-fields-manager>
+                </div>
+
+                {# Tab 2: Prices - show all fields #}
+                <div v-show="activeTab === 'prices'" class="artiss-product-custom-fields-tabs__content">
+                    <sw-custom-field-set-renderer
+                        :entity="entity"
+                        :sets="pricesSets">
+                    </sw-custom-field-set-renderer>
+                </div>
+            {% endblock %}
+        </template>
+
+        {# If only properties exist, show smart manager directly #}
+        <template v-else-if="propertiesSets.length > 0">
+            <artiss-custom-fields-manager
+                :entity="entity"
+                :sets="propertiesSets">
+            </artiss-custom-fields-manager>
+        </template>
+
+        {# If only prices exist, show standard renderer #}
+        <template v-else-if="pricesSets.length > 0">
+            <sw-custom-field-set-renderer
+                :entity="entity"
+                :sets="pricesSets">
+            </sw-custom-field-set-renderer>
+        </template>
+
+        {# Fallback: show all sets with smart manager #}
+        <template v-else>
+            <artiss-custom-fields-manager
+                :entity="entity"
+                :sets="sets">
+            </artiss-custom-fields-manager>
+        </template>
+    </div>
+{% endblock %}
