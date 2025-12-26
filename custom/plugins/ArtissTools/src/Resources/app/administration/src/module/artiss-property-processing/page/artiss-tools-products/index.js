@@ -5,7 +5,13 @@ const { Component } = Shopware;
 
 Component.register('artiss-tools-products', {
     template,
-    
+
+    metaInfo() {
+        return {
+            title: this.$createTitle()
+        };
+    },
+
     data() {
         return {
             activeTab: 'merge'

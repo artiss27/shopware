@@ -18,6 +18,12 @@ Component.register('artiss-property-processing-index', {
         Mixin.getByName('notification')
     ],
 
+    metaInfo() {
+        return {
+            title: this.$createTitle()
+        };
+    },
+
     data() {
         return {
             isLoading: false,

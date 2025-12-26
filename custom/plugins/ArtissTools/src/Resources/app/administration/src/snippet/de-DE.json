@@ -16,6 +16,7 @@
         },
         "products": {
             "title": "Produkte",
+            "menuItem": "Produkte",
             "tabs": {
                 "merge": "Zusammenführen"
             },
@@ -25,6 +26,7 @@
         },
         "backups": {
             "title": "Backups",
+            "menuItem": "Backups",
             "tabs": {
                 "create": "Erstellen",
                 "restore": "Wiederherstellen"
@@ -141,6 +143,7 @@
         },
         "images": {
             "title": "Bilder",
+            "menuItem": "Bilder",
             "tabs": {
                 "cleanup": "Bereinigung",
                 "duplicates": "Duplikate"
@@ -206,6 +209,7 @@
             "title": "Eigenschaftsverarbeitung",
             "description": "Eigenschaftsgruppen und Custom Field Sets zusammenführen",
             "menuTitle": "Eigenschaftsverarbeitung",
+            "menuItem": "Eigenschaften",
             "tabs": {
                 "merge": "Zusammenführen",
                 "mergeOptions": "Optionen zusammenführen",

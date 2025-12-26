@@ -2,15 +2,7 @@
     <sw-page class="artiss-property-processing-index">
         {% block artiss_property_processing_index_header %}
             <template #smart-bar-header>
-                <h2>
-                    <router-link
-                        :to="{ name: 'artiss.tools.index' }"
-                        class="smart-bar__back-btn"
-                    >
-                        <sw-icon name="regular-chevron-left" small></sw-icon>
-                    </router-link>
-                    {{ $tc('artissTools.propertyProcessing.title') }}
-                </h2>
+                <h2>{{ $tc('artissTools.propertyProcessing.title') }}</h2>
             </template>
         {% endblock %}
 

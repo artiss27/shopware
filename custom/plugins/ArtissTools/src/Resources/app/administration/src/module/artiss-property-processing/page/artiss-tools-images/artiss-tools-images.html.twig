@@ -2,15 +2,7 @@
 <sw-page class="artiss-tools-images">
     {% block artiss_tools_images_header %}
         <template #smart-bar-header>
-            <h2>
-                <router-link
-                        :to="{ name: 'artiss.tools.index' }"
-                        class="smart-bar__back-btn"
-                >
-                    <sw-icon name="regular-chevron-left" small></sw-icon>
-                </router-link>
-                {{ $tc('artissTools.images.title') }}
-            </h2>
+            <h2>{{ $tc('artissTools.images.title') }}</h2>
         </template>
     {% endblock %}
 

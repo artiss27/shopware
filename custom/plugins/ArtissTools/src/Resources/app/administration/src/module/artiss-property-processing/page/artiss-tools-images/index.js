@@ -6,7 +6,13 @@ const { Component } = Shopware;
 
 Component.register('artiss-tools-images', {
     template,
-    
+
+    metaInfo() {
+        return {
+            title: this.$createTitle()
+        };
+    },
+
     data() {
         return {
             activeTab: 'cleanup'

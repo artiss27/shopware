@@ -26,19 +26,31 @@ Module.register('artiss-tools', {
         },
         products: {
             component: 'artiss-tools-products',
-            path: 'products'
+            path: 'products',
+            meta: {
+                parentPath: 'artiss.tools.index'
+            }
         },
         backups: {
             component: 'artiss-tools-backups',
-            path: 'backups'
+            path: 'backups',
+            meta: {
+                parentPath: 'artiss.tools.index'
+            }
         },
         properties: {
             component: 'artiss-property-processing-index',
-            path: 'properties'
+            path: 'properties',
+            meta: {
+                parentPath: 'artiss.tools.index'
+            }
         },
         images: {
             component: 'artiss-tools-images',
-            path: 'images'
+            path: 'images',
+            meta: {
+                parentPath: 'artiss.tools.index'
+            }
         }
     },
 
@@ -50,5 +62,37 @@ Module.register('artiss-tools', {
         path: 'artiss.tools.index',
         parent: 'sw-catalogue',
         position: 100
+    }, {
+        id: 'artiss-tools-products',
+        label: 'artissTools.products.menuItem',
+        color: '#ff3d58',
+        icon: 'regular-products',
+        path: 'artiss.tools.products',
+        parent: 'artiss-tools',
+        position: 10
+    }, {
+        id: 'artiss-tools-backups',
+        label: 'artissTools.backups.menuItem',
+        color: '#ff3d58',
+        icon: 'regular-database',
+        path: 'artiss.tools.backups',
+        parent: 'artiss-tools',
+        position: 20
+    }, {
+        id: 'artiss-tools-properties',
+        label: 'artissTools.propertyProcessing.menuItem',
+        color: '#ff3d58',
+        icon: 'regular-tag',
+        path: 'artiss.tools.properties',
+        parent: 'artiss-tools',
+        position: 30
+    }, {
+        id: 'artiss-tools-images',
+        label: 'artissTools.images.menuItem',
+        color: '#ff3d58',
+        icon: 'regular-image',
+        path: 'artiss.tools.images',
+        parent: 'artiss-tools',
+        position: 40
     }]
 });

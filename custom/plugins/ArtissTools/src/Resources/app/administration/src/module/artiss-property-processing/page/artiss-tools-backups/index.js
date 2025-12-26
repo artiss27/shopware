@@ -10,6 +10,12 @@ Component.register('artiss-tools-backups', {
         Mixin.getByName('notification')
     ],
 
+    metaInfo() {
+        return {
+            title: this.$createTitle()
+        };
+    },
+
     data() {
         return {
             activeTab: 'create',

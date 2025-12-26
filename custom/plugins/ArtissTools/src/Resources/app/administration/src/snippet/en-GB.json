@@ -16,6 +16,7 @@
         },
         "products": {
             "title": "Products",
+            "menuItem": "Products",
             "tabs": {
                 "merge": "Merge"
             },
@@ -104,6 +105,7 @@
         },
         "backups": {
             "title": "Backups",
+            "menuItem": "Backups",
             "tabs": {
                 "create": "Create",
                 "restore": "Restore"
@@ -222,6 +224,7 @@
         },
         "images": {
             "title": "Images",
+            "menuItem": "Images",
             "tabs": {
                 "cleanup": "Cleanup",
                 "duplicates": "Duplicates"
@@ -346,6 +349,7 @@
             "title": "Property Processing",
             "description": "Merge property groups and custom field sets",
             "menuTitle": "Property Processing",
+            "menuItem": "Properties",
             "tabs": {
                 "merge": "Merge",
                 "mergeOptions": "Merge Options",

@@ -2,15 +2,7 @@
 <sw-page class="artiss-tools-backups">
     {% block artiss_tools_backups_header %}
         <template #smart-bar-header>
-            <h2>
-                <router-link
-                        :to="{ name: 'artiss.tools.index' }"
-                        class="smart-bar__back-btn"
-                >
-                    <sw-icon name="regular-chevron-left" small></sw-icon>
-                </router-link>
-                {{ $tc('artissTools.backups.title') }}
-            </h2>
+            <h2>{{ $tc('artissTools.backups.title') }}</h2>
         </template>
     {% endblock %}
 
