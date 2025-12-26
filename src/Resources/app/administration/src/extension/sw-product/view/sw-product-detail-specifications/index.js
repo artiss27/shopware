@@ -9,7 +9,7 @@ Component.override('sw-product-detail-specifications', {
         customFieldSetCriteria() {
             const criteria = this.$super('customFieldSetCriteria');
 
-            console.log('🔍 customFieldSetCriteria - adding association');
+            // Load custom fields for each set
             criteria.addAssociation('customFields');
 
             return criteria;

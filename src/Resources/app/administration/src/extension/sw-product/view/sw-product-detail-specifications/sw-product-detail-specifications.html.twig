@@ -5,10 +5,10 @@
         :isLoading="isLoading">
 
         <template v-if="customFieldSets && customFieldSets.length > 0">
-            <artiss-custom-fields-manager
+            <artiss-product-custom-fields-tabs
                 :entity="product"
                 :sets="customFieldSets">
-            </artiss-custom-fields-manager>
+            </artiss-product-custom-fields-tabs>
         </template>
 
         <template v-else>

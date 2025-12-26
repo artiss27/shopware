@@ -7,6 +7,10 @@
       "searchPlaceholder": "Suche nach Schlüssel oder Bezeichnung...",
       "noFields": "Keine verfügbaren Felder",
       "close": "Schließen"
+    },
+    "tabs": {
+      "properties": "Eigenschaften",
+      "prices": "Lieferantenpreise"
     }
   }
 }

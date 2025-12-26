@@ -7,6 +7,10 @@
       "searchPlaceholder": "Search by key or label...",
       "noFields": "No available fields",
       "close": "Close"
+    },
+    "tabs": {
+      "properties": "Properties",
+      "prices": "Supplier Prices"
     }
   }
 }
