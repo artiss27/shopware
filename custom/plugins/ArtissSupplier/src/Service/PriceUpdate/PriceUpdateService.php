@@ -116,6 +116,7 @@ class PriceUpdateService
 
     /**
      * Match products and calculate prices for preview with new config structure
+     * Returns ALL products from filters, not just matched ones
      *
      * @param string $templateId Price template ID
      * @param Context $context
@@ -129,35 +130,20 @@ class PriceUpdateService
 
         // Get normalized data (parse if needed)
         $normalizedData = $template->getNormalizedData();
-        if ($normalizedData === null || $normalizedData === '') {
-            // Auto-parse if not done yet
-            $parsedData = $this->parseAndNormalize($templateId, null, false, $context);
-            $normalizedData = json_encode($parsedData);
-            
-            // Save normalized data to template
-            $this->priceTemplateRepository->update([
-                [
-                    'id' => $templateId,
-                    'normalizedData' => $normalizedData,
-                ],
-            ], $context);
-        }
-
-        $priceData = json_decode($normalizedData, true);
+        $priceData = [];
         
-        // Ensure priceData is an array
-        if (!is_array($priceData)) {
-            $priceData = [];
+        if ($normalizedData !== null && $normalizedData !== '') {
+            $priceData = json_decode($normalizedData, true);
+            if (!is_array($priceData)) {
+                $priceData = [];
+            }
         }
 
-        // Get filtered products
+        // Get filtered products - this is the main source of data
         $products = $this->getFilteredProducts($template, $context);
 
         // Get existing matched products mapping
         $matchedProductsMap = $template->getMatchedProducts() ?? [];
-
-        // Match products using new matching logic
-        $matchResult = $this->matchProductsNew($priceData, $products, $matchedProductsMap, $template);
 
         // Calculate prices with modifiers
         $modifiers = $config['modifiers'] ?? [];
@@ -167,75 +153,170 @@ class PriceUpdateService
             'list' => 'UAH',
         ];
 
+        // Build a map of price data by code for quick lookup
+        $priceDataByCode = [];
+        foreach ($priceData as $item) {
+            $code = $item['code'] ?? '';
+            if ($code) {
+                $priceDataByCode[$code] = $item;
+            }
+        }
+
         $previewData = [];
+        $matchedCount = 0;
+        $unmatchedCount = 0;
 
-        foreach ($matchResult['matched'] as $matchedItem) {
-            $product = $products->get($matchedItem['product_id']);
-            $priceListData = $matchedItem['price_data'];
+        // Process ALL products from filters
+        foreach ($products as $product) {
+            $productId = $product->getId();
+            $customFields = $product->getCustomFields() ?? [];
+            $kodPostavschika = $customFields['kod_postavschika'] ?? '';
+            
+            // Try to find matching price data
+            $matchedPriceData = null;
+            $confidence = 'none';
+            $method = null;
+            $isConfirmed = false;
+            $supplierCode = '';
+            $supplierName = '';
 
-            // Apply modifiers to calculate final prices
-            $calculatedPrices = $this->applyModifiers($priceListData, $modifiers);
+            // 1. Check matched_products map
+            if (isset($matchedProductsMap[$productId])) {
+                $supplierCode = $matchedProductsMap[$productId];
+                if (isset($priceDataByCode[$supplierCode])) {
+                    $matchedPriceData = $priceDataByCode[$supplierCode];
+                    $confidence = 'exact';
+                    $method = 'matched_products';
+                    $isConfirmed = true;
+                    $matchedCount++;
+                }
+            }
+            
+            // 2. Try kod_postavschika
+            if (!$matchedPriceData && $kodPostavschika) {
+                if (isset($priceDataByCode[$kodPostavschika])) {
+                    $matchedPriceData = $priceDataByCode[$kodPostavschika];
+                    $supplierCode = $kodPostavschika;
+                    $confidence = 'high';
+                    $method = 'kod_postavschika';
+                    $isConfirmed = false;
+                    $matchedCount++;
+                }
+            }
+
+            // 3. Try name similarity
+            if (!$matchedPriceData && !empty($product->getName())) {
+                $productName = mb_strtolower(trim($product->getTranslated()['name'] ?? $product->getName() ?? ''));
+                foreach ($priceDataByCode as $code => $priceItem) {
+                    $supplierName = mb_strtolower(trim($priceItem['name'] ?? ''));
+                    if ($supplierName && $productName && str_contains($productName, $supplierName)) {
+                        $matchedPriceData = $priceItem;
+                        $supplierCode = $code;
+                        $confidence = 'medium';
+                        $method = 'name_similarity';
+                        $isConfirmed = false;
+                        $matchedCount++;
+                        break;
+                    }
+                }
+            }
 
             // Get current prices from custom fields
-            $customFields = $product?->getCustomFields() ?? [];
             $currentPurchasePrice = $customFields['product_prices']['purchase_price_value'] ?? null;
             $currentRetailPrice = $customFields['product_prices']['retail_price_value'] ?? null;
             $currentListPrice = $customFields['product_prices']['list_price_value'] ?? null;
 
+            // Calculate new prices
+            $newPrices = [
+                'purchase' => null,
+                'retail' => null,
+                'list' => null,
+            ];
+
+            if ($matchedPriceData) {
+                $calculatedPrices = $this->applyModifiers($matchedPriceData, $modifiers);
+                $newPrices = $calculatedPrices;
+                $supplierName = $matchedPriceData['name'] ?? '';
+            }
+
+            if (!$matchedPriceData) {
+                $unmatchedCount++;
+            }
+
             $previewData[] = [
-                'supplier_code' => $matchedItem['code'],
-                'supplier_name' => $priceListData['name'] ?? '',
-                'product_id' => $matchedItem['product_id'],
-                'product_name' => $product?->getTranslated()['name'] ?? $product?->getName() ?? '',
-                'product_number' => $product?->getProductNumber() ?? '',
+                'supplier_code' => $supplierCode,
+                'supplier_name' => $supplierName,
+                'product_id' => $productId,
+                'product_name' => $product->getTranslated()['name'] ?? $product->getName() ?? '',
+                'product_number' => $product->getProductNumber() ?? '',
                 'current_prices' => [
                     'purchase' => $currentPurchasePrice,
                     'retail' => $currentRetailPrice,
                     'list' => $currentListPrice,
                 ],
-                'new_prices' => [
-                    'purchase' => $calculatedPrices['purchase'],
-                    'retail' => $calculatedPrices['retail'],
-                    'list' => $calculatedPrices['list'],
-                ],
+                'new_prices' => $newPrices,
                 'currencies' => $currencies,
                 'price_changes' => [
-                    'purchase' => $this->getPriceChange($currentPurchasePrice, $calculatedPrices['purchase']),
-                    'retail' => $this->getPriceChange($currentRetailPrice, $calculatedPrices['retail']),
-                    'list' => $this->getPriceChange($currentListPrice, $calculatedPrices['list']),
+                    'purchase' => $this->getPriceChange($currentPurchasePrice, $newPrices['purchase']),
+                    'retail' => $this->getPriceChange($currentRetailPrice, $newPrices['retail']),
+                    'list' => $this->getPriceChange($currentListPrice, $newPrices['list']),
                 ],
-                'confidence' => $matchedItem['confidence'],
-                'method' => $matchedItem['method'],
-                'is_confirmed' => $matchedItem['is_confirmed'] ?? false,
+                'confidence' => $confidence,
+                'method' => $method,
+                'is_confirmed' => $isConfirmed,
+                'status' => $matchedPriceData ? 'matched' : 'unmatched',
             ];
         }
 
-        // Add unmatched items
-        $unmatchedData = [];
-        foreach ($matchResult['unmatched'] as $unmatchedItem) {
-            $calculatedPrices = $this->applyModifiers($unmatchedItem, $modifiers);
+        // Also add unmatched price list items (items from price list that don't match any product)
+        $unmatchedPriceItems = [];
+        $matchedCodes = [];
+        foreach ($previewData as $item) {
+            if (!empty($item['supplier_code'])) {
+                $matchedCodes[] = $item['supplier_code'];
+            }
+        }
 
-            $unmatchedData[] = [
-                'supplier_code' => $unmatchedItem['code'] ?? '',
-                'supplier_name' => $unmatchedItem['name'] ?? '',
-                'product_id' => null,
-                'product_name' => null,
-                'new_prices' => [
-                    'purchase' => $calculatedPrices['purchase'],
-                    'retail' => $calculatedPrices['retail'],
-                    'list' => $calculatedPrices['list'],
-                ],
-                'currencies' => $currencies,
-                'confidence' => 'none',
-                'method' => null,
-                'is_confirmed' => false,
-            ];
+        foreach ($priceData as $priceItem) {
+            $code = $priceItem['code'] ?? '';
+            if ($code && !in_array($code, $matchedCodes, true)) {
+                $calculatedPrices = $this->applyModifiers($priceItem, $modifiers);
+                $unmatchedPriceItems[] = [
+                    'supplier_code' => $code,
+                    'supplier_name' => $priceItem['name'] ?? '',
+                    'product_id' => null,
+                    'product_name' => null,
+                    'product_number' => null,
+                    'current_prices' => [
+                        'purchase' => null,
+                        'retail' => null,
+                        'list' => null,
+                    ],
+                    'new_prices' => $calculatedPrices,
+                    'currencies' => $currencies,
+                    'price_changes' => [
+                        'purchase' => null,
+                        'retail' => null,
+                        'list' => null,
+                    ],
+                    'confidence' => 'none',
+                    'method' => null,
+                    'is_confirmed' => false,
+                    'status' => 'unmatched',
+                ];
+            }
         }
 
         return [
             'matched' => $previewData,
-            'unmatched' => $unmatchedData,
-            'stats' => $matchResult['stats'],
+            'unmatched' => $unmatchedPriceItems,
+            'stats' => [
+                'total' => count($products),
+                'matched_exact' => count(array_filter($previewData, fn($item) => $item['method'] === 'matched_products')),
+                'matched_code' => count(array_filter($previewData, fn($item) => $item['method'] === 'kod_postavschika')),
+                'matched_name' => count(array_filter($previewData, fn($item) => $item['method'] === 'name_similarity')),
+                'unmatched' => $unmatchedCount + count($unmatchedPriceItems),
+            ],
         ];
     }
 
