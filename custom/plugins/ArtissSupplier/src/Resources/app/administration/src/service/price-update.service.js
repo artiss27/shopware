@@ -5,13 +5,13 @@ class PriceUpdateService extends ApiService {
         super(httpClient, loginService, apiEndpoint);
     }
 
-    previewFile(mediaId) {
+    previewFile(mediaId, previewRows = 20) {
         const headers = this.getBasicHeaders();
 
         return this.httpClient
             .post(
                 `/_action/${this.getApiBasePath()}/price-update/preview-file`,
-                { mediaId },
+                { mediaId, previewRows },
                 { headers }
             )
             .then((response) => {

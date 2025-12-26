@@ -26,7 +26,7 @@ class PriceUpdateController extends AbstractController
      * Get file preview for column mapping
      */
     #[Route(
-        path: '/api/supplier/price-update/preview-file',
+        path: '/api/_action/supplier/price-update/preview-file',
         name: 'api.supplier.price_update.preview_file',
         methods: ['POST']
     )]
@@ -58,7 +58,7 @@ class PriceUpdateController extends AbstractController
      * Parse and normalize price list
      */
     #[Route(
-        path: '/api/supplier/price-update/parse',
+        path: '/api/_action/supplier/price-update/parse',
         name: 'api.supplier.price_update.parse',
         methods: ['POST']
     )]
@@ -94,7 +94,7 @@ class PriceUpdateController extends AbstractController
      * Match products and get preview
      */
     #[Route(
-        path: '/api/supplier/price-update/match-preview',
+        path: '/api/_action/supplier/price-update/match-preview',
         name: 'api.supplier.price_update.match_preview',
         methods: ['POST']
     )]
@@ -119,7 +119,7 @@ class PriceUpdateController extends AbstractController
      * Update matched product manually
      */
     #[Route(
-        path: '/api/supplier/price-update/update-match',
+        path: '/api/_action/supplier/price-update/update-match',
         name: 'api.supplier.price_update.update_match',
         methods: ['POST']
     )]
@@ -151,7 +151,7 @@ class PriceUpdateController extends AbstractController
      * Apply prices to products
      */
     #[Route(
-        path: '/api/supplier/price-update/apply',
+        path: '/api/_action/supplier/price-update/apply',
         name: 'api.supplier.price_update.apply',
         methods: ['POST']
     )]
@@ -186,7 +186,7 @@ class PriceUpdateController extends AbstractController
      * Get supported file types
      */
     #[Route(
-        path: '/api/supplier/price-update/supported-types',
+        path: '/api/_action/supplier/price-update/supported-types',
         name: 'api.supplier.price_update.supported_types',
         methods: ['GET']
     )]

@@ -217,7 +217,9 @@ class CsvParser extends AbstractPriceParser
             throw new \RuntimeException('Media has no path');
         }
 
-        $basePath = dirname(__DIR__, 5) . '/public';
+        // Go up 6 levels from src/Service/Parser/ to get to project root
+        // Then add /public to get to the public directory
+        $basePath = dirname(__DIR__, 6) . '/public';
         $fullPath = $basePath . '/' . $mediaPath;
 
         return $fullPath;

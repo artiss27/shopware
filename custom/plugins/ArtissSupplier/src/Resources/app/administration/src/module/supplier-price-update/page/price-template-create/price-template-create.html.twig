@@ -75,12 +75,16 @@
                         @media-upload-finish="onMediaUploadFinish"
                     />
                     <sw-media-upload-v2
+                        v-if="mediaFolderId"
                         variant="regular"
                         :uploadTag="uploadTag"
                         :label="$tc('supplier.priceUpdate.wizard.labelUploadFile')"
-                        :defaultFolder="'supplier_price_list'"
+                        :target-folder-id="mediaFolderId"
                         @media-upload-sidebar-open="onMediaUploadSidebarOpen"
                     />
+                    <div v-else>
+                        <sw-loader />
+                    </div>
 
                     <div v-if="uploadedMedia" class="uploaded-file-info">
                         <p>{{ $tc('supplier.priceUpdate.wizard.uploadedFile') }}: {{ uploadedMedia.fileName }}</p>
@@ -94,14 +98,16 @@
                         <table class="preview-table">
                             <thead>
                                 <tr>
-                                    <th v-for="(col, idx) in filePreview.headers" :key="idx">
-                                        {{ columnIndexToLetter(idx) }}
+                                    <th>{{ $tc('supplier.priceUpdate.wizard.columnRowNumber') }}</th>
+                                    <th v-for="(headerValue, colLetter) in filePreview.headers" :key="colLetter">
+                                        {{ colLetter }}: {{ headerValue }}
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="(row, rowIdx) in filePreview.rows" :key="rowIdx">
-                                    <td v-for="(cell, colIdx) in row" :key="colIdx">
+                                    <td><strong>{{ getRowNumber(rowIdx) }}</strong></td>
+                                    <td v-for="(cell, colLetter) in row" :key="colLetter">
                                         {{ cell }}
                                     </td>
                                 </tr>
@@ -207,25 +213,30 @@
 
                     <h4>{{ $tc('supplier.priceUpdate.wizard.filtersTitle') }}</h4>
 
-                    <sw-entity-multi-select
+                    <sw-entity-multi-id-select
                         :value="template.config.filters.categories"
                         @update:value="template.config.filters.categories = $event"
-                        entity="category"
+                        :repository="categoryRepository"
+                        :criteria="categoryCriteria"
                         :label="$tc('supplier.priceUpdate.wizard.labelFilterCategories')"
                     />
 
-                    <sw-entity-multi-select
+                    <sw-entity-multi-id-select
                         :value="template.config.filters.manufacturers"
                         @update:value="template.config.filters.manufacturers = $event"
-                        entity="product_manufacturer"
+                        :repository="manufacturerRepository"
+                        :criteria="manufacturerCriteria"
                         :label="$tc('supplier.priceUpdate.wizard.labelFilterManufacturers')"
                     />
 
-                    <sw-entity-multi-select
-                        :value="template.config.filters.equipment_types"
-                        @update:value="template.config.filters.equipment_types = $event"
-                        entity="art_equipment_type"
+                    <sw-multi-select
+                        :value="safeEquipmentTypeIds"
+                        @update:value="onEquipmentTypesChange"
                         :label="$tc('supplier.priceUpdate.wizard.labelFilterEquipmentTypes')"
+                        :placeholder="$tc('supplier.priceUpdate.wizard.placeholderEquipmentTypes')"
+                        :options="equipmentTypeOptions"
+                        labelProperty="label"
+                        valueProperty="value"
                     />
                 </sw-card>
 

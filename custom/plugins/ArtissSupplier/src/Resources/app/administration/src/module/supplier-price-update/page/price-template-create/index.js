@@ -23,7 +23,10 @@ Component.register('price-template-create', {
             uploadTag: 'price-template-upload',
             uploadedMedia: null,
             filePreview: null,
-            isLoadingPreview: false
+            isLoadingPreview: false,
+            mediaFolderId: null,
+            equipmentTypes: [],
+            equipmentTypePropertyGroupId: '20836795-aab8-97d8-c709-a2535f197268'
         };
     },
 
@@ -38,6 +41,64 @@ Component.register('price-template-create', {
 
         mediaRepository() {
             return this.repositoryFactory.create('media');
+        },
+
+        mediaFolderRepository() {
+            return this.repositoryFactory.create('media_folder');
+        },
+
+        categoryRepository() {
+            return this.repositoryFactory.create('category');
+        },
+
+        manufacturerRepository() {
+            return this.repositoryFactory.create('product_manufacturer');
+        },
+
+        propertyGroupOptionRepository() {
+            return this.repositoryFactory.create('property_group_option');
+        },
+
+        categoryCriteria() {
+            const criteria = new Criteria();
+            criteria.addSorting(Criteria.sort('name', 'ASC'));
+            return criteria;
+        },
+
+        manufacturerCriteria() {
+            const criteria = new Criteria();
+            criteria.addSorting(Criteria.sort('name', 'ASC'));
+            return criteria;
+        },
+
+        propertyGroupOptionCriteria() {
+            const criteria = new Criteria();
+            criteria.addSorting(Criteria.sort('name', 'ASC'));
+            return criteria;
+        },
+
+        equipmentTypeOptions() {
+            return this.equipmentTypes.map(option => ({
+                value: option.id,
+                label: option.translated?.name || option.name || option.id
+            }));
+        },
+
+        safeEquipmentTypeIds: {
+            get() {
+                if (!this.template || !this.template.config || !this.template.config.filters) {
+                    return [];
+                }
+                if (!Array.isArray(this.template.config.filters.equipment_types)) {
+                    return [];
+                }
+                return this.template.config.filters.equipment_types;
+            },
+            set(value) {
+                if (this.template && this.template.config && this.template.config.filters) {
+                    this.template.config.filters.equipment_types = Array.isArray(value) ? value : [];
+                }
+            }
         },
 
         isEdit() {
@@ -86,6 +147,8 @@ Component.register('price-template-create', {
 
     created() {
         this.loadData();
+        this.loadMediaFolder();
+        this.loadEquipmentTypes();
     },
 
     methods: {
@@ -188,7 +251,8 @@ Component.register('price-template-create', {
             this.isLoadingPreview = true;
             try {
                 const response = await this.priceUpdateService.previewFile(
-                    this.uploadedMedia.id
+                    this.uploadedMedia.id,
+                    20 // Show 20 rows
                 );
                 this.filePreview = response;
             } catch (error) {
@@ -234,6 +298,83 @@ Component.register('price-template-create', {
                 o => o.value === this.template.config.price_rules.mode
             );
             return option ? option.label : '-';
+        },
+
+        getRowNumber(rowIndex) {
+            // Preview shows rows starting from the beginning of the file
+            // Row numbers in files start from 1, so we add 1 to the 0-based index
+            return rowIndex + 1;
+        },
+
+        async loadMediaFolder() {
+            try {
+                const criteria = new Criteria();
+                criteria.addFilter(Criteria.equals('name', 'Suppliers Prices'));
+
+                const result = await this.mediaFolderRepository.search(criteria, Shopware.Context.api);
+                if (result.length > 0) {
+                    this.mediaFolderId = result.first().id;
+                }
+            } catch (error) {
+                console.error('Error loading media folder:', error);
+            }
+        },
+
+        async loadEquipmentTypes() {
+            try {
+                const propertyGroupRepository = this.repositoryFactory.create('property_group');
+                const allCriteria = new Criteria();
+                allCriteria.setLimit(100);
+
+                const allGroups = await propertyGroupRepository.search(allCriteria, Shopware.Context.api);
+
+                const equipmentGroup = Array.from(allGroups).find(group =>
+                    group.name === 'Тип обладнання' ||
+                    group.name === 'Equipment Type' ||
+                    group.id === this.equipmentTypePropertyGroupId
+                );
+
+                if (equipmentGroup) {
+                    const criteria = new Criteria();
+                    criteria.addAssociation('options');
+                    criteria.setIds([equipmentGroup.id]);
+
+                    const result = await propertyGroupRepository.search(criteria, Shopware.Context.api);
+
+                    if (result && result.length > 0) {
+                        const propertyGroup = result.first();
+                        if (propertyGroup && propertyGroup.options) {
+                            const options = Array.from(propertyGroup.options);
+                            options.sort((a, b) => {
+                                const posA = a.position || 0;
+                                const posB = b.position || 0;
+                                if (posA !== posB) {
+                                    return posA - posB;
+                                }
+                                const nameA = a.translated?.name || a.name || '';
+                                const nameB = b.translated?.name || b.name || '';
+                                return nameA.localeCompare(nameB);
+                            });
+                            this.equipmentTypes = options;
+                        } else {
+                            this.equipmentTypes = [];
+                        }
+                    } else {
+                        this.equipmentTypes = [];
+                    }
+                } else {
+                    this.equipmentTypes = [];
+                }
+            } catch (error) {
+                this.equipmentTypes = [];
+                console.error('Error loading equipment types:', error);
+            }
+        },
+
+        onEquipmentTypesChange(selectedValues) {
+            if (this.template && this.template.config && this.template.config.filters) {
+                this.template.config.filters.equipment_types = Array.isArray(selectedValues) ? selectedValues : [];
+            }
         },
 
         async onSave() {
