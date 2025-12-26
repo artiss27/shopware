@@ -139,6 +139,7 @@
         "summaryPriceRules": "Preisregeln",
         "errorLoad": "Fehler beim Laden der Daten",
         "errorUpload": "Fehler beim Hochladen der Datei",
+        "errorDuplicateFileName": "Eine Datei mit dem Namen \"{fileName}\" existiert bereits. Bitte benennen Sie die Datei um und versuchen Sie es erneut.",
         "errorPreview": "Fehler bei der Dateivorschau",
         "errorValidation": "Bitte füllen Sie die Pflichtfelder aus",
         "errorSave": "Fehler beim Speichern der Vorlage",

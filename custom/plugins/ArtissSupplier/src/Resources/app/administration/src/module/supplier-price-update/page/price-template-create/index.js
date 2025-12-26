@@ -501,6 +501,15 @@ Component.register('price-template-create', {
         },
 
         async onMediaUploadFinish({ targetId }) {
+            // Check if targetId is provided
+            if (!targetId) {
+                console.error('Media upload finished but targetId is missing');
+                this.createNotificationError({
+                    message: this.$tc('supplier.priceUpdate.wizard.errorUpload')
+                });
+                return;
+            }
+
             try {
                 const media = await this.mediaRepository.get(targetId, Shopware.Context.api);
 
@@ -516,10 +525,21 @@ Component.register('price-template-create', {
                 // Reload supplier data
                 await this.loadSupplierData();
             } catch (error) {
+                console.error('Error processing uploaded media:', error);
                 this.createNotificationError({
                     message: this.$tc('supplier.priceUpdate.wizard.errorUpload')
                 });
             }
+        },
+
+        onMediaUploadFail(error) {
+            console.error('Media upload failed:', error);
+            const errorMessage = error?.response?.data?.errors?.[0]?.detail || 
+                               error?.message || 
+                               this.$tc('supplier.priceUpdate.wizard.errorUpload');
+            this.createNotificationError({
+                message: errorMessage
+            });
         },
 
         async setActiveMedia(media) {
@@ -580,7 +600,10 @@ Component.register('price-template-create', {
         },
 
         async loadPreview() {
-            if (!this.template.config.selected_media_id) return;
+            if (!this.template.config.selected_media_id) {
+                this.filePreview = null;
+                return;
+            }
 
             this.isLoadingPreview = true;
             this.previewOffset = 0;
@@ -597,6 +620,8 @@ Component.register('price-template-create', {
                 // Rebuild selected column types from saved config
                 this.rebuildSelectedColumnTypes();
             } catch (error) {
+                // Clear preview on error to hide the table
+                this.filePreview = null;
                 this.createNotificationError({
                     message: this.$tc('supplier.priceUpdate.wizard.errorPreview')
                 });

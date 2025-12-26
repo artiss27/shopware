@@ -62,13 +62,25 @@ class PriceUpdateService
         }
 
         // Build parser config from new structure
+        $columnMapping = $config['column_mapping'] ?? [];
+        
+        // Check if column mapping is configured
+        if (empty($columnMapping)) {
+            throw new \RuntimeException('Column mapping is not configured. Please configure column mapping on step 2 before preview.');
+        }
+        
         $parserConfig = [
             'start_row' => $config['start_row'] ?? 2,
-            'column_mapping' => $config['column_mapping'] ?? [],
+            'column_mapping' => $columnMapping,
         ];
 
         // Parse file with new column mapping structure
         $normalizedData = $this->parseWithColumnMapping($media, $parserConfig);
+        
+        // Check if parsing returned data
+        if (empty($normalizedData)) {
+            throw new \RuntimeException('No data found in price list. Please check column mapping and start row configuration.');
+        }
 
         // Save normalized data to template
         $this->priceTemplateRepository->update([
@@ -117,12 +129,26 @@ class PriceUpdateService
 
         // Get normalized data (parse if needed)
         $normalizedData = $template->getNormalizedData();
-        if ($normalizedData === null) {
+        if ($normalizedData === null || $normalizedData === '') {
             // Auto-parse if not done yet
-            $normalizedData = json_encode($this->parseAndNormalize($templateId, null, false, $context));
+            $parsedData = $this->parseAndNormalize($templateId, null, false, $context);
+            $normalizedData = json_encode($parsedData);
+            
+            // Save normalized data to template
+            $this->priceTemplateRepository->update([
+                [
+                    'id' => $templateId,
+                    'normalizedData' => $normalizedData,
+                ],
+            ], $context);
         }
 
         $priceData = json_decode($normalizedData, true);
+        
+        // Ensure priceData is an array
+        if (!is_array($priceData)) {
+            $priceData = [];
+        }
 
         // Get filtered products
         $products = $this->getFilteredProducts($template, $context);
@@ -611,7 +637,8 @@ class PriceUpdateService
 
         // Add filters
         if (!empty($filters['categories']) && is_array($filters['categories'])) {
-            $criteria->addFilter(new EqualsAnyFilter('categoryIds', $filters['categories']));
+            // Use categories association for filtering
+            $criteria->addFilter(new EqualsAnyFilter('categories.id', $filters['categories']));
         }
 
         if (!empty($filters['manufacturers']) && is_array($filters['manufacturers'])) {
@@ -625,6 +652,7 @@ class PriceUpdateService
 
         // Load associations needed for matching
         $criteria->addAssociation('children');
+        $criteria->addAssociation('categories');
         $criteria->setLimit(10000); // Large limit for all products
 
         /** @var ProductCollection $products */

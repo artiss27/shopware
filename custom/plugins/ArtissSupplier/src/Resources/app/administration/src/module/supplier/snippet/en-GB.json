@@ -153,6 +153,7 @@
         "summaryPriceRules": "Price Rules",
         "errorLoad": "Error loading data",
         "errorUpload": "Error uploading file",
+        "errorDuplicateFileName": "A file with the name \"{fileName}\" already exists. Please rename the file and try again.",
         "errorPreview": "Error previewing file",
         "errorValidation": "Please fill in required fields",
         "errorSave": "Error saving template",

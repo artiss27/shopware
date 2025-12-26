@@ -54,7 +54,8 @@ class ExcelParser extends AbstractPriceParser
             $rowData = [];
             for ($col = 0; $col <= $maxColIndex; $col++) {
                 $colLetter = $this->indexToColumn($col);
-                $cellValue = $worksheet->getCellByColumnAndRow($col + 1, $row)->getValue();
+                $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . $row;
+                $cellValue = $worksheet->getCell($cellCoordinate)->getValue();
                 $rowData[$colLetter] = $cellValue;
             }
 
@@ -158,7 +159,8 @@ class ExcelParser extends AbstractPriceParser
             $rowData = [];
 
             for ($col = 1; $col <= $highestColumnIndex; $col++) {
-                $cellValue = $worksheet->getCellByColumnAndRow($col, $row)->getValue();
+                $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $row;
+                $cellValue = $worksheet->getCell($cellCoordinate)->getValue();
                 $columnLetter = $this->indexToColumn($col - 1);
                 $rowData[$columnLetter] = $cellValue !== null ? (string) $cellValue : '';
 
