@@ -158,17 +158,24 @@ class PriceUpdateController extends AbstractController
     public function autoMatch(Request $request, Context $context): JsonResponse
     {
         $templateId = $request->request->get('templateId');
+        $batchSize = (int) ($request->request->get('batchSize') ?? 50);
+        $offset = (int) ($request->request->get('offset') ?? 0);
 
         if (!$templateId) {
             return new JsonResponse(['error' => 'templateId is required'], 400);
         }
 
         try {
-            $result = $this->priceUpdateService->autoMatchProducts($templateId, $context);
+            $result = $this->priceUpdateService->autoMatchProducts(
+                $templateId,
+                $context,
+                $batchSize,
+                $offset
+            );
 
             return new JsonResponse([
                 'success' => true,
-                'matches' => $result['matches'],
+                'matched' => $result['matched'],
                 'stats' => $result['stats'],
             ]);
         } catch (\Exception $e) {

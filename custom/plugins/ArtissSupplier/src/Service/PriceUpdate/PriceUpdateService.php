@@ -4,6 +4,7 @@ namespace Artiss\Supplier\Service\PriceUpdate;
 
 use Artiss\Supplier\Core\Content\PriceTemplate\PriceTemplateEntity;
 use Artiss\Supplier\Service\Parser\ParserRegistry;
+use Artiss\Supplier\Service\ProductMatchingService;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -21,7 +22,8 @@ class PriceUpdateService
         private readonly EntityRepository $priceTemplateRepository,
         private readonly EntityRepository $mediaRepository,
         private readonly EntityRepository $productRepository,
-        private readonly EntityRepository $currencyRepository
+        private readonly EntityRepository $currencyRepository,
+        private readonly ProductMatchingService $productMatchingService
     ) {
     }
 
@@ -311,6 +313,153 @@ class PriceUpdateService
                 'matched_code' => count(array_filter($previewData, fn($item) => $item['method'] === 'kod_postavschika')),
                 'matched_name' => count(array_filter($previewData, fn($item) => $item['method'] === 'name_similarity')),
                 'unmatched' => $unmatchedCount + count($unmatchedPriceItems),
+            ],
+        ];
+    }
+
+    /**
+     * Automatically match unmatched products using AI-based matching algorithm
+     *
+     * @param string $templateId Price template ID
+     * @param Context $context Shopware context
+     * @param int $batchSize Number of items to process per batch (default 50)
+     * @param int $offset Offset for batch processing (default 0)
+     * @return array Auto-matched results with confidence scores
+     * @throws \RuntimeException If manufacturer is not selected in filters
+     */
+    public function autoMatchProducts(
+        string $templateId,
+        Context $context,
+        int $batchSize = 50,
+        int $offset = 0
+    ): array {
+        $template = $this->getTemplate($templateId, $context);
+        $config = $template->getConfig();
+        $filters = $config['filters'] ?? [];
+
+        // Manufacturer is REQUIRED for auto-matching (for performance and accuracy)
+        if (empty($filters['manufacturers'])) {
+            throw new \RuntimeException('Please select at least one manufacturer in filters before using auto-match');
+        }
+
+        // Parse price list data
+        $priceData = [];
+        if ($config['selected_media_id']) {
+            try {
+                $priceData = $this->parseAndNormalize(
+                    $templateId,
+                    $config['selected_media_id'],
+                    false,
+                    $context
+                );
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Failed to parse price list: ' . $e->getMessage());
+            }
+        }
+
+        if (empty($priceData)) {
+            return [
+                'matched' => [],
+                'stats' => [
+                    'total_price_items' => 0,
+                    'auto_matched' => 0,
+                    'processed' => 0,
+                    'remaining' => 0,
+                ],
+            ];
+        }
+
+        // Apply batch processing
+        $totalItems = count($priceData);
+        $batchData = array_slice($priceData, $offset, $batchSize);
+
+        if (empty($batchData)) {
+            return [
+                'matched' => [],
+                'stats' => [
+                    'total_price_items' => $totalItems,
+                    'auto_matched' => 0,
+                    'processed' => $offset,
+                    'remaining' => 0,
+                ],
+            ];
+        }
+
+        // Get filtered products (only by manufacturer)
+        $products = $this->getFilteredProducts($template, $context);
+
+        if ($products->count() === 0) {
+            throw new \RuntimeException('No products found with selected manufacturers');
+        }
+
+        // Get manufacturer name (use first manufacturer for simplicity)
+        $manufacturerId = is_array($filters['manufacturers']) ? $filters['manufacturers'][0] : $filters['manufacturers'];
+        $manufacturer = $this->getManufacturerName($manufacturerId, $context);
+
+        if (!$manufacturer) {
+            throw new \RuntimeException('Manufacturer not found');
+        }
+
+        // Run auto-matching algorithm on batch
+        $autoMatchResults = $this->productMatchingService->matchProducts(
+            $batchData,
+            $products,
+        );
+
+        // Format results for frontend
+        $matched = [];
+        foreach ($autoMatchResults as $result) {
+            $priceItem = $result['price_item'];
+            $match = $result['match'];
+
+            // Calculate score and confidence based on matched tokens
+            $matchedTokens = $match['matched_tokens'] ?? 0;
+            $level = $match['level'] ?? 0;
+
+            // Simple score: matched tokens * 10 + level bonus
+            $score = ($matchedTokens * 10) + ($level * 5);
+
+            // Confidence based on score
+            if ($score >= 100) {
+                $confidence = 'excellent';
+            } elseif ($score >= 60) {
+                $confidence = 'good';
+            } elseif ($score >= 40) {
+                $confidence = 'medium';
+            } else {
+                $confidence = 'low';
+            }
+
+            $matched[] = [
+                'supplier_code' => $priceItem['code'] ?? '',
+                'supplier_name' => $priceItem['name'] ?? '',
+                'product_id' => $match['product_id'],
+                'product_name' => $match['product_name'],
+                'product_number' => $match['product_number'] ?? '',
+                'score' => $score,
+                'confidence' => $confidence,
+                'matched_candidate' => sprintf('%d tokens (level %d)',
+                    $matchedTokens,
+                    $level
+                ),
+                'status' => 'auto_matched',
+            ];
+        }
+
+        $processedCount = $offset + count($batchData);
+        $remainingCount = max(0, $totalItems - $processedCount);
+
+        return [
+            'matched' => $matched,
+            'stats' => [
+                'total_price_items' => $totalItems,
+                'auto_matched' => count($matched),
+                'processed' => $processedCount,
+                'remaining' => $remainingCount,
+                'excellent' => count(array_filter($matched, fn($m) => $m['confidence'] === 'excellent')),
+                'good' => count(array_filter($matched, fn($m) => $m['confidence'] === 'good')),
+                'medium' => count(array_filter($matched, fn($m) => $m['confidence'] === 'medium')),
+                'low' => count(array_filter($matched, fn($m) => $m['confidence'] === 'low')),
             ],
         ];
     }
@@ -656,87 +805,6 @@ class PriceUpdateService
     }
 
     /**
-     * Auto-match products by name similarity for unmatched items
-     */
-    public function autoMatchProducts(string $templateId, Context $context): array
-    {
-        $template = $this->getTemplate($templateId, $context);
-        $matchedProductsMap = $template->getMatchedProducts() ?? [];
-
-        // Get preview to find unmatched items
-        $preview = $this->matchProductsPreview($templateId, $context);
-        $products = $this->getFilteredProducts($template, $context);
-
-        $autoMatched = [];
-        $stats = [
-            'total_unmatched' => count($preview['unmatched']),
-            'auto_matched' => 0,
-            'still_unmatched' => 0,
-        ];
-
-        // Try to match unmatched items by name similarity
-        foreach ($preview['unmatched'] as $unmatchedItem) {
-            $supplierName = mb_strtolower(trim($unmatchedItem['supplier_name'] ?? ''));
-            if (!$supplierName) {
-                $stats['still_unmatched']++;
-                continue;
-            }
-
-            $bestMatch = null;
-            $bestSimilarity = 0;
-
-            foreach ($products as $product) {
-                $productName = mb_strtolower(trim($product->getTranslated()['name'] ?? $product->getName() ?? ''));
-                if (!$productName) {
-                    continue;
-                }
-
-                // Calculate similarity using simple contains check and levenshtein
-                if (str_contains($productName, $supplierName) || str_contains($supplierName, $productName)) {
-                    $similarity = 0.8; // High similarity for contains
-
-                    // Use levenshtein for more precise matching
-                    $lev = levenshtein(substr($supplierName, 0, 255), substr($productName, 0, 255));
-                    $maxLen = max(strlen($supplierName), strlen($productName));
-                    $levSimilarity = 1 - ($lev / $maxLen);
-
-                    $similarity = max($similarity, $levSimilarity);
-
-                    if ($similarity > $bestSimilarity && $similarity > 0.6) { // Threshold 60%
-                        $bestSimilarity = $similarity;
-                        $bestMatch = [
-                            'product_id' => $product->getId(),
-                            'product_name' => $product->getTranslated()['name'] ?? $product->getName(),
-                            'confidence' => $similarity > 0.8 ? 'high' : 'medium',
-                            'similarity' => round($similarity * 100, 1),
-                        ];
-                    }
-                }
-            }
-
-            if ($bestMatch) {
-                $autoMatched[] = [
-                    'supplier_code' => $unmatchedItem['supplier_code'],
-                    'supplier_name' => $unmatchedItem['supplier_name'],
-                    'product_id' => $bestMatch['product_id'],
-                    'product_name' => $bestMatch['product_name'],
-                    'confidence' => $bestMatch['confidence'],
-                    'similarity' => $bestMatch['similarity'],
-                    'is_confirmed' => false, // Requires manual confirmation
-                ];
-                $stats['auto_matched']++;
-            } else {
-                $stats['still_unmatched']++;
-            }
-        }
-
-        return [
-            'matches' => $autoMatched,
-            'stats' => $stats,
-        ];
-    }
-
-    /**
      * Confirm all pending matches (auto-matched or manually matched)
      */
     public function confirmAllMatches(string $templateId, array $matchesToConfirm, Context $context): array
@@ -788,8 +856,8 @@ class PriceUpdateService
         }
 
         if (!empty($filters['equipment_types']) && is_array($filters['equipment_types'])) {
-            // Equipment types are stored in custom fields
-            $criteria->addFilter(new EqualsAnyFilter('customFields.equipment_type', $filters['equipment_types']));
+            // Equipment types are product properties (not custom fields!)
+            $criteria->addFilter(new EqualsAnyFilter('properties.id', $filters['equipment_types']));
         }
 
         if (!empty($filters['supplier'])) {
@@ -821,6 +889,27 @@ class PriceUpdateService
         }
 
         return $template;
+    }
+
+    /**
+     * Get manufacturer name by ID
+     */
+    private function getManufacturerName(string $manufacturerId, Context $context): ?string
+    {
+        // We need to inject manufacturer repository
+        // For now, let's use product repository to find products with this manufacturer
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('manufacturerId', $manufacturerId));
+        $criteria->addAssociation('manufacturer');
+        $criteria->setLimit(1);
+
+        $product = $this->productRepository->search($criteria, $context)->first();
+
+        if ($product && $product->getManufacturer()) {
+            return $product->getManufacturer()->getName();
+        }
+
+        return null;
     }
 
     /**
@@ -1085,7 +1174,7 @@ class PriceUpdateService
         }
 
         if (!empty($filters['equipment_types'])) {
-            $criteria->addFilter(new EqualsAnyFilter('customFields.equipment_type', $filters['equipment_types']));
+            $criteria->addFilter(new EqualsAnyFilter('properties.id', $filters['equipment_types']));
         }
 
         if (!empty($filters['supplier'])) {

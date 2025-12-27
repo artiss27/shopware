@@ -39,6 +39,9 @@
             <argument type="tagged_iterator" tag="artiss.price_parser"/>
         </service>
 
+        <!-- Product Matching Service -->
+        <service id="Artiss\Supplier\Service\ProductMatchingService"/>
+
         <!-- Price Update Service -->
         <service id="Artiss\Supplier\Service\PriceUpdate\PriceUpdateService">
             <argument type="service" id="Artiss\Supplier\Service\Parser\ParserRegistry"/>
@@ -46,6 +49,7 @@
             <argument type="service" id="media.repository"/>
             <argument type="service" id="product.repository"/>
             <argument type="service" id="currency.repository"/>
+            <argument type="service" id="Artiss\Supplier\Service\ProductMatchingService"/>
         </service>
 
         <!-- API Controllers -->

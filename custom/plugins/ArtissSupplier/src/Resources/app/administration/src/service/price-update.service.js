@@ -88,6 +88,20 @@ class PriceUpdateService extends ApiService {
                 return ApiService.handleResponse(response);
             });
     }
+
+    autoMatch(templateId, batchSize = 50, offset = 0) {
+        const headers = this.getBasicHeaders();
+
+        return this.httpClient
+            .post(
+                `/_action/${this.getApiBasePath()}/price-update/auto-match`,
+                { templateId, batchSize, offset },
+                { headers }
+            )
+            .then((response) => {
+                return ApiService.handleResponse(response);
+            });
+    }
 }
 
 export default PriceUpdateService;

@@ -341,6 +341,12 @@
                             </sw-button>
 
                             <sw-button
+                                @click="clearAllBindings"
+                                variant="ghost">
+                                {{ $tc('supplier.priceUpdate.wizard.buttonClearBindings') }}
+                            </sw-button>
+
+                            <sw-button
                                 v-if="hasPendingMatches"
                                 @click="confirmAllMatches"
                                 variant="primary">
@@ -404,9 +410,12 @@
                             </template>
                             <template #column-status="{ item }">
                                 <sw-label
-                                    :variant="item.status === 'matched' ? 'success' : (item.status === 'edited' ? 'info' : 'warning')"
+                                    :variant="item.status === 'matched' ? 'success' : (item.status === 'auto_matched' ? 'neutral' : (item.status === 'edited' ? 'info' : 'warning'))"
                                     size="small">
-                                    {{ item.status === 'matched' ? 'Найден' : (item.status === 'edited' ? 'Отредактирован' : 'Не найден') }}
+                                    {{ item.status === 'matched' ? 'Найден' : (item.status === 'auto_matched' ? 'Автоподбор' : (item.status === 'edited' ? 'Отредактирован' : 'Не найден')) }}
+                                    <span v-if="item.status === 'auto_matched' && item.score" style="margin-left: 4px; opacity: 0.7">
+                                        ({{ item.score }})
+                                    </span>
                                 </sw-label>
                             </template>
                             <template #column-current_kod_postavschika="{ item }">
