@@ -1,4 +1,9 @@
 .price-template-create {
+    // Отступ для кнопки предпросмотра
+    .preview-button-spacing {
+        margin-top: 30px;
+    }
+
     // Стили для кнопки сохранения - делаем такой же размер как остальные кнопки
     .price-template-create__save-button {
         height: 32px;

@@ -114,13 +114,27 @@ class RecalculatePricesCommand extends Command
 
         foreach ($products as $product) {
             $customFields = $product->getCustomFields() ?? [];
-            $productPrices = $customFields['product_prices'] ?? [];
 
-            if (empty($productPrices)) {
+            // Read from flat structure (not nested product_prices object)
+            $purchaseValue = $customFields['purchase_price_value'] ?? null;
+            $retailValue = $customFields['retail_price_value'] ?? null;
+            $listValue = $customFields['list_price_value'] ?? null;
+
+            if ($purchaseValue === null && $retailValue === null && $listValue === null) {
                 $stats['skipped']++;
                 $io->progressAdvance();
                 continue;
             }
+
+            // Reconstruct productPrices array for compatibility
+            $productPrices = [
+                'purchase_price_value' => $purchaseValue,
+                'purchase_price_currency' => $customFields['purchase_price_currency'] ?? 'UAH',
+                'retail_price_value' => $retailValue,
+                'retail_price_currency' => $customFields['retail_price_currency'] ?? 'UAH',
+                'list_price_value' => $listValue,
+                'list_price_currency' => $customFields['list_price_currency'] ?? 'UAH',
+            ];
 
             $update = $this->calculatePriceUpdate($product, $productPrices, $currencies, $priceType);
 
@@ -204,11 +218,15 @@ class RecalculatePricesCommand extends Command
     {
         $criteria = new Criteria();
 
-        // Filter products that have product_prices custom field
+        // Filter products that have any price custom fields (flat structure)
         $criteria->addFilter(
             new NotFilter(
                 NotFilter::CONNECTION_AND,
-                [new EqualsFilter('customFields.product_prices', null)]
+                [
+                    new EqualsFilter('customFields.purchase_price_value', null),
+                    new EqualsFilter('customFields.retail_price_value', null),
+                    new EqualsFilter('customFields.list_price_value', null),
+                ]
             )
         );
 

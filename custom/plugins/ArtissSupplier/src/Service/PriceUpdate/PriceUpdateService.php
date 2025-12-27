@@ -20,7 +20,8 @@ class PriceUpdateService
         private readonly ParserRegistry $parserRegistry,
         private readonly EntityRepository $priceTemplateRepository,
         private readonly EntityRepository $mediaRepository,
-        private readonly EntityRepository $productRepository
+        private readonly EntityRepository $productRepository,
+        private readonly EntityRepository $currencyRepository
     ) {
     }
 
@@ -237,10 +238,10 @@ class PriceUpdateService
                 }
             }
 
-            // Get current prices from custom fields
-            $currentPurchasePrice = $customFields['product_prices']['purchase_price_value'] ?? null;
-            $currentRetailPrice = $customFields['product_prices']['retail_price_value'] ?? null;
-            $currentListPrice = $customFields['product_prices']['list_price_value'] ?? null;
+            // Get current prices from custom fields (flat structure)
+            $currentPurchasePrice = $customFields['purchase_price_value'] ?? null;
+            $currentRetailPrice = $customFields['retail_price_value'] ?? null;
+            $currentListPrice = $customFields['list_price_value'] ?? null;
 
             // Calculate new prices
             $newPrices = [
@@ -560,31 +561,31 @@ class PriceUpdateService
             // Save to matched_products mapping
             $matchedProducts[$productId] = $supplierCode;
 
-            // Prepare custom fields update with new price structure
-            $productPrices = [];
+            // Prepare custom fields update - FLAT structure (not nested)
+            // Custom fields in admin are configured as flat: purchase_price_value, not product_prices.purchase_price_value
+            $customFields = [
+                'kod_postavschika' => $supplierCode,
+            ];
 
             if (isset($newPrices['purchase']) && $newPrices['purchase'] !== null) {
-                $productPrices['purchase_price_value'] = $newPrices['purchase'];
-                $productPrices['purchase_price_currency'] = $currencies['purchase'];
+                $customFields['purchase_price_value'] = $newPrices['purchase'];
+                $customFields['purchase_price_currency'] = $currencies['purchase'];
             }
 
             if (isset($newPrices['retail']) && $newPrices['retail'] !== null) {
-                $productPrices['retail_price_value'] = $newPrices['retail'];
-                $productPrices['retail_price_currency'] = $currencies['retail'];
+                $customFields['retail_price_value'] = $newPrices['retail'];
+                $customFields['retail_price_currency'] = $currencies['retail'];
             }
 
             if (isset($newPrices['list']) && $newPrices['list'] !== null) {
-                $productPrices['list_price_value'] = $newPrices['list'];
-                $productPrices['list_price_currency'] = $currencies['list'];
+                $customFields['list_price_value'] = $newPrices['list'];
+                $customFields['list_price_currency'] = $currencies['list'];
             }
 
-            // Prepare update data
+            // Prepare update data - write to customFields in current context language
             $productUpdate = [
                 'id' => $productId,
-                'customFields' => [
-                    'product_prices' => $productPrices,
-                    'kod_postavschika' => $supplierCode,
-                ],
+                'customFields' => $customFields,
             ];
 
             // Handle stock/availability update
@@ -632,6 +633,29 @@ class PriceUpdateService
             }
         }
 
+        // Handle zero stock for missing products
+        $zeroStockForMissing = $config['filters']['zero_stock_for_missing'] ?? false;
+        if ($zeroStockForMissing) {
+            try {
+                // Collect product IDs that were found in price list
+                $matchedProductIds = [];
+                foreach ($confirmedMatches as $match) {
+                    if (isset($match['product_id']) && $match['product_id']) {
+                        $matchedProductIds[] = $match['product_id'];
+                    }
+                }
+
+                $zeroStockCount = $this->setZeroStockForMissingProducts(
+                    $template,
+                    $matchedProductIds,
+                    $context
+                );
+                $stats['zero_stock_set'] = $zeroStockCount;
+            } catch (\Exception $e) {
+                $stats['zero_stock_error'] = $e->getMessage();
+            }
+        }
+
         // Update template
         $this->priceTemplateRepository->update([
             [
@@ -641,6 +665,18 @@ class PriceUpdateService
                 'appliedByUserId' => $userId,
             ],
         ], $context);
+
+        // Auto-recalculate prices from custom fields using current exchange rates
+        // This converts prices from custom fields (in various currencies) to product.price (in base currency)
+        if ($stats['updated'] > 0) {
+            try {
+                $recalculateStats = $this->recalculatePricesFromCustomFields('all', null, $context);
+                $stats['recalculated'] = $recalculateStats['updated'];
+            } catch (\Exception $e) {
+                // Log error but don't fail the whole operation
+                $stats['recalculate_error'] = $e->getMessage();
+            }
+        }
 
         return $stats;
     }
@@ -782,6 +818,11 @@ class PriceUpdateService
             $criteria->addFilter(new EqualsAnyFilter('customFields.equipment_type', $filters['equipment_types']));
         }
 
+        if (!empty($filters['supplier'])) {
+            // Supplier is stored in custom fields
+            $criteria->addFilter(new EqualsFilter('customFields.supplier', $filters['supplier']));
+        }
+
         // Load associations needed for matching
         $criteria->addAssociation('children');
         $criteria->addAssociation('categories');
@@ -843,12 +884,26 @@ class PriceUpdateService
 
         foreach ($products as $product) {
             $customFields = $product->getCustomFields() ?? [];
-            $productPrices = $customFields['product_prices'] ?? [];
 
-            if (empty($productPrices)) {
+            // Read from flat structure
+            $purchasePrice = $customFields['purchase_price_value'] ?? null;
+            $retailPrice = $customFields['retail_price_value'] ?? null;
+            $listPrice = $customFields['list_price_value'] ?? null;
+
+            if ($purchasePrice === null && $retailPrice === null && $listPrice === null) {
                 $stats['skipped']++;
                 continue;
             }
+
+            // Reconstruct productPrices array for compatibility
+            $productPrices = [
+                'purchase_price_value' => $purchasePrice,
+                'purchase_price_currency' => $customFields['purchase_price_currency'] ?? 'UAH',
+                'retail_price_value' => $retailPrice,
+                'retail_price_currency' => $customFields['retail_price_currency'] ?? 'UAH',
+                'list_price_value' => $listPrice,
+                'list_price_currency' => $customFields['list_price_currency'] ?? 'UAH',
+            ];
 
             $update = $this->calculatePriceUpdateFromCustomFields(
                 $product,
@@ -899,13 +954,11 @@ class PriceUpdateService
     private function loadCurrencies(Context $context): array
     {
         $currencyCriteria = new Criteria();
-        $currencies = $this->productRepository->getDefinition()
-            ->getEntityManager()
-            ->getRepository('currency')
-            ->search($currencyCriteria, $context);
+        $currencies = $this->currencyRepository->search($currencyCriteria, $context);
 
         $currencyMap = [];
         foreach ($currencies as $currency) {
+            /** @var \Shopware\Core\System\Currency\CurrencyEntity $currency */
             $currencyMap[$currency->getIsoCode()] = $currency->getFactor();
         }
 
@@ -919,11 +972,15 @@ class PriceUpdateService
     {
         $criteria = new Criteria();
 
-        // Filter products that have product_prices custom field
+        // Filter products that have any price custom fields (flat structure)
         $criteria->addFilter(
             new \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter(
                 \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter::CONNECTION_AND,
-                [new EqualsFilter('customFields.product_prices', null)]
+                [
+                    new EqualsFilter('customFields.purchase_price_value', null),
+                    new EqualsFilter('customFields.retail_price_value', null),
+                    new EqualsFilter('customFields.list_price_value', null),
+                ]
             )
         );
 
@@ -999,6 +1056,88 @@ class PriceUpdateService
         }
 
         return $hasUpdates ? $updates : null;
+    }
+
+    /**
+     * Set stock to 0 for products that match template filters but are NOT in current price list
+     *
+     * @param PriceTemplateEntity $template
+     * @param array $matchedProductIds Product IDs that were found in current price list
+     * @param Context $context
+     * @return int Number of products updated
+     */
+    private function setZeroStockForMissingProducts(
+        PriceTemplateEntity $template,
+        array $matchedProductIds,
+        Context $context
+    ): int {
+        $config = $template->getConfig();
+        $filters = $config['filters'] ?? [];
+
+        // Build criteria to find products that match template filters but are NOT in current price list
+        $criteria = new Criteria();
+
+        // Exclude products that were matched in current price list
+        if (!empty($matchedProductIds)) {
+            $criteria->addFilter(
+                new \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter(
+                    \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter::CONNECTION_AND,
+                    [new EqualsAnyFilter('id', $matchedProductIds)]
+                )
+            );
+        }
+
+        // Apply same filters as template (manufacturers, categories, equipment types, supplier)
+        if (!empty($filters['manufacturers'])) {
+            $criteria->addFilter(new EqualsAnyFilter('productManufacturerId', $filters['manufacturers']));
+        }
+
+        if (!empty($filters['categories'])) {
+            $criteria->addFilter(new EqualsAnyFilter('categoryTree', $filters['categories']));
+        }
+
+        if (!empty($filters['equipment_types'])) {
+            $criteria->addFilter(new EqualsAnyFilter('customFields.equipment_type', $filters['equipment_types']));
+        }
+
+        if (!empty($filters['supplier'])) {
+            $criteria->addFilter(new EqualsFilter('customFields.supplier', $filters['supplier']));
+        }
+
+        // Limit to reasonable number to avoid performance issues
+        $criteria->setLimit(5000);
+
+        $products = $this->productRepository->search($criteria, $context);
+
+        if ($products->count() === 0) {
+            return 0;
+        }
+
+        // Prepare updates to set stock = 0
+        $updateData = [];
+        foreach ($products as $product) {
+            $updateData[] = [
+                'id' => $product->getId(),
+                'stock' => 0,
+            ];
+        }
+
+        // Update products in batches
+        $batchSize = 100;
+        $batches = array_chunk($updateData, $batchSize);
+        $totalUpdated = 0;
+
+        foreach ($batches as $batch) {
+            try {
+                $this->productRepository->update($batch, $context);
+                $totalUpdated += count($batch);
+            } catch (\Exception $e) {
+                // Continue with next batch even if this one fails
+                continue;
+            }
+        }
+
+        return $totalUpdated;
     }
 
     private function getMedia(string $mediaId, Context $context)

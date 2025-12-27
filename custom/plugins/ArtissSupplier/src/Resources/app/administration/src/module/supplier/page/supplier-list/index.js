@@ -119,11 +119,47 @@ Component.register('supplier-list', {
             criteria.addSorting(Criteria.sort('name', 'ASC'));
 
             if (this.term) {
-                criteria.setTerm(this.term);
+                // First, find manufacturers matching the search term
+                const manufacturerCriteria = new Criteria();
+                manufacturerCriteria.addFilter(Criteria.contains('name', this.term));
+                manufacturerCriteria.setLimit(100);
+                
+                let manufacturerIds = [];
+                try {
+                    const matchingManufacturers = await this.manufacturerRepository.search(manufacturerCriteria, Shopware.Context.api);
+                    manufacturerIds = Array.from(matchingManufacturers).map(m => m.id);
+                } catch (error) {
+                    console.error('Error searching manufacturers:', error);
+                }
+                
+                // Build OR filter: search by name OR by manufacturer IDs
+                const filters = [
+                    Criteria.contains('name', this.term)
+                ];
+                
+                // Add manufacturer filters if we found any
+                if (manufacturerIds.length > 0) {
+                    // For JSON array fields, we need to check if the array contains any of the IDs
+                    // Shopware supports JSON path queries, but for simplicity, we'll use contains
+                    // Note: This might need backend support for proper JSON array filtering
+                    manufacturerIds.forEach(id => {
+                        // Try to match manufacturer ID in JSON array
+                        // This is a workaround - proper solution would need backend filter
+                        filters.push(Criteria.contains('manufacturerIds', id));
+                        filters.push(Criteria.contains('alternativeManufacturerIds', id));
+                    });
+                }
+                
+                // Use OR to combine all filters
+                if (filters.length > 1) {
+                    criteria.addFilter(Criteria.multi('OR', filters));
+                } else {
+                    criteria.addFilter(filters[0]);
+                }
             }
 
             try {
-                const result = await this.supplierRepository.search(criteria);
+                const result = await this.supplierRepository.search(criteria, Shopware.Context.api);
                 this.suppliers = result;
                 this.total = result.total;
             } finally {

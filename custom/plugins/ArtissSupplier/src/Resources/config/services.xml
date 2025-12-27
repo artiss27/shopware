@@ -45,6 +45,7 @@
             <argument type="service" id="art_supplier_price_template.repository"/>
             <argument type="service" id="media.repository"/>
             <argument type="service" id="product.repository"/>
+            <argument type="service" id="currency.repository"/>
         </service>
 
         <!-- API Controllers -->

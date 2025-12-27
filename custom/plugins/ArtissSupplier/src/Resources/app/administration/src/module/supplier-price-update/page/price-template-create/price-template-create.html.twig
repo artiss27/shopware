@@ -254,6 +254,13 @@
                 <div v-if="currentStep === 3">
                     <!-- Filters -->
                     <sw-card :title="$tc('supplier.priceUpdate.wizard.step3FiltersTitle')">
+                        <sw-entity-single-select
+                            v-model:value="template.config.filters.supplier"
+                            entity="art_supplier"
+                            :label="$tc('supplier.priceUpdate.wizard.labelFilterSupplier')"
+                            @update:value="autoSaveTemplate"
+                        />
+
                         <sw-entity-multi-id-select
                             :value="template.config.filters.categories"
                             @update:value="onCategoriesChange"
@@ -287,10 +294,17 @@
                             @update:value="autoSaveTemplate"
                         />
 
+                        <sw-checkbox-field
+                            v-model:value="template.config.filters.zero_stock_for_missing"
+                            :label="$tc('supplier.priceUpdate.wizard.labelZeroStockForMissing')"
+                            @update:value="autoSaveTemplate"
+                        />
+
                         <sw-button
                             variant="primary"
                             @click="loadMatchPreview"
-                            :isLoading="isLoadingMatchPreview">
+                            :isLoading="isLoadingMatchPreview"
+                            class="preview-button-spacing">
                             {{ $tc('supplier.priceUpdate.wizard.buttonPreview') }}
                         </sw-button>
                     </sw-card>

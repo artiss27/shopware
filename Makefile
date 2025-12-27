@@ -1,6 +1,6 @@
 # bin/console media:delete-unused --folder-entity=product --grace-period-days=0 --dry-run --limit=10
 # docker compose exec -T web bin/console dal:refresh:index - индексация товаров
-# bin/console media:generate-thumbnails
+# bin/console media:generate-thumbnails or bin/console media:generate-thumbnails -b 10 -a
 # docker compose exec web bin/console database:migrate ArtissSupplier --all
 
 ifndef APP_ENV

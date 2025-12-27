@@ -339,10 +339,18 @@ Component.register('price-template-create', {
 
             // Rebuild allSelectedColumnTypes from existing config
             this.rebuildSelectedColumnTypes();
-            
+
+            // Set supplier filter to current supplier if not set
+            if (!this.template.config.filters) {
+                this.template.config.filters = {};
+            }
+            if (!this.template.config.filters.supplier && this.template.supplierId) {
+                this.template.config.filters.supplier = this.template.supplierId;
+            }
+
             // Mark as already redirected since this is an existing template
             this.hasRedirected = true;
-            
+
             // Auto-load preview if active media is selected
             if (this.template.config.selected_media_id) {
                 await this.loadPreview();
@@ -362,10 +370,12 @@ Component.register('price-template-create', {
                     list: 'UAH'
                 },
                 filters: {
+                    supplier: null, // Will be set to current supplier ID
                     categories: [],
                     manufacturers: [],
                     equipment_types: [],
-                    availability_action: 'dont_change'
+                    availability_action: 'dont_change',
+                    zero_stock_for_missing: false
                 }
             };
         },
