@@ -339,7 +339,7 @@
 
         // Стили для улучшенного отображения цен
         .sw-data-grid__cell-content {
-            height: auto;
+            height: auto !important;
             .price-display {
                 display: flex;
                 flex-direction: column;
