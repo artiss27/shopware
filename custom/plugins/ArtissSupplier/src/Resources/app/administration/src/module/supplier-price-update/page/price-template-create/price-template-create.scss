@@ -149,6 +149,33 @@
                         margin-right: 8px;
                     }
                 }
+
+                // Стили для строк до начала данных (затемнение)
+                tbody tr.row-header {
+                    opacity: 0.4;
+                    background-color: #f5f7fa;
+                    color: #8b95a7;
+
+                    &:hover {
+                        background-color: #e8ebef;
+                        opacity: 0.5;
+                    }
+                }
+
+                // Стили для строк с данными (выделение)
+                tbody tr.row-data {
+                    background-color: #ffffff;
+                    position: relative;
+
+                    // Добавляем визуальный разделитель перед первой строкой данных
+                    &:first-of-type {
+                        border-top: 3px solid #189eff;
+                    }
+
+                    &:hover {
+                        background-color: #f0f7ff;
+                    }
+                }
             }
         }
 
@@ -266,6 +293,100 @@
                     flex: 1;
                     margin-bottom: 0;
                 }
+            }
+        }
+
+        // Стили для редактируемого поля "Код поставщика" в таблице предпросмотра
+        :deep(.sw-data-grid) {
+            .sw-data-grid__cell-content {
+                .sw-text-field {
+                    margin: 0;
+                    width: 100%;
+
+                    .sw-field {
+                        margin-bottom: 0;
+                    }
+
+                    .sw-field__label {
+                        display: none;
+                    }
+
+                    .sw-field__content {
+                        margin-top: 0;
+                    }
+
+                    input {
+                        padding: 4px 8px;
+                        font-size: 13px;
+                        border: 1px solid #d1d9e0;
+                        border-radius: 4px;
+                        background-color: #ffffff;
+                        transition: border-color 0.2s ease;
+
+                        &:focus {
+                            border-color: #189eff;
+                            outline: none;
+                        }
+
+                        &:hover:not(:focus) {
+                            border-color: #b3c7d6;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Стили для улучшенного отображения цен
+        .price-display {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            line-height: 1.4;
+
+            .price-item {
+                display: flex;
+                align-items: baseline;
+                gap: 6px;
+                flex-wrap: wrap;
+
+                .price-label {
+                    font-weight: 600;
+                    color: #52667a;
+                    min-width: 45px;
+                }
+
+                .price-value {
+                    font-weight: 600;
+                    font-size: 13px;
+
+                    &.price-new {
+                        color: #37d046;
+                    }
+
+                    &.price-increase {
+                        color: #ff6b6b;
+                    }
+
+                    &.price-decrease {
+                        color: #37d046;
+                    }
+
+                    &.price-same {
+                        color: #52667a;
+                    }
+                }
+
+                .price-old {
+                    color: #8b95a7;
+                    font-size: 11px;
+                    text-decoration: line-through;
+                    margin-left: 4px;
+                }
+            }
+
+            .price-empty {
+                color: #8b95a7;
             }
         }
     }

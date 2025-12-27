@@ -141,7 +141,6 @@
                                                     :value="getColumnMapping(colLetter)"
                                                     @update:value="updateColumnMapping(colLetter, $event)"
                                                     :options="getAvailableColumnTypes(colLetter)"
-                                                    :placeholder="$tc('supplier.priceUpdate.wizard.placeholderSelectColumnType')"
                                                     size="small"
                                                     labelProperty="label"
                                                     valueProperty="value"
@@ -256,7 +255,7 @@
                     <sw-card :title="$tc('supplier.priceUpdate.wizard.step3FiltersTitle')">
                         <sw-entity-multi-id-select
                             :value="template.config.filters.categories"
-                            @update:value="template.config.filters.categories = $event"
+                            @update:value="onCategoriesChange"
                             :repository="categoryRepository"
                             :criteria="categoryCriteria"
                             :label="$tc('supplier.priceUpdate.wizard.labelFilterCategories')"
@@ -264,7 +263,7 @@
 
                         <sw-entity-multi-id-select
                             :value="template.config.filters.manufacturers"
-                            @update:value="template.config.filters.manufacturers = $event"
+                            @update:value="onManufacturersChange"
                             :repository="manufacturerRepository"
                             :criteria="manufacturerCriteria"
                             :label="$tc('supplier.priceUpdate.wizard.labelFilterManufacturers')"
@@ -317,57 +316,78 @@
                             :dataSource="matchPreviewData"
                             :columns="matchPreviewColumns"
                             :showSelection="false"
+                            :showActions="false"
                             :isLoading="isLoadingMatchPreview"
                             :allowInlineEdit="false"
                             :allowColumnEdit="false"
-                            :total="previewTotal"
-                            @page-change="onPreviewPageChange"
                         >
+                            <template #pagination>
+                                <sw-pagination
+                                    :page="previewPage"
+                                    :limit="previewLimit"
+                                    :total="previewTotal"
+                                    :total-visible="7"
+                                    @page-change="onPreviewPageChange"
+                                />
+                            </template>
                             <template #column-product_name="{ item }">
                                 {{ item.product_name || '-' }}
                             </template>
-                            <template #column-current_kod_postavschika="{ item }">
-                                {{ item.current_kod_postavschika || '-' }}
-                            </template>
                             <template #column-status="{ item }">
                                 <sw-label
-                                    :variant="item.status === 'matched' ? 'success' : 'warning'"
+                                    :variant="item.status === 'matched' ? 'success' : (item.status === 'edited' ? 'info' : 'warning')"
                                     size="small">
-                                    {{ item.status === 'matched' ? 'Найден' : 'Не найден' }}
+                                    {{ item.status === 'matched' ? 'Найден' : (item.status === 'edited' ? 'Отредактирован' : 'Не найден') }}
                                 </sw-label>
                             </template>
                             <template #column-supplier_code="{ item }">
-                                {{ item.supplier_code || '-' }}
+                                <sw-text-field
+                                    v-model="item.supplier_code"
+                                    @change="onSupplierCodeChange(item, item.supplier_code)"
+                                    size="small"
+                                    borderless
+                                ></sw-text-field>
                             </template>
                             <template #column-supplier_name="{ item }">
                                 {{ item.supplier_name || '-' }}
                             </template>
                             <template #column-prices="{ item }">
-                                <div v-if="item.new_prices">
-                                    <div v-if="item.new_prices.purchase">
-                                        Зак: {{ item.new_prices.purchase.toFixed(2) }}
+                                <div v-if="item.new_prices && (item.new_prices.purchase || item.new_prices.retail || item.new_prices.list)" class="price-display">
+                                    <div v-if="item.new_prices.purchase" class="price-item">
+                                        <span class="price-label">Зак:</span>
+                                        <span :class="getPriceChangeClass(item.current_prices?.purchase, item.new_prices.purchase)" class="price-value">
+                                            {{ formatPrice(item.new_prices.purchase) }}
+                                        </span>
+                                        <span v-if="item.current_prices?.purchase != null" class="price-old">
+                                            {{ formatPrice(item.current_prices.purchase) }}
+                                        </span>
                                     </div>
-                                    <div v-if="item.new_prices.retail">
-                                        Розн: {{ item.new_prices.retail.toFixed(2) }}
+                                    <div v-if="item.new_prices.retail" class="price-item">
+                                        <span class="price-label">Розн:</span>
+                                        <span :class="getPriceChangeClass(item.current_prices?.retail, item.new_prices.retail)" class="price-value">
+                                            {{ formatPrice(item.new_prices.retail) }}
+                                        </span>
+                                        <span v-if="item.current_prices?.retail != null" class="price-old">
+                                            {{ formatPrice(item.current_prices.retail) }}
+                                        </span>
                                     </div>
-                                    <div v-if="item.new_prices.list">
-                                        Прайс: {{ item.new_prices.list.toFixed(2) }}
+                                    <div v-if="item.new_prices.list" class="price-item">
+                                        <span class="price-label">Прайс:</span>
+                                        <span :class="getPriceChangeClass(item.current_prices?.list, item.new_prices.list)" class="price-value">
+                                            {{ formatPrice(item.new_prices.list) }}
+                                        </span>
+                                        <span v-if="item.current_prices?.list != null" class="price-old">
+                                            {{ formatPrice(item.current_prices.list) }}
+                                        </span>
                                     </div>
                                 </div>
-                                <span v-else>-</span>
+                                <span v-else class="price-empty">-</span>
                             </template>
                             <template #column-availability="{ item }">
                                 <span v-if="item.availability !== null && item.availability !== undefined">
                                     {{ item.availability }} (тек: {{ item.current_stock || 0 }})
                                 </span>
                                 <span v-else>-</span>
-                            </template>
-                            <template #column-actions="{ item }">
-                                <sw-context-button v-if="item.status === 'unmatched' && item.supplier_code">
-                                    <sw-context-menu-item @click="onManualMatch(item)">
-                                        Привязать
-                                    </sw-context-menu-item>
-                                </sw-context-button>
                             </template>
                         </sw-data-grid>
 

@@ -33,9 +33,9 @@ Component.register('price-template-create', {
             isAutoMatching: false,
             isApplyingPrices: false,
             previewPage: 1,
-            previewLimit: 100,
             previewTotal: 0,
             allPreviewData: null,
+            parsedPriceData: null,
             equipmentTypes: [],
             equipmentTypePropertyGroupId: '20836795-aab8-97d8-c709-a2535f197268',
             hasRedirected: false,
@@ -222,7 +222,7 @@ Component.register('price-template-create', {
                     property: 'status',
                     label: this.$tc('supplier.priceUpdate.wizard.columnStatus'),
                     allowResize: true,
-                    width: '120px'
+                    width: '130px'
                 },
                 {
                     property: 'product_name',
@@ -231,16 +231,10 @@ Component.register('price-template-create', {
                     primary: true
                 },
                 {
-                    property: 'current_kod_postavschika',
-                    label: 'Код пост. (тек)',
-                    allowResize: true,
-                    width: '150px'
-                },
-                {
                     property: 'supplier_code',
                     label: this.$tc('supplier.priceUpdate.wizard.columnSupplierCode'),
                     allowResize: true,
-                    width: '150px'
+                    width: '200px'
                 },
                 {
                     property: 'supplier_name',
@@ -251,19 +245,13 @@ Component.register('price-template-create', {
                     property: 'prices',
                     label: this.$tc('supplier.priceUpdate.wizard.columnPrices'),
                     allowResize: true,
-                    width: '200px'
+                    width: '250px'
                 },
                 {
                     property: 'availability',
                     label: this.$tc('supplier.priceUpdate.wizard.columnAvailability'),
                     allowResize: true,
                     width: '120px'
-                },
-                {
-                    property: 'actions',
-                    label: 'Привязка',
-                    allowResize: false,
-                    width: '80px'
                 }
             ];
         },
@@ -559,9 +547,24 @@ Component.register('price-template-create', {
             }
         },
 
-        onEquipmentTypesChange(selectedValues) {
+        async onCategoriesChange(selectedValues) {
+            if (this.template?.config?.filters) {
+                this.template.config.filters.categories = Array.isArray(selectedValues) ? selectedValues : [];
+                await this.autoSaveTemplate();
+            }
+        },
+
+        async onManufacturersChange(selectedValues) {
+            if (this.template?.config?.filters) {
+                this.template.config.filters.manufacturers = Array.isArray(selectedValues) ? selectedValues : [];
+                await this.autoSaveTemplate();
+            }
+        },
+
+        async onEquipmentTypesChange(selectedValues) {
             if (this.template?.config?.filters) {
                 this.template.config.filters.equipment_types = Array.isArray(selectedValues) ? selectedValues : [];
+                await this.autoSaveTemplate();
             }
         },
 
@@ -812,15 +815,44 @@ Component.register('price-template-create', {
 
             this.isLoadingMatchPreview = true;
             try {
+                // Load parsed price data for interactive lookup
+                try {
+                    const parseResult = await this.priceUpdateService.parseAndNormalize(
+                        this.template.id,
+                        this.template.config.selected_media_id,
+                        false
+                    );
+                    this.parsedPriceData = parseResult.data || [];
+                    console.log('Parsed price data:', this.parsedPriceData.length, 'items');
+                } catch (parseError) {
+                    console.error('Error loading parsed price data:', parseError);
+                    this.parsedPriceData = [];
+                }
+
                 const result = await this.priceUpdateService.matchPreview(this.template.id);
+                console.log('Match preview result:', result);
                 const allData = result.matched || [];
+                console.log('All data items:', allData.length);
+                console.log('First item:', allData[0]);
+
+                // Auto-save matched products to mapping
+                const matchedItems = allData.filter(item => item.status === 'matched' && item.product_id && item.supplier_code);
+                if (matchedItems.length > 0) {
+                    await this.saveMatchedProducts(matchedItems);
+                }
 
                 // Store all data
                 this.allPreviewData = allData;
                 this.previewTotal = allData.length;
+                // Reset to first page when loading new data
+                this.previewPage = 1;
+                console.log('Preview total:', this.previewTotal);
+                console.log('Preview page:', this.previewPage);
+                console.log('Preview limit:', this.previewLimit);
 
                 // Apply pagination
                 this.applyPreviewPagination();
+                console.log('After pagination - matchPreviewData items:', this.matchPreviewData.length);
             } catch (error) {
                 console.error('Error loading match preview:', error);
                 this.createNotificationError({
@@ -839,44 +871,166 @@ Component.register('price-template-create', {
 
             const start = (this.previewPage - 1) * this.previewLimit;
             const end = start + this.previewLimit;
+            console.log('Pagination - start:', start, 'end:', end, 'total:', this.allPreviewData.length);
             this.matchPreviewData = this.allPreviewData.slice(start, end);
+            console.log('Paginated data:', this.matchPreviewData.length);
         },
 
         onPreviewPageChange({ page, limit }) {
+            console.log('Page change event:', page, limit);
             this.previewPage = page;
             this.previewLimit = limit;
             this.applyPreviewPagination();
         },
 
-        async onManualMatch(item) {
-            // Open modal to manually select product for this price list item
-            // For now, just show a simple prompt
-            this.$emit('manual-match-requested', item);
+        formatPrice(price) {
+            if (price === null || price === undefined) {
+                return '-';
+            }
+            return parseFloat(price).toFixed(2);
         },
 
-        async updateManualMatch(item, productId) {
-            if (!this.template.id || !item.supplier_code || !productId) {
+        getPriceChangeClass(oldPrice, newPrice) {
+            if (oldPrice === null || oldPrice === undefined) {
+                return 'price-new';
+            }
+            const old = parseFloat(oldPrice);
+            const newVal = parseFloat(newPrice);
+            if (newVal > old) {
+                return 'price-increase';
+            } else if (newVal < old) {
+                return 'price-decrease';
+            }
+            return 'price-same';
+        },
+
+        async onSupplierCodeChange(item, newCode) {
+            console.log('onSupplierCodeChange called!', item, newCode);
+
+            if (!this.template.id || !item.product_id) {
+                console.log('Missing template ID or product ID');
+                return;
+            }
+
+            // Normalize code
+            const normalizedCode = newCode ? newCode.trim().toUpperCase() : '';
+            console.log('Normalized code:', normalizedCode);
+
+            try {
+                // Find item in local data
+                const itemIndex = this.allPreviewData.findIndex(i => i.product_id === item.product_id);
+                console.log('Item index:', itemIndex);
+                if (itemIndex === -1) {
+                    return;
+                }
+
+                // Look up the code in parsed price data
+                let foundPriceData = null;
+                if (normalizedCode && this.parsedPriceData) {
+                    foundPriceData = this.parsedPriceData.find(p => p.code === normalizedCode);
+                }
+
+                if (foundPriceData) {
+                    // Update item with data from price list
+                    const modifiers = this.template.config.modifiers || [];
+                    const prices = this.calculatePricesWithModifiers(foundPriceData, modifiers);
+
+                    this.allPreviewData[itemIndex].supplier_code = normalizedCode;
+                    this.allPreviewData[itemIndex].supplier_name = foundPriceData.name || '';
+                    this.allPreviewData[itemIndex].new_prices = prices;
+                    this.allPreviewData[itemIndex].availability = foundPriceData.availability ?? null;
+                    this.allPreviewData[itemIndex].status = 'matched';
+                    this.allPreviewData[itemIndex].confidence = 'high';
+                    this.allPreviewData[itemIndex].method = 'manual';
+
+                    // Save to matched_products
+                    await this.priceUpdateService.updateMatch(
+                        this.template.id,
+                        item.product_id,
+                        normalizedCode
+                    );
+
+                    this.createNotificationSuccess({
+                        message: 'Товар найден в прайсе'
+                    });
+                } else {
+                    // Not found in price list - clear price data and update the code
+                    this.allPreviewData[itemIndex].supplier_code = normalizedCode;
+                    this.allPreviewData[itemIndex].supplier_name = '';
+                    this.allPreviewData[itemIndex].new_prices = {
+                        purchase: null,
+                        retail: null,
+                        list: null
+                    };
+                    this.allPreviewData[itemIndex].availability = null;
+                    this.allPreviewData[itemIndex].status = 'unmatched';
+
+                    // Save to matched_products if code is not empty
+                    if (normalizedCode) {
+                        await this.priceUpdateService.updateMatch(
+                            this.template.id,
+                            item.product_id,
+                            normalizedCode
+                        );
+
+                        this.createNotificationSuccess({
+                            message: 'Код сохранен (товар не найден в прайсе)'
+                        });
+                    }
+                }
+
+                // Refresh pagination
+                this.applyPreviewPagination();
+            } catch (error) {
+                console.error('Error updating supplier code:', error);
+                this.createNotificationError({
+                    message: 'Ошибка сохранения привязки'
+                });
+            }
+        },
+
+        calculatePricesWithModifiers(priceData, modifiers) {
+            const prices = {
+                purchase: priceData.purchase_price || null,
+                retail: priceData.retail_price || null,
+                list: priceData.list_price || null
+            };
+
+            // Apply modifiers (simplified - actual logic is on backend)
+            modifiers.forEach(modifier => {
+                const priceType = modifier.price_type;
+                const basePrice = prices[priceType];
+
+                if (basePrice && modifier.modifier_type && modifier.modifier_value) {
+                    if (modifier.modifier_type === 'percentage') {
+                        prices[priceType] = basePrice * (1 + modifier.modifier_value / 100);
+                    } else if (modifier.modifier_type === 'fixed') {
+                        prices[priceType] = basePrice + modifier.modifier_value;
+                    }
+                }
+            });
+
+            return prices;
+        },
+
+        async saveMatchedProducts(matchedItems) {
+            if (!this.template.id || matchedItems.length === 0) {
                 return;
             }
 
             try {
-                await this.priceUpdateService.updateMatch(
-                    this.template.id,
-                    productId,
-                    item.supplier_code
-                );
-
-                this.createNotificationSuccess({
-                    message: 'Привязка обновлена'
-                });
-
-                // Reload preview
-                await this.loadMatchPreview();
+                // Save all matched products at once
+                for (const item of matchedItems) {
+                    if (item.method !== 'matched_products') { // Don't re-save already saved mappings
+                        await this.priceUpdateService.updateMatch(
+                            this.template.id,
+                            item.product_id,
+                            item.supplier_code
+                        );
+                    }
+                }
             } catch (error) {
-                console.error('Error updating manual match:', error);
-                this.createNotificationError({
-                    message: 'Ошибка обновления привязки'
-                });
+                console.error('Error saving matched products:', error);
             }
         },
 

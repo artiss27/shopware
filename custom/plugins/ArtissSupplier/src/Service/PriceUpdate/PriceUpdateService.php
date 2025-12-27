@@ -255,9 +255,9 @@ class PriceUpdateService
                 $newPrices = $calculatedPrices;
                 $supplierName = $matchedPriceData['name'] ?? '';
                 $availability = $matchedPriceData['availability'] ?? null;
-            }
-
-            if (!$matchedPriceData) {
+            } else {
+                // If no match, don't set supplier name
+                $supplierName = '';
                 $unmatchedCount++;
             }
 

@@ -47,13 +47,13 @@ class PriceUpdateService extends ApiService {
             });
     }
 
-    updateMatch(templateId, code, productId) {
+    updateMatch(templateId, productId, supplierCode) {
         const headers = this.getBasicHeaders();
 
         return this.httpClient
             .post(
                 `/_action/${this.getApiBasePath()}/price-update/update-match`,
-                { templateId, code, productId },
+                { templateId, productId, supplierCode },
                 { headers }
             )
             .then((response) => {
