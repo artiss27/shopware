@@ -315,6 +315,26 @@
                         :title="$tc('supplier.priceUpdate.wizard.step3PreviewTitle')"
                         class="preview-table-card">
 
+                        <!-- Statistics -->
+                        <div class="preview-statistics">
+                            <div class="stat-item">
+                                <span class="stat-label">{{ $tc('supplier.priceUpdate.wizard.statMatched') }}:</span>
+                                <span class="stat-value stat-matched">{{ previewStats.matched }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">{{ $tc('supplier.priceUpdate.wizard.statEdited') }}:</span>
+                                <span class="stat-value stat-edited">{{ previewStats.edited }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">{{ $tc('supplier.priceUpdate.wizard.statUnmatched') }}:</span>
+                                <span class="stat-value stat-unmatched">{{ previewStats.unmatched }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">{{ $tc('supplier.priceUpdate.wizard.statTotal') }}:</span>
+                                <span class="stat-value stat-total">{{ previewStats.total }}</span>
+                            </div>
+                        </div>
+
                         <div class="preview-actions">
                             <sw-button @click="autoMatchProducts" :isLoading="isAutoMatching">
                                 {{ $tc('supplier.priceUpdate.wizard.buttonAutoMatch') }}
@@ -449,7 +469,8 @@
                     
                     <sw-card
                         v-else-if="matchPreviewData && matchPreviewData.length === 0"
-                        :title="$tc('supplier.priceUpdate.wizard.step3PreviewTitle')">
+                        :title="$tc('supplier.priceUpdate.wizard.step3PreviewTitle')"
+                        class="preview-table-card">
                         <sw-empty-state
                             :title="$tc('supplier.priceUpdate.wizard.emptyMatchPreviewTitle')"
                             :subline="$tc('supplier.priceUpdate.wizard.emptyMatchPreviewDescription')"

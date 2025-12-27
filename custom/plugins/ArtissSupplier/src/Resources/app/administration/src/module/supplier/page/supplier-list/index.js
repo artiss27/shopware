@@ -1,4 +1,5 @@
 import template from './supplier-list.html.twig';
+import './supplier-list.scss';
 
 const { Component, Mixin } = Shopware;
 const { Criteria } = Shopware.Data;
@@ -20,8 +21,9 @@ Component.register('supplier-list', {
             page: 1,
             limit: 25,
             selection: {},
-            term: '',
-            manufacturers: []
+            manufacturers: [],
+            filterSupplierId: null,
+            filterManufacturerId: null
         };
     },
 
@@ -38,6 +40,13 @@ Component.register('supplier-list', {
 
         manufacturerRepository() {
             return this.repositoryFactory.create('product_manufacturer');
+        },
+
+        manufacturerCriteria() {
+            const criteria = new Criteria();
+            criteria.addSorting(Criteria.sort('name', 'ASC'));
+            criteria.setLimit(500);
+            return criteria;
         },
 
         supplierColumns() {
@@ -112,66 +121,133 @@ Component.register('supplier-list', {
             }
         },
 
+        // Helper function to safely get array from JSON field
+        getSafeArray(value) {
+            if (!value) {
+                return [];
+            }
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string') {
+                try {
+                    const parsed = JSON.parse(value);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        },
+
         async getList() {
             this.isLoading = true;
 
             try {
-                // Load all suppliers (or with high limit) to filter on client side
-                // This is needed because JSON array filtering doesn't work well with Criteria
-                const allCriteria = new Criteria(1, 10000);
-                allCriteria.addSorting(Criteria.sort('name', 'ASC'));
-                
-                const allSuppliers = await this.supplierRepository.search(allCriteria, Shopware.Context.api);
-                let filteredSuppliers = Array.from(allSuppliers);
-                
-                // Filter by search term if provided
-                if (this.term) {
-                    const searchTerm = this.term.toLowerCase().trim();
+                // If filters are selected, load all and filter on client side
+                if (this.filterSupplierId || this.filterManufacturerId) {
+                    // Load all suppliers in batches
+                    const allSuppliers = [];
+                    let page = 1;
+                    const batchLimit = 500;
+                    let hasMore = true;
                     
-                    // Find manufacturers matching the search term
-                    const manufacturerCriteria = new Criteria();
-                    manufacturerCriteria.addFilter(Criteria.contains('name', this.term));
-                    manufacturerCriteria.setLimit(100);
-                    
-                    let manufacturerIds = [];
-                    try {
-                        const matchingManufacturers = await this.manufacturerRepository.search(manufacturerCriteria, Shopware.Context.api);
-                        manufacturerIds = Array.from(matchingManufacturers).map(m => m.id);
-                    } catch (error) {
-                        console.error('Error searching manufacturers:', error);
+                    while (hasMore) {
+                        const batchCriteria = new Criteria(page, batchLimit);
+                        batchCriteria.addSorting(Criteria.sort('name', 'ASC'));
+                        
+                        try {
+                            const batchResult = await this.supplierRepository.search(batchCriteria, Shopware.Context.api);
+                            const batchSuppliers = Array.from(batchResult);
+                            allSuppliers.push(...batchSuppliers);
+                            
+                            hasMore = batchResult.total > page * batchLimit;
+                            page++;
+                            
+                            // Safety limit to prevent infinite loops
+                            if (page > 100) break;
+                        } catch (error) {
+                            console.error('Error loading suppliers batch:', error);
+                            hasMore = false;
+                        }
                     }
                     
-                    // Filter suppliers
-                    filteredSuppliers = filteredSuppliers.filter(supplier => {
-                        // Check supplier name
-                        const nameMatch = supplier.name && supplier.name.toLowerCase().includes(searchTerm);
-                        
-                        // Check manufacturer IDs
-                        const manufacturerIdsArray = supplier.manufacturerIds || [];
-                        const alternativeManufacturerIdsArray = supplier.alternativeManufacturerIds || [];
-                        const hasMatchingManufacturer = manufacturerIds.length > 0 && (
-                            manufacturerIds.some(id => manufacturerIdsArray.includes(id)) ||
-                            manufacturerIds.some(id => alternativeManufacturerIdsArray.includes(id))
+                    // Apply filters
+                    let filteredSuppliers = allSuppliers;
+                    
+                    // Filter by supplier ID
+                    if (this.filterSupplierId) {
+                        filteredSuppliers = filteredSuppliers.filter(supplier => 
+                            supplier.id === this.filterSupplierId
                         );
+                    }
+                    
+                    // Filter by manufacturer
+                    if (this.filterManufacturerId) {
+                        filteredSuppliers = filteredSuppliers.filter(supplier => {
+                            // Safely get arrays from JSON fields
+                            const manufacturerIds = this.getSafeArray(supplier.manufacturerIds);
+                            const alternativeManufacturerIds = this.getSafeArray(supplier.alternativeManufacturerIds);
+                            
+                            return manufacturerIds.includes(this.filterManufacturerId) || 
+                                   alternativeManufacturerIds.includes(this.filterManufacturerId);
+                        });
+                    }
+                    
+                    // Apply pagination
+                    const start = (this.page - 1) * this.limit;
+                    const end = start + this.limit;
+                    const paginatedSuppliers = filteredSuppliers.slice(start, end);
+                    
+                    // sw-entity-listing works with arrays, but we need to maintain the collection structure
+                    // Create a new search result by doing a search with the filtered IDs
+                    if (paginatedSuppliers.length > 0) {
+                        const filteredIds = paginatedSuppliers.map(s => s.id);
+                        const criteria = new Criteria();
+                        criteria.addFilter(Criteria.equalsAny('id', filteredIds));
+                        criteria.addSorting(Criteria.sort('name', 'ASC'));
                         
-                        return nameMatch || hasMatchingManufacturer;
-                    });
+                        const result = await this.supplierRepository.search(criteria, Shopware.Context.api);
+                        result.total = filteredSuppliers.length;
+                        this.suppliers = result;
+                        this.total = filteredSuppliers.length;
+                    } else {
+                        // No results after filtering
+                        this.suppliers = [];
+                        this.total = 0;
+                    }
+                } else {
+                    // No filters - normal pagination
+                    const criteria = new Criteria(this.page, this.limit);
+                    criteria.addSorting(Criteria.sort('name', 'ASC'));
+
+                    const result = await this.supplierRepository.search(criteria, Shopware.Context.api);
+                    this.suppliers = result;
+                    this.total = result.total;
                 }
-                
-                // Apply pagination
-                const start = (this.page - 1) * this.limit;
-                const end = start + this.limit;
-                const paginatedSuppliers = filteredSuppliers.slice(start, end);
-                
-                // Create collection from array - sw-entity-listing expects EntityCollection
-                const collection = this.supplierRepository.createCollection(paginatedSuppliers);
-                collection.total = filteredSuppliers.length;
-                
-                this.suppliers = collection;
-                this.total = filteredSuppliers.length;
+            } catch (error) {
+                console.error('Error loading suppliers:', error);
+                this.suppliers = null;
+                this.total = 0;
             } finally {
                 this.isLoading = false;
             }
+        },
+        
+        onSupplierFilterChange(value) {
+            // Handle both direct value and event object
+            const supplierId = value && typeof value === 'object' ? value.id : value;
+            this.filterSupplierId = supplierId || null;
+            this.page = 1;
+            this.getList();
+        },
+        
+        onManufacturerFilterChange(value) {
+            // Handle both direct value and event object
+            const manufacturerId = value && typeof value === 'object' ? value.id : value;
+            this.filterManufacturerId = manufacturerId || null;
+            this.page = 1;
+            this.getList();
         },
 
         onPageChange({ page, limit }) {
@@ -180,11 +256,6 @@ Component.register('supplier-list', {
             this.getList();
         },
 
-        onSearch(searchTerm) {
-            this.term = searchTerm;
-            this.page = 1;
-            this.getList();
-        },
 
         onSelectionChanged(selection) {
             this.selection = selection;

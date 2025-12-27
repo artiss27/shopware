@@ -51,13 +51,27 @@
         {% block supplier_list_content %}
             <template #content>
                 {% block supplier_list_content_search %}
-                    <sw-card :title="$tc('supplier.list.searchTitle')">
-                        <sw-simple-search-field
-                            v-model:value="term"
-                            :placeholder="$tc('supplier.list.searchPlaceholder')"
-                            @search-term-change="onSearch"
-                        >
-                        </sw-simple-search-field>
+                    <sw-card :title="$tc('supplier.list.filterTitle')">
+                        <div class="supplier-list__filters">
+                            <sw-entity-single-select
+                                v-model:value="filterSupplierId"
+                                entity="art_supplier"
+                                :label="$tc('supplier.list.filterSupplier')"
+                                :placeholder="$tc('supplier.list.filterSupplierPlaceholder')"
+                                @update:value="onSupplierFilterChange"
+                                class="supplier-list__supplier-filter"
+                            />
+                            
+                            <sw-entity-single-select
+                                v-model:value="filterManufacturerId"
+                                entity="product_manufacturer"
+                                :criteria="manufacturerCriteria"
+                                :label="$tc('supplier.list.filterManufacturer')"
+                                :placeholder="$tc('supplier.list.filterManufacturerPlaceholder')"
+                                @update:value="onManufacturerFilterChange"
+                                class="supplier-list__manufacturer-filter"
+                            />
+                        </div>
                     </sw-card>
                 {% endblock %}
 

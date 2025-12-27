@@ -1121,7 +1121,16 @@ class PriceUpdateService
         // Limit to reasonable number to avoid performance issues
         $criteria->setLimit(5000);
 
-        $products = $this->productRepository->search($criteria, $context);
+        error_log('[ZERO_STOCK] About to search for products...');
+
+        try {
+            $products = $this->productRepository->search($criteria, $context);
+            error_log('[ZERO_STOCK] Search completed successfully');
+        } catch (\Exception $e) {
+            error_log('[ZERO_STOCK] ERROR during search: ' . $e->getMessage());
+            error_log('[ZERO_STOCK] Exception trace: ' . $e->getTraceAsString());
+            return 0;
+        }
 
         error_log('[ZERO_STOCK] Found products matching filters: ' . $products->count());
 

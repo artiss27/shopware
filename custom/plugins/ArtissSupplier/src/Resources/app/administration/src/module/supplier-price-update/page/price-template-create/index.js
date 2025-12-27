@@ -218,6 +218,38 @@ Component.register('price-template-create', {
             return this.matchPreviewData.some(item => item.status === 'pending');
         },
 
+        previewStats() {
+            if (!this.allPreviewData || this.allPreviewData.length === 0) {
+                return {
+                    matched: 0,
+                    edited: 0,
+                    unmatched: 0,
+                    total: 0
+                };
+            }
+
+            const stats = {
+                matched: 0,
+                edited: 0,
+                unmatched: 0,
+                total: this.allPreviewData.length
+            };
+
+            this.allPreviewData.forEach(item => {
+                if (item.status === 'matched' || item.status === 'edited') {
+                    if (item.status === 'edited') {
+                        stats.edited++;
+                    } else {
+                        stats.matched++;
+                    }
+                } else {
+                    stats.unmatched++;
+                }
+            });
+
+            return stats;
+        },
+
         matchPreviewColumns() {
             return [
                 {
@@ -999,6 +1031,9 @@ Component.register('price-template-create', {
                     this.createNotificationSuccess({
                         message: 'Товар найден в прайсе'
                     });
+                    
+                    // Update pagination to reflect status change
+                    this.applyPreviewPagination();
                 } else {
                     // Not found in price list - clear price data and update the code
                     this.allPreviewData[itemIndex].supplier_code = normalizedCode;
@@ -1010,6 +1045,9 @@ Component.register('price-template-create', {
                     };
                     this.allPreviewData[itemIndex].availability = null;
                     this.allPreviewData[itemIndex].status = 'unmatched';
+                    
+                    // Update pagination to reflect status change
+                    this.applyPreviewPagination();
 
                     // Save to matched_products if code is not empty
                     if (normalizedCode) {

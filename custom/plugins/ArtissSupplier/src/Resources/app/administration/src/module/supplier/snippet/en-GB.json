@@ -19,8 +19,11 @@
       "columnUpdatedAt": "Last updated",
       "successDelete": "No supplier deleted | {count} supplier deleted | {count} suppliers deleted",
       "errorDelete": "Error deleting suppliers",
-      "searchTitle": "Search",
-      "searchPlaceholder": "Search by name..."
+      "filterTitle": "Filters",
+      "filterSupplier": "Filter by supplier",
+      "filterSupplierPlaceholder": "Select supplier",
+      "filterManufacturer": "Filter by manufacturer",
+      "filterManufacturerPlaceholder": "Select manufacturer"
     },
     "detail": {
       "buttonUpdatePrices": "Update Prices",
@@ -170,6 +173,10 @@
         "errorNoTemplate": "Template is missing",
         "emptyMatchPreviewTitle": "No matches found",
         "emptyMatchPreviewDescription": "No products were matched. Please check your filters and try again.",
+        "statMatched": "Matched",
+        "statEdited": "Edited",
+        "statUnmatched": "Unmatched",
+        "statTotal": "Total",
         "errorApplyPrices": "Error applying prices",
         "successApplyPrices": "Prices successfully applied"
       },
@@ -180,6 +187,7 @@
         "cardTitleSummary": "Statistics",
         "cardTitleProducts": "Products",
         "statMatched": "Matched",
+        "statEdited": "Edited",
         "statUnmatched": "Unmatched",
         "statTotal": "Total",
         "tabMatched": "Matched",

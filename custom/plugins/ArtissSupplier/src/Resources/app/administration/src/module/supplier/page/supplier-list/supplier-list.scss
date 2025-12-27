@@ -1,0 +1,19 @@
+.supplier-list {
+    .supplier-list__filters {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+
+        .supplier-list__supplier-filter {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .supplier-list__manufacturer-filter {
+            flex: 1;
+            min-width: 300px;
+        }
+    }
+}
+

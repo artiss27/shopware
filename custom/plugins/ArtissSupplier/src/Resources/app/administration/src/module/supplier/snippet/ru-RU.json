@@ -19,8 +19,11 @@
       "columnUpdatedAt": "Последнее обновление",
       "successDelete": "Ни один поставщик не удален | {count} поставщик удален | {count} поставщика удалено | {count} поставщиков удалено",
       "errorDelete": "Ошибка при удалении поставщиков",
-      "searchTitle": "Поиск",
-      "searchPlaceholder": "Поиск по названию..."
+      "filterTitle": "Фильтры",
+      "filterSupplier": "Фильтр по поставщику",
+      "filterSupplierPlaceholder": "Выберите поставщика",
+      "filterManufacturer": "Фильтр по производителю",
+      "filterManufacturerPlaceholder": "Выберите производителя"
     },
     "detail": {
       "buttonUpdatePrices": "Обновить цены",
@@ -188,7 +191,11 @@
         "errorNoTemplateOrMedia": "Отсутствует шаблон или файл",
         "errorNoTemplate": "Отсутствует шаблон",
         "emptyMatchPreviewTitle": "Совпадений не найдено",
-        "emptyMatchPreviewDescription": "Товары не были сопоставлены. Проверьте фильтры и попробуйте снова."
+        "emptyMatchPreviewDescription": "Товары не были сопоставлены. Проверьте фильтры и попробуйте снова.",
+        "statMatched": "Найдено",
+        "statEdited": "Отредактировано",
+        "statUnmatched": "Не найдено",
+        "statTotal": "Всего"
       },
       "apply": {
         "title": "Применение шаблона обновления цен",
@@ -197,8 +204,13 @@
         "cardTitleSummary": "Статистика",
         "cardTitleProducts": "Товары",
         "statMatched": "Найдено",
+        "statEdited": "Отредактировано",
         "statUnmatched": "Не найдено",
         "statTotal": "Всего",
+        "statMatchedWizard": "Найдено",
+        "statEditedWizard": "Отредактировано",
+        "statUnmatchedWizard": "Не найдено",
+        "statTotalWizard": "Всего",
         "tabMatched": "Найденные",
         "tabUnmatched": "Не найденные",
         "columnCode": "Код",

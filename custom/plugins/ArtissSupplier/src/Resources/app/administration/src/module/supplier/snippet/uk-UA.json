@@ -19,8 +19,11 @@
       "columnUpdatedAt": "Останнє оновлення",
       "successDelete": "Жоден постачальник не видалено | {count} постачальник видалено | {count} постачальники видалено | {count} постачальників видалено",
       "errorDelete": "Помилка при видаленні постачальників",
-      "searchTitle": "Пошук",
-      "searchPlaceholder": "Пошук за назвою..."
+      "filterTitle": "Фільтри",
+      "filterSupplier": "Фільтр по постачальнику",
+      "filterSupplierPlaceholder": "Виберіть постачальника",
+      "filterManufacturer": "Фільтр по виробнику",
+      "filterManufacturerPlaceholder": "Виберіть виробника"
     },
     "detail": {
       "buttonUpdatePrices": "Оновити ціни",
@@ -188,7 +191,11 @@
         "errorNoTemplateOrMedia": "Відсутній шаблон або файл",
         "errorNoTemplate": "Відсутній шаблон",
         "emptyMatchPreviewTitle": "Збігів не знайдено",
-        "emptyMatchPreviewDescription": "Товари не були співставлені. Перевірте фільтри та спробуйте знову."
+        "emptyMatchPreviewDescription": "Товари не були співставлені. Перевірте фільтри та спробуйте знову.",
+        "statMatched": "Знайдено",
+        "statEdited": "Відредаговано",
+        "statUnmatched": "Не знайдено",
+        "statTotal": "Всього"
       },
       "apply": {
         "title": "Застосування шаблону оновлення цін",
@@ -197,6 +204,7 @@
         "cardTitleSummary": "Статистика",
         "cardTitleProducts": "Товари",
         "statMatched": "Знайдено",
+        "statEdited": "Відредаговано",
         "statUnmatched": "Не знайдено",
         "statTotal": "Всього",
         "tabMatched": "Знайдені",

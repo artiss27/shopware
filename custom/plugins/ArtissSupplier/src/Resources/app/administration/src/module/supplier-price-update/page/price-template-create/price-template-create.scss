@@ -12,6 +12,7 @@
     }
 
     .price-template-wizard {
+
         .wizard-steps {
             margin-bottom: 20px;
 
@@ -415,6 +416,59 @@
         // Preview table card with full width and margin
         .preview-table-card {
             margin-top: 30px;
+
+            // Min height for card content when no items found
+            .mt-card__content {
+                min-height: 250px;
+            }
+
+            // Statistics styles
+            .preview-statistics {
+                display: flex;
+                gap: 24px;
+                margin-bottom: 20px;
+                padding: 16px;
+                background-color: #f5f7fa;
+                border-radius: 4px;
+                flex-wrap: wrap;
+
+                .stat-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+
+                    .stat-label {
+                        font-size: 14px;
+                        color: #52667a;
+                        font-weight: 500;
+                    }
+
+                    .stat-value {
+                        font-size: 16px;
+                        font-weight: 600;
+                        padding: 4px 12px;
+                        border-radius: 4px;
+                        background-color: #ffffff;
+                        border: 1px solid #d1d9e0;
+
+                        &.stat-matched {
+                            color: #37d046;
+                        }
+
+                        &.stat-edited {
+                            color: #189eff;
+                        }
+
+                        &.stat-unmatched {
+                            color: #ff6b6b;
+                        }
+
+                        &.stat-total {
+                            color: #52667a;
+                        }
+                    }
+                }
+            }
 
             // Make the card full-width by breaking out of container
             margin-left: -20px;
