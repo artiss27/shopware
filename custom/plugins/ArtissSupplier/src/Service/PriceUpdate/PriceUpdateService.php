@@ -819,8 +819,8 @@ class PriceUpdateService
         }
 
         if (!empty($filters['supplier'])) {
-            // Supplier is stored in custom fields
-            $criteria->addFilter(new EqualsFilter('customFields.supplier', $filters['supplier']));
+            // Supplier is stored in custom fields as product_supplier_id
+            $criteria->addFilter(new EqualsFilter('customFields.product_supplier_id', $filters['supplier']));
         }
 
         // Load associations needed for matching
@@ -1020,16 +1020,35 @@ class PriceUpdateService
             $factor = $currencies[$retailCurrency] ?? 1.0;
 
             // Convert to base currency
-            $basePrice = $retailValue / $factor;
+            $basePrice = round($retailValue / $factor, 2);
 
-            $updates['price'] = [
-                [
-                    'currencyId' => $defaultCurrencyId,
-                    'gross' => round($basePrice, 2),
-                    'net' => round($basePrice, 2),
-                    'linked' => false,
-                ],
+            // If we have list price, include it in the price structure
+            $priceData = [
+                'currencyId' => $defaultCurrencyId,
+                'gross' => $basePrice,
+                'net' => $basePrice,
+                'linked' => false,
             ];
+
+            // Add list price if available
+            if (($priceType === 'list' || $priceType === 'all')
+                && isset($productPrices['list_price_value'])
+                && isset($productPrices['list_price_currency'])
+            ) {
+                $listValue = (float) $productPrices['list_price_value'];
+                $listCurrency = $productPrices['list_price_currency'];
+                $listFactor = $currencies[$listCurrency] ?? 1.0;
+                $listBasePrice = round($listValue / $listFactor, 2);
+
+                $priceData['listPrice'] = [
+                    'currencyId' => $defaultCurrencyId,
+                    'gross' => $listBasePrice,
+                    'net' => $listBasePrice,
+                    'linked' => false,
+                ];
+            }
+
+            $updates['price'] = [$priceData];
             $hasUpdates = true;
         }
 
@@ -1074,18 +1093,13 @@ class PriceUpdateService
         $config = $template->getConfig();
         $filters = $config['filters'] ?? [];
 
-        // Build criteria to find products that match template filters but are NOT in current price list
-        $criteria = new Criteria();
+        error_log('[ZERO_STOCK] Starting setZeroStockForMissingProducts');
+        error_log('[ZERO_STOCK] Matched product IDs count: ' . count($matchedProductIds));
+        error_log('[ZERO_STOCK] Matched product IDs: ' . json_encode($matchedProductIds));
+        error_log('[ZERO_STOCK] Filters: ' . json_encode($filters));
 
-        // Exclude products that were matched in current price list
-        if (!empty($matchedProductIds)) {
-            $criteria->addFilter(
-                new \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter(
-                    \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter::CONNECTION_AND,
-                    [new EqualsAnyFilter('id', $matchedProductIds)]
-                )
-            );
-        }
+        // Build criteria to find products that match template filters
+        $criteria = new Criteria();
 
         // Apply same filters as template (manufacturers, categories, equipment types, supplier)
         if (!empty($filters['manufacturers'])) {
@@ -1101,7 +1115,7 @@ class PriceUpdateService
         }
 
         if (!empty($filters['supplier'])) {
-            $criteria->addFilter(new EqualsFilter('customFields.supplier', $filters['supplier']));
+            $criteria->addFilter(new EqualsFilter('customFields.product_supplier_id', $filters['supplier']));
         }
 
         // Limit to reasonable number to avoid performance issues
@@ -1109,17 +1123,36 @@ class PriceUpdateService
 
         $products = $this->productRepository->search($criteria, $context);
 
+        error_log('[ZERO_STOCK] Found products matching filters: ' . $products->count());
+
         if ($products->count() === 0) {
+            error_log('[ZERO_STOCK] No products found, returning 0');
             return 0;
         }
 
-        // Prepare updates to set stock = 0
+        // Prepare updates to set stock = 0, but exclude matched products
         $updateData = [];
+        $matchedIdsFlipped = array_flip($matchedProductIds);
+
         foreach ($products as $product) {
+            $productId = $product->getId();
+
+            // Skip products that were matched in current price list
+            if (isset($matchedIdsFlipped[$productId])) {
+                error_log('[ZERO_STOCK] Skipping matched product: ' . $productId);
+                continue;
+            }
+
+            error_log('[ZERO_STOCK] Will update product: ' . $productId . ' (stock: ' . $product->getStock() . ' -> 0)');
             $updateData[] = [
-                'id' => $product->getId(),
+                'id' => $productId,
                 'stock' => 0,
             ];
+        }
+
+        if (empty($updateData)) {
+            error_log('[ZERO_STOCK] No products to update after filtering matched ones');
+            return 0;
         }
 
         // Update products in batches
@@ -1131,12 +1164,15 @@ class PriceUpdateService
             try {
                 $this->productRepository->update($batch, $context);
                 $totalUpdated += count($batch);
+                error_log('[ZERO_STOCK] Updated batch of ' . count($batch) . ' products');
             } catch (\Exception $e) {
+                error_log('[ZERO_STOCK] Error updating batch: ' . $e->getMessage());
                 // Continue with next batch even if this one fails
                 continue;
             }
         }
 
+        error_log('[ZERO_STOCK] Total updated: ' . $totalUpdated);
         return $totalUpdated;
     }
 

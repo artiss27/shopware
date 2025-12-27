@@ -264,16 +264,34 @@ class RecalculatePricesCommand extends Command
             $factor = $currencies[$retailCurrency] ?? 1.0;
 
             // Convert to base currency (EUR/UAH depending on shop config)
-            $basePrice = $retailValue / $factor;
+            $basePrice = round($retailValue / $factor, 2);
 
-            $updates['price'] = [
-                [
-                    'currencyId' => Defaults::CURRENCY,
-                    'gross' => round($basePrice, 2),
-                    'net' => round($basePrice, 2),
-                    'linked' => false,
-                ],
+            $priceData = [
+                'currencyId' => Defaults::CURRENCY,
+                'gross' => $basePrice,
+                'net' => $basePrice,
+                'linked' => false,
             ];
+
+            // Add list price if available
+            if (($priceType === 'list' || $priceType === 'all')
+                && isset($productPrices['list_price_value'])
+                && isset($productPrices['list_price_currency'])
+            ) {
+                $listValue = (float) $productPrices['list_price_value'];
+                $listCurrency = $productPrices['list_price_currency'];
+                $listFactor = $currencies[$listCurrency] ?? 1.0;
+                $listBasePrice = round($listValue / $listFactor, 2);
+
+                $priceData['listPrice'] = [
+                    'currencyId' => Defaults::CURRENCY,
+                    'gross' => $listBasePrice,
+                    'net' => $listBasePrice,
+                    'linked' => false,
+                ];
+            }
+
+            $updates['price'] = [$priceData];
             $hasUpdates = true;
         }
 
@@ -298,9 +316,6 @@ class RecalculatePricesCommand extends Command
             ];
             $hasUpdates = true;
         }
-
-        // List price is stored in custom fields only (for reference)
-        // It's not directly used in Shopware price calculations
 
         return $hasUpdates ? $updates : null;
     }

@@ -115,53 +115,60 @@ Component.register('supplier-list', {
         async getList() {
             this.isLoading = true;
 
-            const criteria = new Criteria(this.page, this.limit);
-            criteria.addSorting(Criteria.sort('name', 'ASC'));
-
-            if (this.term) {
-                // First, find manufacturers matching the search term
-                const manufacturerCriteria = new Criteria();
-                manufacturerCriteria.addFilter(Criteria.contains('name', this.term));
-                manufacturerCriteria.setLimit(100);
+            try {
+                // Load all suppliers (or with high limit) to filter on client side
+                // This is needed because JSON array filtering doesn't work well with Criteria
+                const allCriteria = new Criteria(1, 10000);
+                allCriteria.addSorting(Criteria.sort('name', 'ASC'));
                 
-                let manufacturerIds = [];
-                try {
-                    const matchingManufacturers = await this.manufacturerRepository.search(manufacturerCriteria, Shopware.Context.api);
-                    manufacturerIds = Array.from(matchingManufacturers).map(m => m.id);
-                } catch (error) {
-                    console.error('Error searching manufacturers:', error);
-                }
+                const allSuppliers = await this.supplierRepository.search(allCriteria, Shopware.Context.api);
+                let filteredSuppliers = Array.from(allSuppliers);
                 
-                // Build OR filter: search by name OR by manufacturer IDs
-                const filters = [
-                    Criteria.contains('name', this.term)
-                ];
-                
-                // Add manufacturer filters if we found any
-                if (manufacturerIds.length > 0) {
-                    // For JSON array fields, we need to check if the array contains any of the IDs
-                    // Shopware supports JSON path queries, but for simplicity, we'll use contains
-                    // Note: This might need backend support for proper JSON array filtering
-                    manufacturerIds.forEach(id => {
-                        // Try to match manufacturer ID in JSON array
-                        // This is a workaround - proper solution would need backend filter
-                        filters.push(Criteria.contains('manufacturerIds', id));
-                        filters.push(Criteria.contains('alternativeManufacturerIds', id));
+                // Filter by search term if provided
+                if (this.term) {
+                    const searchTerm = this.term.toLowerCase().trim();
+                    
+                    // Find manufacturers matching the search term
+                    const manufacturerCriteria = new Criteria();
+                    manufacturerCriteria.addFilter(Criteria.contains('name', this.term));
+                    manufacturerCriteria.setLimit(100);
+                    
+                    let manufacturerIds = [];
+                    try {
+                        const matchingManufacturers = await this.manufacturerRepository.search(manufacturerCriteria, Shopware.Context.api);
+                        manufacturerIds = Array.from(matchingManufacturers).map(m => m.id);
+                    } catch (error) {
+                        console.error('Error searching manufacturers:', error);
+                    }
+                    
+                    // Filter suppliers
+                    filteredSuppliers = filteredSuppliers.filter(supplier => {
+                        // Check supplier name
+                        const nameMatch = supplier.name && supplier.name.toLowerCase().includes(searchTerm);
+                        
+                        // Check manufacturer IDs
+                        const manufacturerIdsArray = supplier.manufacturerIds || [];
+                        const alternativeManufacturerIdsArray = supplier.alternativeManufacturerIds || [];
+                        const hasMatchingManufacturer = manufacturerIds.length > 0 && (
+                            manufacturerIds.some(id => manufacturerIdsArray.includes(id)) ||
+                            manufacturerIds.some(id => alternativeManufacturerIdsArray.includes(id))
+                        );
+                        
+                        return nameMatch || hasMatchingManufacturer;
                     });
                 }
                 
-                // Use OR to combine all filters
-                if (filters.length > 1) {
-                    criteria.addFilter(Criteria.multi('OR', filters));
-                } else {
-                    criteria.addFilter(filters[0]);
-                }
-            }
-
-            try {
-                const result = await this.supplierRepository.search(criteria, Shopware.Context.api);
-                this.suppliers = result;
-                this.total = result.total;
+                // Apply pagination
+                const start = (this.page - 1) * this.limit;
+                const end = start + this.limit;
+                const paginatedSuppliers = filteredSuppliers.slice(start, end);
+                
+                // Create collection from array - sw-entity-listing expects EntityCollection
+                const collection = this.supplierRepository.createCollection(paginatedSuppliers);
+                collection.total = filteredSuppliers.length;
+                
+                this.suppliers = collection;
+                this.total = filteredSuppliers.length;
             } finally {
                 this.isLoading = false;
             }
