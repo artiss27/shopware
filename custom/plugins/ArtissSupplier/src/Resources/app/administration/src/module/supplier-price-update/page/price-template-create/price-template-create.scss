@@ -1,4 +1,11 @@
 .price-template-create {
+    // Стили для кнопки сохранения - делаем такой же размер как остальные кнопки
+    .price-template-create__save-button {
+        height: 32px;
+        min-height: 32px;
+        padding: 0 16px;
+    }
+
     .price-template-wizard {
         .wizard-steps {
             margin-bottom: 20px;

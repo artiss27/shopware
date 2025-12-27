@@ -263,6 +263,18 @@ Component.register('price-template-create', {
         ...mapPropertyErrors('template', ['name', 'supplierId'])
     },
 
+    watch: {
+        'template.config.modifiers': {
+            handler() {
+                // Recalculate prices when modifiers change (if preview data is already loaded)
+                if (this.allPreviewData && this.allPreviewData.length > 0) {
+                    this.recalculateAllPrices();
+                }
+            },
+            deep: true
+        }
+    },
+
     created() {
         this.loadData();
         this.loadMediaFolder();
@@ -823,17 +835,13 @@ Component.register('price-template-create', {
                         false
                     );
                     this.parsedPriceData = parseResult.data || [];
-                    console.log('Parsed price data:', this.parsedPriceData.length, 'items');
                 } catch (parseError) {
                     console.error('Error loading parsed price data:', parseError);
                     this.parsedPriceData = [];
                 }
 
                 const result = await this.priceUpdateService.matchPreview(this.template.id);
-                console.log('Match preview result:', result);
                 const allData = result.matched || [];
-                console.log('All data items:', allData.length);
-                console.log('First item:', allData[0]);
 
                 // Auto-save matched products to mapping
                 const matchedItems = allData.filter(item => item.status === 'matched' && item.product_id && item.supplier_code);
@@ -846,13 +854,9 @@ Component.register('price-template-create', {
                 this.previewTotal = allData.length;
                 // Reset to first page when loading new data
                 this.previewPage = 1;
-                console.log('Preview total:', this.previewTotal);
-                console.log('Preview page:', this.previewPage);
-                console.log('Preview limit:', this.previewLimit);
 
                 // Apply pagination
                 this.applyPreviewPagination();
-                console.log('After pagination - matchPreviewData items:', this.matchPreviewData.length);
             } catch (error) {
                 console.error('Error loading match preview:', error);
                 this.createNotificationError({
@@ -861,6 +865,29 @@ Component.register('price-template-create', {
             } finally {
                 this.isLoadingMatchPreview = false;
             }
+        },
+        
+        // Recalculate prices for all items when modifiers change
+        recalculateAllPrices() {
+            if (!this.allPreviewData || !this.parsedPriceData) {
+                return;
+            }
+
+            const modifiers = this.template.config.modifiers || [];
+
+            this.allPreviewData.forEach(item => {
+                if (item.supplier_code && item.status === 'matched') {
+                    // Find price data for this item
+                    const priceData = this.parsedPriceData.find(p => p.code === item.supplier_code);
+                    if (priceData) {
+                        const recalculatedPrices = this.calculatePricesWithModifiers(priceData, modifiers);
+                        item.new_prices = recalculatedPrices;
+                    }
+                }
+            });
+
+            // Reapply pagination to update displayed data
+            this.applyPreviewPagination();
         },
 
         applyPreviewPagination() {
@@ -871,13 +898,10 @@ Component.register('price-template-create', {
 
             const start = (this.previewPage - 1) * this.matchPreviewLimit;
             const end = start + this.matchPreviewLimit;
-            console.log('Pagination - start:', start, 'end:', end, 'total:', this.allPreviewData.length);
             this.matchPreviewData = this.allPreviewData.slice(start, end);
-            console.log('Paginated data:', this.matchPreviewData.length);
         },
 
         onPreviewPageChange({ page, limit }) {
-            console.log('Page change event:', page, limit);
             this.previewPage = page;
             this.matchPreviewLimit = limit;
             this.applyPreviewPagination();
@@ -905,21 +929,16 @@ Component.register('price-template-create', {
         },
 
         async onSupplierCodeChange(item, newCode) {
-            console.log('onSupplierCodeChange called!', item, newCode);
-
             if (!this.template.id || !item.product_id) {
-                console.log('Missing template ID or product ID');
                 return;
             }
 
             // Normalize code
             const normalizedCode = newCode ? newCode.trim().toUpperCase() : '';
-            console.log('Normalized code:', normalizedCode);
 
             try {
                 // Find item in local data
                 const itemIndex = this.allPreviewData.findIndex(i => i.product_id === item.product_id);
-                console.log('Item index:', itemIndex);
                 if (itemIndex === -1) {
                     return;
                 }
@@ -996,18 +1015,15 @@ Component.register('price-template-create', {
                 list: priceData.list_price || null
             };
 
-            console.log('calculatePricesWithModifiers - Input prices:', prices);
-            console.log('calculatePricesWithModifiers - Modifiers:', modifiers);
-
             if (!modifiers || !Array.isArray(modifiers)) {
-                console.log('No modifiers to apply');
                 return prices;
             }
 
             // Apply modifiers (must match backend logic)
             modifiers.forEach(modifier => {
                 const priceType = modifier.price_type;
-                const modifierType = modifier.modifier_type;
+                const modifierType = modifier.modifier_type || modifier.modifierType || 'none';
+                // Backend uses modifier_value or value, frontend uses value
                 const value = parseFloat(modifier.modifier_value || modifier.value || 0);
 
                 if (!priceType || modifierType === 'none' || !prices[priceType] || prices[priceType] === null) {
@@ -1024,10 +1040,8 @@ Component.register('price-template-create', {
 
                 // Round to 2 decimals (same as backend)
                 prices[priceType] = Math.round(prices[priceType] * 100) / 100;
-                console.log(`Applied ${modifierType} modifier (${value}) to ${priceType}: ${originalPrice} -> ${prices[priceType]}`);
             });
 
-            console.log('calculatePricesWithModifiers - Output prices:', prices);
             return prices;
         },
 

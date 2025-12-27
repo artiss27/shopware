@@ -162,7 +162,6 @@ class PriceUpdateService
 
         // Calculate prices with modifiers
         $modifiers = $config['modifiers'] ?? [];
-        error_log('matchProductsPreview - Modifiers from config: ' . json_encode($modifiers));
         $currencies = $config['price_currencies'] ?? [
             'purchase' => 'UAH',
             'retail' => 'UAH',
@@ -442,19 +441,12 @@ class PriceUpdateService
             'list' => $priceData['list_price'] ?? null,
         ];
 
-        error_log('applyModifiers - Input prices: ' . json_encode($prices));
-        error_log('applyModifiers - Modifiers count: ' . count($modifiers));
-        error_log('applyModifiers - Modifiers: ' . json_encode($modifiers));
-
         foreach ($modifiers as $modifier) {
             $priceType = $modifier['price_type'] ?? null;
             $modifierType = $modifier['modifier_type'] ?? 'none';
             $value = (float) ($modifier['modifier_value'] ?? $modifier['value'] ?? 0);
 
-            error_log("Processing modifier - priceType: {$priceType}, modifierType: {$modifierType}, value: {$value}");
-
             if (!$priceType || $modifierType === 'none' || !isset($prices[$priceType]) || $prices[$priceType] === null) {
-                error_log("Skipping modifier - conditions not met");
                 continue;
             }
 
@@ -462,17 +454,14 @@ class PriceUpdateService
 
             if ($modifierType === 'percentage') {
                 $prices[$priceType] = $originalPrice * (1 + $value / 100);
-                error_log("Applied percentage: {$originalPrice} * (1 + {$value}/100) = {$prices[$priceType]}");
             } elseif ($modifierType === 'fixed') {
                 $prices[$priceType] = $originalPrice + $value;
-                error_log("Applied fixed: {$originalPrice} + {$value} = {$prices[$priceType]}");
             }
 
             // Round to 2 decimals
             $prices[$priceType] = round($prices[$priceType], 2);
         }
 
-        error_log('applyModifiers - Output prices: ' . json_encode($prices));
         return $prices;
     }
 
