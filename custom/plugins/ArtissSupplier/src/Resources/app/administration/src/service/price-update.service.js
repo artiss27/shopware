@@ -89,13 +89,13 @@ class PriceUpdateService extends ApiService {
             });
     }
 
-    autoMatch(templateId, batchSize = 50, offset = 0) {
+    autoMatch(templateId, batchSize = 50, offset = 0, minMatchPercentage = 50) {
         const headers = this.getBasicHeaders();
 
         return this.httpClient
             .post(
                 `/_action/${this.getApiBasePath()}/price-update/auto-match`,
-                { templateId, batchSize, offset },
+                { templateId, batchSize, offset, minMatchPercentage },
                 { headers }
             )
             .then((response) => {

@@ -336,8 +336,29 @@
                         </div>
 
                         <div class="preview-actions">
-                            <sw-button @click="autoMatchProducts" :isLoading="isAutoMatching">
+                            <sw-number-field
+                                v-if="!isAutoMatching"
+                                v-model="minMatchPercentage"
+                                :placeholder="$tc('supplier.priceUpdate.wizard.minMatchPercentage')"
+                                :min="0"
+                                :max="100"
+                                :step="5"
+                                numberType="int"
+                                size="small"
+                                style="width: 80px; margin-right: 8px;">
+                            </sw-number-field>
+
+                            <sw-button
+                                v-if="!isAutoMatching"
+                                @click="autoMatchProducts">
                                 {{ $tc('supplier.priceUpdate.wizard.buttonAutoMatch') }}
+                            </sw-button>
+
+                            <sw-button
+                                v-if="isAutoMatching"
+                                @click="stopAutoMatch"
+                                variant="danger">
+                                {{ $tc('supplier.priceUpdate.wizard.buttonStopAutoMatch') }}
                             </sw-button>
 
                             <sw-button
@@ -422,12 +443,34 @@
                                 {{ item.current_kod_postavschika || '-' }}
                             </template>
                             <template #column-supplier_code="{ item }">
-                                <sw-text-field
-                                    v-model="item.supplier_code"
-                                    @change="onSupplierCodeChange(item, item.supplier_code)"
-                                    size="small"
-                                    borderless
-                                ></sw-text-field>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <sw-text-field
+                                        v-model="item.supplier_code"
+                                        @change="onSupplierCodeChange(item, item.supplier_code)"
+                                        size="small"
+                                        borderless
+                                        style="flex: 1;"
+                                    ></sw-text-field>
+
+                                    <template v-if="item.status === 'auto_matched'">
+                                        <sw-icon
+                                            name="solid-check-circle"
+                                            size="16px"
+                                            color="#37d046"
+                                            style="cursor: pointer;"
+                                            @click="confirmAutoMatch(item)"
+                                            title="Подтвердить автоподбор">
+                                        </sw-icon>
+                                        <sw-icon
+                                            name="solid-times-circle"
+                                            size="16px"
+                                            color="#de294c"
+                                            style="cursor: pointer;"
+                                            @click="rejectAutoMatch(item)"
+                                            title="Отклонить автоподбор">
+                                        </sw-icon>
+                                    </template>
+                                </div>
                             </template>
                             <template #column-supplier_name="{ item }">
                                 {{ item.supplier_name || '-' }}

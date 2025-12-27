@@ -160,6 +160,7 @@ class PriceUpdateController extends AbstractController
         $templateId = $request->request->get('templateId');
         $batchSize = (int) ($request->request->get('batchSize') ?? 50);
         $offset = (int) ($request->request->get('offset') ?? 0);
+        $minMatchPercentage = (int) ($request->request->get('minMatchPercentage') ?? 50);
 
         if (!$templateId) {
             return new JsonResponse(['error' => 'templateId is required'], 400);
@@ -170,7 +171,8 @@ class PriceUpdateController extends AbstractController
                 $templateId,
                 $context,
                 $batchSize,
-                $offset
+                $offset,
+                $minMatchPercentage
             );
 
             return new JsonResponse([

@@ -188,6 +188,7 @@ class ProductMatchingService
             'product_name' => $item['product']['name'],
             'product_number' => $item['product']['productNumber'],
             'matched_tokens' => $item['matched'],
+            'original_tokens_count' => count($item['product']['tokens']),
             'level' => $item['level'],
         ];
     }

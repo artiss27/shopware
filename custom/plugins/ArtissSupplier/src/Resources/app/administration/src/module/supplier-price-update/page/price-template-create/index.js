@@ -43,7 +43,9 @@ Component.register('price-template-create', {
             currencyOptions: [],
             allSelectedColumnTypes: new Set(), // Track all selected column types across all columns
             hiddenColumns: ['supplier_name', 'supplier_code', 'current_kod_postavschika'], // Hidden columns by default
-            toggleColumnMenu: false // Column visibility menu state
+            toggleColumnMenu: false, // Column visibility menu state
+            minMatchPercentage: 50, // Minimum percentage for auto-match (default 50%)
+            cancelAutoMatch: false // Flag to cancel auto-match process
         };
     },
 
@@ -1150,6 +1152,7 @@ Component.register('price-template-create', {
             this.hiddenColumns = [];
 
             this.isAutoMatching = true;
+            this.cancelAutoMatch = false; // Reset cancel flag
             let totalMatched = 0;
             let offset = 0;
             const batchSize = 50;
@@ -1157,11 +1160,21 @@ Component.register('price-template-create', {
             try {
                 // Process in batches
                 while (true) {
+                    // Check if user cancelled the process
+                    if (this.cancelAutoMatch) {
+                        console.log('[AutoMatch] Cancelled by user');
+                        this.createNotificationInfo({
+                            message: this.$tc('supplier.priceUpdate.wizard.infoCancelled')
+                        });
+                        break;
+                    }
+
                     // Call auto-match API for current batch
                     const result = await this.priceUpdateService.autoMatch(
                         this.template.id,
                         batchSize,
-                        offset
+                        offset,
+                        this.minMatchPercentage
                     );
 
                     if (!result.stats) {
@@ -1288,6 +1301,10 @@ Component.register('price-template-create', {
             }
         },
 
+        stopAutoMatch() {
+            this.cancelAutoMatch = true;
+        },
+
         clearAllBindings() {
             if (!this.allPreviewData) {
                 console.log('[ClearBindings] No allPreviewData');
@@ -1352,6 +1369,77 @@ Component.register('price-template-create', {
                     message: 'Нет автоматических привязок для очистки'
                 });
             }
+        },
+
+        async confirmAutoMatch(item) {
+            if (!item.product_id || !item.supplier_code) {
+                return;
+            }
+
+            try {
+                // Save mapping to database via API
+                await this.priceUpdateService.updateMatch(
+                    this.template.id,
+                    item.product_id,
+                    item.supplier_code
+                );
+
+                // Update item status to 'matched'
+                const updatedData = this.allPreviewData.map(dataItem => {
+                    if (dataItem.product_id === item.product_id) {
+                        return {
+                            ...dataItem,
+                            status: 'matched',
+                            is_confirmed: true
+                        };
+                    }
+                    return dataItem;
+                });
+
+                this.allPreviewData = updatedData;
+                this.applyPreviewPagination();
+
+                this.createNotificationSuccess({
+                    message: 'Автоподбор подтверждён'
+                });
+            } catch (error) {
+                console.error('Error confirming auto-match:', error);
+                this.createNotificationError({
+                    message: 'Ошибка подтверждения автоподбора'
+                });
+            }
+        },
+
+        rejectAutoMatch(item) {
+            // Clear supplier code and reset to unmatched status
+            const updatedData = this.allPreviewData.map(dataItem => {
+                if (dataItem.product_id === item.product_id) {
+                    return {
+                        ...dataItem,
+                        supplier_code: '',
+                        supplier_name: '',
+                        status: 'unmatched',
+                        confidence: 'none',
+                        score: null,
+                        matched_candidate: null,
+                        is_confirmed: false,
+                        new_prices: {
+                            purchase: null,
+                            retail: null,
+                            list: null
+                        },
+                        availability: null
+                    };
+                }
+                return dataItem;
+            });
+
+            this.allPreviewData = updatedData;
+            this.applyPreviewPagination();
+
+            this.createNotificationInfo({
+                message: 'Автоподбор отклонён'
+            });
         },
 
         toggleColumnVisibility(columnProperty) {

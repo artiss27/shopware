@@ -331,7 +331,8 @@ class PriceUpdateService
         string $templateId,
         Context $context,
         int $batchSize = 50,
-        int $offset = 0
+        int $offset = 0,
+        int $minMatchPercentage = 50
     ): array {
         $template = $this->getTemplate($templateId, $context);
         $config = $template->getConfig();
@@ -412,19 +413,27 @@ class PriceUpdateService
             $priceItem = $result['price_item'];
             $match = $result['match'];
 
-            // Calculate score and confidence based on matched tokens
+            // Calculate score as percentage of original tokens
             $matchedTokens = $match['matched_tokens'] ?? 0;
+            $originalTokensCount = $match['original_tokens_count'] ?? 1;
             $level = $match['level'] ?? 0;
 
-            // Simple score: matched tokens * 10 + level bonus
-            $score = ($matchedTokens * 10) + ($level * 5);
+            // Score = percentage of matched tokens from original + level bonus
+            $percentage = ($matchedTokens / $originalTokensCount) * 100;
+            $levelBonus = $level * 5;
+            $score = (int) ($percentage + $levelBonus);
+
+            // Skip if percentage is below minimum threshold
+            if ($percentage < $minMatchPercentage) {
+                continue;
+            }
 
             // Confidence based on score
             if ($score >= 100) {
                 $confidence = 'excellent';
-            } elseif ($score >= 60) {
+            } elseif ($score >= 70) {
                 $confidence = 'good';
-            } elseif ($score >= 40) {
+            } elseif ($score >= 50) {
                 $confidence = 'medium';
             } else {
                 $confidence = 'low';
@@ -438,8 +447,10 @@ class PriceUpdateService
                 'product_number' => $match['product_number'] ?? '',
                 'score' => $score,
                 'confidence' => $confidence,
-                'matched_candidate' => sprintf('%d tokens (level %d)',
+                'matched_candidate' => sprintf('%d/%d tokens (%.0f%%, level %d)',
                     $matchedTokens,
+                    $originalTokensCount,
+                    $percentage,
                     $level
                 ),
                 'status' => 'auto_matched',
