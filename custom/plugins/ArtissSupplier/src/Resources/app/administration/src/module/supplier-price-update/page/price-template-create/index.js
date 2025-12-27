@@ -41,7 +41,9 @@ Component.register('price-template-create', {
             equipmentTypePropertyGroupId: '20836795-aab8-97d8-c709-a2535f197268',
             hasRedirected: false,
             currencyOptions: [],
-            allSelectedColumnTypes: new Set() // Track all selected column types across all columns
+            allSelectedColumnTypes: new Set(), // Track all selected column types across all columns
+            hiddenColumns: ['supplier_name', 'supplier_code'], // Hidden columns by default
+            toggleColumnMenu: false // Column visibility menu state
         };
     },
 
@@ -219,6 +221,12 @@ Component.register('price-template-create', {
         matchPreviewColumns() {
             return [
                 {
+                    property: 'row_number',
+                    label: '№',
+                    allowResize: false,
+                    width: '60px'
+                },
+                {
                     property: 'status',
                     label: this.$tc('supplier.priceUpdate.wizard.columnStatus'),
                     allowResize: true,
@@ -254,6 +262,12 @@ Component.register('price-template-create', {
                     width: '120px'
                 }
             ];
+        },
+
+        visibleMatchPreviewColumns() {
+            return this.matchPreviewColumns.filter(col => {
+                return !this.hiddenColumns.includes(col.property);
+            });
         },
 
         productRepository() {
@@ -898,7 +912,10 @@ Component.register('price-template-create', {
 
             const start = (this.previewPage - 1) * this.matchPreviewLimit;
             const end = start + this.matchPreviewLimit;
-            this.matchPreviewData = this.allPreviewData.slice(start, end);
+            this.matchPreviewData = this.allPreviewData.slice(start, end).map((item, index) => ({
+                ...item,
+                row_number: start + index + 1
+            }));
         },
 
         onPreviewPageChange({ page, limit }) {
@@ -1067,6 +1084,9 @@ Component.register('price-template-create', {
         },
 
         async autoMatchProducts() {
+            // Show all columns when auto-matching
+            this.hiddenColumns = [];
+
             // TODO: Implement auto-match logic
             this.isAutoMatching = true;
             try {
@@ -1074,6 +1094,21 @@ Component.register('price-template-create', {
             } finally {
                 this.isAutoMatching = false;
             }
+        },
+
+        toggleColumnVisibility(columnProperty) {
+            const index = this.hiddenColumns.indexOf(columnProperty);
+            if (index > -1) {
+                // Show column
+                this.hiddenColumns.splice(index, 1);
+            } else {
+                // Hide column
+                this.hiddenColumns.push(columnProperty);
+            }
+        },
+
+        isColumnVisible(columnProperty) {
+            return !this.hiddenColumns.includes(columnProperty);
         },
 
         async confirmAllMatches() {

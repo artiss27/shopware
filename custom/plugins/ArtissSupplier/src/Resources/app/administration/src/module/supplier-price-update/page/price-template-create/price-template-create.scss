@@ -406,5 +406,68 @@
                 }
             }
         }
+
+        // Preview table card with full width and margin
+        .preview-table-card {
+            margin-top: 30px;
+
+            // Make the card full-width by breaking out of container
+            margin-left: -20px;
+            margin-right: -20px;
+            width: calc(100% + 40px);
+            max-width: none;
+
+            .preview-actions {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+
+                .column-toggle-dropdown {
+                    margin-left: auto;
+                    position: relative;
+
+                    .sw-button {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                    }
+
+                    .column-menu {
+                        position: absolute;
+                        top: 100%;
+                        right: 0;
+                        margin-top: 4px;
+                        background: white;
+                        border: 1px solid #d1d9e0;
+                        border-radius: 4px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                        min-width: 200px;
+                        z-index: 100;
+                        overflow: hidden;
+
+                        .column-menu-item {
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            padding: 10px 16px;
+                            cursor: pointer;
+                            transition: background-color 0.2s ease;
+                            user-select: none;
+
+                            &:hover {
+                                background-color: #f5f7fa;
+                            }
+
+                            span {
+                                font-size: 14px;
+                                color: #52667a;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

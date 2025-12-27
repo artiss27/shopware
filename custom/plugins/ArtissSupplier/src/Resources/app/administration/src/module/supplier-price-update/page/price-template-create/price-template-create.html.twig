@@ -298,7 +298,8 @@
                     <!-- Match Preview Table -->
                     <sw-card
                         v-if="matchPreviewData && matchPreviewData.length > 0"
-                        :title="$tc('supplier.priceUpdate.wizard.step3PreviewTitle')">
+                        :title="$tc('supplier.priceUpdate.wizard.step3PreviewTitle')"
+                        class="preview-table-card">
 
                         <div class="preview-actions">
                             <sw-button @click="autoMatchProducts" :isLoading="isAutoMatching">
@@ -311,11 +312,34 @@
                                 variant="primary">
                                 {{ $tc('supplier.priceUpdate.wizard.buttonConfirmAll') }}
                             </sw-button>
+
+                            <div class="column-toggle-dropdown">
+                                <sw-button size="small" @click="toggleColumnMenu = !toggleColumnMenu">
+                                    <sw-icon name="regular-eye" size="16px" />
+                                    Колонки
+                                    <sw-icon :name="toggleColumnMenu ? 'regular-chevron-up-xs' : 'regular-chevron-down-xs'" size="12px" />
+                                </sw-button>
+
+                                <div v-if="toggleColumnMenu" class="column-menu">
+                                    <div
+                                        v-for="column in matchPreviewColumns.filter(c => c.property !== 'row_number')"
+                                        :key="column.property"
+                                        @click="toggleColumnVisibility(column.property)"
+                                        class="column-menu-item">
+                                        <sw-icon
+                                            :name="isColumnVisible(column.property) ? 'regular-checkmark-xs' : 'regular-times-xs'"
+                                            size="16px"
+                                            :color="isColumnVisible(column.property) ? '#37d046' : '#de294c'"
+                                        />
+                                        <span>{{ column.label }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <sw-data-grid
                             :dataSource="matchPreviewData"
-                            :columns="matchPreviewColumns"
+                            :columns="visibleMatchPreviewColumns"
                             :showSelection="false"
                             :showActions="false"
                             :isLoading="isLoadingMatchPreview"
@@ -330,6 +354,9 @@
                                     :total-visible="7"
                                     @page-change="onPreviewPageChange"
                                 />
+                            </template>
+                            <template #column-row_number="{ item }">
+                                {{ item.row_number }}
                             </template>
                             <template #column-product_name="{ item }">
                                 {{ item.product_name || '-' }}
