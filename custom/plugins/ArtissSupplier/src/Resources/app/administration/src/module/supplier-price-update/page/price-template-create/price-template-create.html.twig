@@ -393,7 +393,14 @@
                                 {{ item.row_number }}
                             </template>
                             <template #column-product_name="{ item }">
-                                {{ item.product_name || '-' }}
+                                <router-link
+                                    v-if="item.product_id"
+                                    :to="{ name: 'sw.product.detail', params: { id: item.product_id } }"
+                                    target="_blank"
+                                    class="product-name-link">
+                                    {{ item.product_name || '-' }}
+                                </router-link>
+                                <span v-else>{{ item.product_name || '-' }}</span>
                             </template>
                             <template #column-status="{ item }">
                                 <sw-label
@@ -401,6 +408,9 @@
                                     size="small">
                                     {{ item.status === 'matched' ? 'Найден' : (item.status === 'edited' ? 'Отредактирован' : 'Не найден') }}
                                 </sw-label>
+                            </template>
+                            <template #column-current_kod_postavschika="{ item }">
+                                {{ item.current_kod_postavschika || '-' }}
                             </template>
                             <template #column-supplier_code="{ item }">
                                 <sw-text-field

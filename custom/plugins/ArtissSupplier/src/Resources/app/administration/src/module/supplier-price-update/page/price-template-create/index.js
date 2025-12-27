@@ -42,7 +42,7 @@ Component.register('price-template-create', {
             hasRedirected: false,
             currencyOptions: [],
             allSelectedColumnTypes: new Set(), // Track all selected column types across all columns
-            hiddenColumns: ['supplier_name', 'supplier_code'], // Hidden columns by default
+            hiddenColumns: ['supplier_name', 'supplier_code', 'current_kod_postavschika'], // Hidden columns by default
             toggleColumnMenu: false // Column visibility menu state
         };
     },
@@ -271,8 +271,14 @@ Component.register('price-template-create', {
                     primary: true
                 },
                 {
-                    property: 'supplier_code',
+                    property: 'current_kod_postavschika',
                     label: this.$tc('supplier.priceUpdate.wizard.columnSupplierCode'),
+                    allowResize: true,
+                    width: '200px'
+                },
+                {
+                    property: 'supplier_code',
+                    label: this.$tc('supplier.priceUpdate.wizard.columnSupplierCodeFromPrice'),
                     allowResize: true,
                     width: '200px'
                 },

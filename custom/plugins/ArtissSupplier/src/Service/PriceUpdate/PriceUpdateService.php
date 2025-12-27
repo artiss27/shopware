@@ -53,15 +53,6 @@ class PriceUpdateService
 
         $media = $this->getMedia($mediaId, $context);
 
-        // Check if we can use cached data
-        if (!$forceRefresh
-            && $template->getLastImportMediaId() === $mediaId
-            && $template->getLastImportMediaUpdatedAt() === $media->getUpdatedAt()
-            && $template->getNormalizedData() !== null
-        ) {
-            return json_decode($template->getNormalizedData(), true);
-        }
-
         // Build parser config from new structure
         $columnMapping = $config['column_mapping'] ?? [];
         
@@ -83,15 +74,8 @@ class PriceUpdateService
             throw new \RuntimeException('No data found in price list. Please check column mapping and start row configuration.');
         }
 
-        // Save normalized data to template
-        $this->priceTemplateRepository->update([
-            [
-                'id' => $templateId,
-                'normalizedData' => json_encode($normalizedData),
-                'lastImportMediaId' => $mediaId,
-                'lastImportMediaUpdatedAt' => $media->getUpdatedAt(),
-            ],
-        ], $context);
+        // Note: normalized_data field is no longer used - we parse file each time
+        // Keeping the field in DB for now but not storing data there
 
         return $normalizedData;
     }
@@ -129,19 +113,9 @@ class PriceUpdateService
         $template = $this->getTemplate($templateId, $context);
         $config = $template->getConfig();
 
-        // Get normalized data (parse if needed)
-        $normalizedData = $template->getNormalizedData();
+        // Parse file each time (no caching)
         $priceData = [];
-
-        if ($normalizedData !== null && $normalizedData !== '') {
-            $priceData = json_decode($normalizedData, true);
-            if (!is_array($priceData)) {
-                $priceData = [];
-            }
-        }
-
-        // If no data, try to parse
-        if (empty($priceData) && $config['selected_media_id']) {
+        if ($config['selected_media_id']) {
             try {
                 $priceData = $this->parseAndNormalize(
                     $templateId,
@@ -1103,7 +1077,7 @@ class PriceUpdateService
 
         // Apply same filters as template (manufacturers, categories, equipment types, supplier)
         if (!empty($filters['manufacturers'])) {
-            $criteria->addFilter(new EqualsAnyFilter('productManufacturerId', $filters['manufacturers']));
+            $criteria->addFilter(new EqualsAnyFilter('manufacturerId', $filters['manufacturers']));
         }
 
         if (!empty($filters['categories'])) {

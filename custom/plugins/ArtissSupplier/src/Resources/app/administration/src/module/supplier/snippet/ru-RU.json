@@ -131,6 +131,7 @@
         "columnProductNumber": "Артикул",
         "columnStatus": "Статус",
         "columnSupplierCode": "Код поставщика",
+        "columnSupplierCodeFromPrice": "Код поставщика из прайса",
         "columnSupplierName": "Название из прайса",
         "columnPrices": "Цены",
         "columnAvailability": "Остаток",

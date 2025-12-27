@@ -131,6 +131,7 @@
         "columnProductNumber": "Артикул",
         "columnStatus": "Статус",
         "columnSupplierCode": "Код постачальника",
+        "columnSupplierCodeFromPrice": "Код постачальника з прайсу",
         "columnSupplierName": "Назва з прайса",
         "columnPrices": "Ціни",
         "columnAvailability": "Залишок",
