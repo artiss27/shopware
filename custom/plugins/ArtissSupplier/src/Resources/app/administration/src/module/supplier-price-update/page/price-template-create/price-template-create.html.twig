@@ -324,7 +324,7 @@
                             <template #pagination>
                                 <sw-pagination
                                     :page="previewPage"
-                                    :limit="previewLimit"
+                                    :limit="matchPreviewLimit"
                                     :total="previewTotal"
                                     :total-visible="7"
                                     @page-change="onPreviewPageChange"
@@ -384,8 +384,14 @@
                                 <span v-else class="price-empty">-</span>
                             </template>
                             <template #column-availability="{ item }">
-                                <span v-if="item.availability !== null && item.availability !== undefined">
-                                    {{ item.availability }} (тек: {{ item.current_stock || 0 }})
+                                <span v-if="template.config.filters.availability_action === 'dont_change'">
+                                    {{ item.current_stock || 0 }}
+                                </span>
+                                <span v-else-if="template.config.filters.availability_action === 'set_1000'">
+                                    1000
+                                </span>
+                                <span v-else-if="template.config.filters.availability_action === 'set_from_price'">
+                                    {{ (item.availability !== null && item.availability !== undefined) ? item.availability : 0 }}
                                 </span>
                                 <span v-else>-</span>
                             </template>

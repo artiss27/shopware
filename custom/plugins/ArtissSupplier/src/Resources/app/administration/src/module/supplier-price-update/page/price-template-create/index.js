@@ -34,6 +34,7 @@ Component.register('price-template-create', {
             isApplyingPrices: false,
             previewPage: 1,
             previewTotal: 0,
+            matchPreviewLimit: 50, // Лимит для таблицы предпросмотра товаров
             allPreviewData: null,
             parsedPriceData: null,
             equipmentTypes: [],
@@ -170,9 +171,8 @@ Component.register('price-template-create', {
 
         availabilityActionOptions() {
             return [
-                { value: 'set_from_price', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionSetFromPrice') },
                 { value: 'dont_change', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionDontChange') },
-                { value: 'set_zero_if_missing', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionSetZeroIfMissing') },
+                { value: 'set_from_price', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionSetFromPrice') },
                 { value: 'set_1000', label: this.$tc('supplier.priceUpdate.wizard.availabilityActionSet1000') }
             ];
         },
@@ -869,8 +869,8 @@ Component.register('price-template-create', {
                 return;
             }
 
-            const start = (this.previewPage - 1) * this.previewLimit;
-            const end = start + this.previewLimit;
+            const start = (this.previewPage - 1) * this.matchPreviewLimit;
+            const end = start + this.matchPreviewLimit;
             console.log('Pagination - start:', start, 'end:', end, 'total:', this.allPreviewData.length);
             this.matchPreviewData = this.allPreviewData.slice(start, end);
             console.log('Paginated data:', this.matchPreviewData.length);
@@ -879,7 +879,7 @@ Component.register('price-template-create', {
         onPreviewPageChange({ page, limit }) {
             console.log('Page change event:', page, limit);
             this.previewPage = page;
-            this.previewLimit = limit;
+            this.matchPreviewLimit = limit;
             this.applyPreviewPagination();
         },
 
@@ -996,20 +996,38 @@ Component.register('price-template-create', {
                 list: priceData.list_price || null
             };
 
-            // Apply modifiers (simplified - actual logic is on backend)
+            console.log('calculatePricesWithModifiers - Input prices:', prices);
+            console.log('calculatePricesWithModifiers - Modifiers:', modifiers);
+
+            if (!modifiers || !Array.isArray(modifiers)) {
+                console.log('No modifiers to apply');
+                return prices;
+            }
+
+            // Apply modifiers (must match backend logic)
             modifiers.forEach(modifier => {
                 const priceType = modifier.price_type;
-                const basePrice = prices[priceType];
+                const modifierType = modifier.modifier_type;
+                const value = parseFloat(modifier.modifier_value || modifier.value || 0);
 
-                if (basePrice && modifier.modifier_type && modifier.modifier_value) {
-                    if (modifier.modifier_type === 'percentage') {
-                        prices[priceType] = basePrice * (1 + modifier.modifier_value / 100);
-                    } else if (modifier.modifier_type === 'fixed') {
-                        prices[priceType] = basePrice + modifier.modifier_value;
-                    }
+                if (!priceType || modifierType === 'none' || !prices[priceType] || prices[priceType] === null) {
+                    return;
                 }
+
+                const originalPrice = parseFloat(prices[priceType]);
+
+                if (modifierType === 'percentage') {
+                    prices[priceType] = originalPrice * (1 + value / 100);
+                } else if (modifierType === 'fixed') {
+                    prices[priceType] = originalPrice + value;
+                }
+
+                // Round to 2 decimals (same as backend)
+                prices[priceType] = Math.round(prices[priceType] * 100) / 100;
+                console.log(`Applied ${modifierType} modifier (${value}) to ${priceType}: ${originalPrice} -> ${prices[priceType]}`);
             });
 
+            console.log('calculatePricesWithModifiers - Output prices:', prices);
             return prices;
         },
 

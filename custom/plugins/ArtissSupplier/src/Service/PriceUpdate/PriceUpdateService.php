@@ -162,6 +162,7 @@ class PriceUpdateService
 
         // Calculate prices with modifiers
         $modifiers = $config['modifiers'] ?? [];
+        error_log('matchProductsPreview - Modifiers from config: ' . json_encode($modifiers));
         $currencies = $config['price_currencies'] ?? [
             'purchase' => 'UAH',
             'retail' => 'UAH',
@@ -441,12 +442,19 @@ class PriceUpdateService
             'list' => $priceData['list_price'] ?? null,
         ];
 
+        error_log('applyModifiers - Input prices: ' . json_encode($prices));
+        error_log('applyModifiers - Modifiers count: ' . count($modifiers));
+        error_log('applyModifiers - Modifiers: ' . json_encode($modifiers));
+
         foreach ($modifiers as $modifier) {
             $priceType = $modifier['price_type'] ?? null;
             $modifierType = $modifier['modifier_type'] ?? 'none';
-            $value = (float) ($modifier['value'] ?? 0);
+            $value = (float) ($modifier['modifier_value'] ?? $modifier['value'] ?? 0);
 
-            if (!$priceType || $modifierType === 'none' || !isset($prices[$priceType])) {
+            error_log("Processing modifier - priceType: {$priceType}, modifierType: {$modifierType}, value: {$value}");
+
+            if (!$priceType || $modifierType === 'none' || !isset($prices[$priceType]) || $prices[$priceType] === null) {
+                error_log("Skipping modifier - conditions not met");
                 continue;
             }
 
@@ -454,14 +462,17 @@ class PriceUpdateService
 
             if ($modifierType === 'percentage') {
                 $prices[$priceType] = $originalPrice * (1 + $value / 100);
+                error_log("Applied percentage: {$originalPrice} * (1 + {$value}/100) = {$prices[$priceType]}");
             } elseif ($modifierType === 'fixed') {
                 $prices[$priceType] = $originalPrice + $value;
+                error_log("Applied fixed: {$originalPrice} + {$value} = {$prices[$priceType]}");
             }
 
             // Round to 2 decimals
             $prices[$priceType] = round($prices[$priceType], 2);
         }
 
+        error_log('applyModifiers - Output prices: ' . json_encode($prices));
         return $prices;
     }
 
@@ -602,21 +613,13 @@ class PriceUpdateService
 
             // Apply availability logic based on action
             if ($availabilityAction === 'set_from_price') {
-                // Use value from price list if available
+                // Use value from price list if available, otherwise set to 0
                 if (isset($match['availability']) && $match['availability'] !== null && $match['availability'] !== '') {
                     $stock = max(0, (int) $match['availability']);
                     $productUpdate['stock'] = $stock;
                 } else {
                     // No availability in price list - set to 0
                     $productUpdate['stock'] = 0;
-                }
-            } elseif ($availabilityAction === 'set_zero_if_missing') {
-                // Set to 0 if product not in price list or no availability
-                if (!isset($match['availability']) || $match['availability'] === null || $match['availability'] === '') {
-                    $productUpdate['stock'] = 0;
-                } elseif (isset($match['availability'])) {
-                    $stock = max(0, (int) $match['availability']);
-                    $productUpdate['stock'] = $stock;
                 }
             } elseif ($availabilityAction === 'set_1000') {
                 // Always set to 1000

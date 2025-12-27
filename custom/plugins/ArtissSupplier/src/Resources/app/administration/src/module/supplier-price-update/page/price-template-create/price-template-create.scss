@@ -248,22 +248,22 @@
                     margin-bottom: 0 !important;
                     width: auto;
 
-                    // Remove mt-field class styles completely
-                    :deep(.mt-field) {
-                        margin-top: 0 !important;
-                        margin-bottom: 0 !important;
-                        padding: 0 !important;
-                    }
-
-                    // Also target the field wrapper directly
-                    :deep(.sw-field) {
+                    .sw-field,
+                    .mt-field {
                         margin-top: 0 !important;
                         margin-bottom: 0 !important;
                     }
 
-                    // Remove any container styles
-                    :deep(.sw-field__label) {
+                    .sw-field__label,
+                    .mt-field__label {
+                        display: none;
                         margin-bottom: 0 !important;
+                    }
+
+                    .sw-field__content,
+                    .mt-block-field__block {
+                        margin-top: 0 !important;
+                        min-height: auto !important;
                     }
                 }
 
@@ -297,22 +297,23 @@
         }
 
         // Стили для редактируемого поля "Код поставщика" в таблице предпросмотра
-        :deep(.sw-data-grid) {
+        .sw-data-grid {
             .sw-data-grid__cell-content {
-                .sw-text-field {
+                height: auto;
+                .mt-text-field {
                     margin: 0;
                     width: 100%;
 
-                    .sw-field {
+                    .mt-field {
                         margin-bottom: 0;
                     }
 
-                    .sw-field__label {
+                    .mt-field__label {
                         display: none;
                     }
 
-                    .sw-field__content {
-                        margin-top: 0;
+                    .mt-block-field__block {
+                        min-height: auto !important;
                     }
 
                     input {
@@ -337,56 +338,65 @@
         }
 
         // Стили для улучшенного отображения цен
-        .price-display {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 12px;
-            line-height: 1.4;
-
-            .price-item {
+        .sw-data-grid__cell-content {
+            height: auto;
+            .price-display {
                 display: flex;
-                align-items: baseline;
-                gap: 6px;
-                flex-wrap: wrap;
+                flex-direction: column;
+                gap: 4px;
+                font-size: 12px;
+                line-height: 1.4;
+                margin: 0;
+                padding: 0;
 
-                .price-label {
-                    font-weight: 600;
-                    color: #52667a;
-                    min-width: 45px;
-                }
+                .price-item {
+                    display: flex;
+                    align-items: baseline;
+                    gap: 6px;
+                    flex-wrap: wrap;
+                    margin: 0;
 
-                .price-value {
-                    font-weight: 600;
-                    font-size: 13px;
-
-                    &.price-new {
-                        color: #37d046;
-                    }
-
-                    &.price-increase {
-                        color: #ff6b6b;
-                    }
-
-                    &.price-decrease {
-                        color: #37d046;
-                    }
-
-                    &.price-same {
+                    .price-label {
+                        font-weight: 600;
                         color: #52667a;
+                        min-width: 45px;
+                        font-size: 12px;
+                    }
+
+                    .price-value {
+                        font-weight: 600;
+                        font-size: 13px;
+                        display: inline-block;
+
+                        &.price-new {
+                            color: #37d046;
+                        }
+
+                        &.price-increase {
+                            color: #ff6b6b;
+                        }
+
+                        &.price-decrease {
+                            color: #37d046;
+                        }
+
+                        &.price-same {
+                            color: #52667a;
+                        }
+                    }
+
+                    .price-old {
+                        color: #8b95a7;
+                        font-size: 11px;
+                        text-decoration: line-through;
+                        margin-left: 4px;
+                        display: inline-block;
                     }
                 }
 
-                .price-old {
+                .price-empty {
                     color: #8b95a7;
-                    font-size: 11px;
-                    text-decoration: line-through;
-                    margin-left: 4px;
                 }
-            }
-
-            .price-empty {
-                color: #8b95a7;
             }
         }
     }
