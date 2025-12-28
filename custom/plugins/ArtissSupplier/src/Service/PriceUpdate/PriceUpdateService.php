@@ -1167,11 +1167,6 @@ class PriceUpdateService
         $config = $template->getConfig();
         $filters = $config['filters'] ?? [];
 
-        error_log('[ZERO_STOCK] Starting setZeroStockForMissingProducts');
-        error_log('[ZERO_STOCK] Matched product IDs count: ' . count($matchedProductIds));
-        error_log('[ZERO_STOCK] Matched product IDs: ' . json_encode($matchedProductIds));
-        error_log('[ZERO_STOCK] Filters: ' . json_encode($filters));
-
         // Build criteria to find products that match template filters
         $criteria = new Criteria();
 
@@ -1192,41 +1187,28 @@ class PriceUpdateService
             $criteria->addFilter(new EqualsFilter('customFields.product_supplier_id', $filters['supplier']));
         }
 
-        // Limit to reasonable number to avoid performance issues
         $criteria->setLimit(5000);
-
-        error_log('[ZERO_STOCK] About to search for products...');
 
         try {
             $products = $this->productRepository->search($criteria, $context);
-            error_log('[ZERO_STOCK] Search completed successfully');
         } catch (\Exception $e) {
-            error_log('[ZERO_STOCK] ERROR during search: ' . $e->getMessage());
-            error_log('[ZERO_STOCK] Exception trace: ' . $e->getTraceAsString());
             return 0;
         }
-
-        error_log('[ZERO_STOCK] Found products matching filters: ' . $products->count());
 
         if ($products->count() === 0) {
-            error_log('[ZERO_STOCK] No products found, returning 0');
             return 0;
         }
 
-        // Prepare updates to set stock = 0, but exclude matched products
         $updateData = [];
         $matchedIdsFlipped = array_flip($matchedProductIds);
 
         foreach ($products as $product) {
             $productId = $product->getId();
 
-            // Skip products that were matched in current price list
             if (isset($matchedIdsFlipped[$productId])) {
-                error_log('[ZERO_STOCK] Skipping matched product: ' . $productId);
                 continue;
             }
 
-            error_log('[ZERO_STOCK] Will update product: ' . $productId . ' (stock: ' . $product->getStock() . ' -> 0)');
             $updateData[] = [
                 'id' => $productId,
                 'stock' => 0,
@@ -1234,11 +1216,9 @@ class PriceUpdateService
         }
 
         if (empty($updateData)) {
-            error_log('[ZERO_STOCK] No products to update after filtering matched ones');
             return 0;
         }
 
-        // Update products in batches
         $batchSize = 100;
         $batches = array_chunk($updateData, $batchSize);
         $totalUpdated = 0;
@@ -1247,15 +1227,11 @@ class PriceUpdateService
             try {
                 $this->productRepository->update($batch, $context);
                 $totalUpdated += count($batch);
-                error_log('[ZERO_STOCK] Updated batch of ' . count($batch) . ' products');
             } catch (\Exception $e) {
-                error_log('[ZERO_STOCK] Error updating batch: ' . $e->getMessage());
-                // Continue with next batch even if this one fails
                 continue;
             }
         }
 
-        error_log('[ZERO_STOCK] Total updated: ' . $totalUpdated);
         return $totalUpdated;
     }
 

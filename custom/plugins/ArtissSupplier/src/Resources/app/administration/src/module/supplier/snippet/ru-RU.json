@@ -192,6 +192,7 @@
         "errorNoManufacturer": "Выберите хотя бы одного производителя в фильтрах перед автоподбором",
         "infoNoAutoMatches": "Автоматических совпадений не найдено",
         "infoCancelled": "Автоподбор остановлен пользователем",
+        "infoBatchMatched": "Найдено товаров: {count}",
         "successAutoMatch": "{count} товаров автоматически подобрано",
         "successClearBindings": "Все автоматические привязки очищены",
         "errorConfirmMatches": "Ошибка подтверждения сопоставлений",

@@ -335,31 +335,29 @@
                             </div>
                         </div>
 
-                        <div class="preview-actions">
-                            <sw-number-field
-                                v-if="!isAutoMatching"
-                                v-model="minMatchPercentage"
-                                :placeholder="$tc('supplier.priceUpdate.wizard.minMatchPercentage')"
-                                :min="0"
-                                :max="100"
-                                :step="5"
-                                numberType="int"
-                                size="small"
-                                style="width: 80px; margin-right: 8px;">
-                            </sw-number-field>
+                        <div class="preview-actions" style="display: flex; align-items: center; gap: 8px;">
+                            <template v-if="!isAutoMatching">
+                                <input
+                                    type="number"
+                                    v-model.number="minMatchPercentage"
+                                    :placeholder="$tc('supplier.priceUpdate.wizard.minMatchPercentage')"
+                                    min="0"
+                                    max="100"
+                                    step="5"
+                                    style="width: 70px; padding: 6px 8px; border: 1px solid #d1d9e0; border-radius: 4px; font-size: 14px;">
 
-                            <sw-button
-                                v-if="!isAutoMatching"
-                                @click="autoMatchProducts">
-                                {{ $tc('supplier.priceUpdate.wizard.buttonAutoMatch') }}
-                            </sw-button>
+                                <sw-button @click="autoMatchProducts">
+                                    {{ $tc('supplier.priceUpdate.wizard.buttonAutoMatch') }}
+                                </sw-button>
+                            </template>
 
-                            <sw-button
-                                v-if="isAutoMatching"
-                                @click="stopAutoMatch"
-                                variant="danger">
-                                {{ $tc('supplier.priceUpdate.wizard.buttonStopAutoMatch') }}
-                            </sw-button>
+                            <template v-else>
+                                <sw-button
+                                    @click="stopAutoMatch"
+                                    variant="danger">
+                                    {{ $tc('supplier.priceUpdate.wizard.buttonStopAutoMatch') }}
+                                </sw-button>
+                            </template>
 
                             <sw-button
                                 @click="clearAllBindings"

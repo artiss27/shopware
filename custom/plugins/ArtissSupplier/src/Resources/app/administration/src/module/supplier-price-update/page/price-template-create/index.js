@@ -1162,7 +1162,6 @@ Component.register('price-template-create', {
                 while (true) {
                     // Check if user cancelled the process
                     if (this.cancelAutoMatch) {
-                        console.log('[AutoMatch] Cancelled by user');
                         this.createNotificationInfo({
                             message: this.$tc('supplier.priceUpdate.wizard.infoCancelled')
                         });
@@ -1181,49 +1180,16 @@ Component.register('price-template-create', {
                         break;
                     }
 
-                    // Merge auto-matched results with existing preview data
                     if (result.matched && result.matched.length > 0 && this.allPreviewData) {
-                        console.log('[AutoMatch] Received matches:', result.matched.length);
-                        console.log('[AutoMatch] allPreviewData count:', this.allPreviewData.length);
-                        console.log('[AutoMatch] Sample match:', result.matched[0]);
-
                         let batchMatched = 0;
 
-                        // Create new array to ensure reactivity
                         const updatedData = this.allPreviewData.map(item => {
-                            // DEBUG: Log first unmatched item to see its structure
-                            if (offset === 0 && item.status === 'unmatched' && batchMatched === 0) {
-                                console.log('[AutoMatch] First unmatched item:', {
-                                    supplier_code: item.supplier_code,
-                                    product_id: item.product_id,
-                                    status: item.status
-                                });
-                            }
-
-                            // Find if this product has auto-match result
+                            // Find auto-match by supplier_code from price list
                             const autoMatch = result.matched.find(match =>
-                                match.product_id === item.product_id
+                                match.supplier_code === item.supplier_code
                             );
 
-                            // DEBUG: Try to find by supplier_code if product_id didn't match
-                            if (!autoMatch && item.status === 'unmatched') {
-                                const autoMatchByCode = result.matched.find(match =>
-                                    match.supplier_code === item.supplier_code
-                                );
-                                if (autoMatchByCode && offset === 0 && batchMatched === 0) {
-                                    console.log('[AutoMatch] Found match by supplier_code but NOT by product_id!');
-                                    console.log('[AutoMatch] item.supplier_code:', item.supplier_code);
-                                    console.log('[AutoMatch] item.product_id:', item.product_id);
-                                    console.log('[AutoMatch] match:', autoMatchByCode);
-                                }
-                            }
-
                             if (autoMatch) {
-                                console.log('[AutoMatch] Found match for product:', item.product_id);
-                                console.log('[AutoMatch] Current item status:', item.status);
-                                console.log('[AutoMatch] Match data:', autoMatch);
-
-                                // Update if unmatched OR if already auto_matched (re-run)
                                 if (item.status === 'unmatched' || item.status === 'auto_matched') {
                                     // Calculate prices if we have price data
                                     let newPrices = item.new_prices || { purchase: null, retail: null, list: null };
@@ -1243,6 +1209,9 @@ Component.register('price-template-create', {
                                     // Return new object with updated fields
                                     return {
                                         ...item,
+                                        product_id: autoMatch.product_id,
+                                        product_name: autoMatch.product_name,
+                                        product_number: autoMatch.product_number,
                                         supplier_code: autoMatch.supplier_code,
                                         supplier_name: autoMatch.supplier_name,
                                         status: 'auto_matched',
@@ -1261,9 +1230,6 @@ Component.register('price-template-create', {
 
                         this.allPreviewData = updatedData;
                         totalMatched += batchMatched;
-
-                        console.log('[AutoMatch] Matched in this batch:', batchMatched);
-                        console.log('[AutoMatch] Total matched so far:', totalMatched);
                     }
 
                     // Check if more batches remain
@@ -1286,10 +1252,6 @@ Component.register('price-template-create', {
                             count: totalMatched
                         })
                     });
-                } else {
-                    this.createNotificationInfo({
-                        message: this.$tc('supplier.priceUpdate.wizard.infoNoAutoMatches')
-                    });
                 }
             } catch (error) {
                 console.error('Error auto-matching products:', error);
@@ -1307,32 +1269,14 @@ Component.register('price-template-create', {
 
         clearAllBindings() {
             if (!this.allPreviewData) {
-                console.log('[ClearBindings] No allPreviewData');
                 return;
             }
 
-            console.log('[ClearBindings] Starting clear, items:', this.allPreviewData.length);
-
             let clearedCount = 0;
-            let autoMatchedCount = 0;
 
-            // Count all matched items (both manual 'matched' and 'auto_matched')
-            this.allPreviewData.forEach(item => {
-                if (item.status === 'matched' || item.status === 'auto_matched') {
-                    autoMatchedCount++;
-                    console.log('[ClearBindings] Found matched item:', item.product_id, item.status);
-                }
-            });
-
-            console.log('[ClearBindings] Matched items found:', autoMatchedCount);
-
-            // Reset all matched products to unmatched (only on frontend, no DB changes)
-            // Create new array to trigger reactivity
             const updatedData = this.allPreviewData.map(item => {
                 if (item.status === 'matched' || item.status === 'auto_matched') {
                     clearedCount++;
-                    console.log('[ClearBindings] Clearing item:', item.product_id);
-                    // Return new object with cleared fields
                     return {
                         ...item,
                         supplier_code: '',
@@ -1354,10 +1298,6 @@ Component.register('price-template-create', {
             });
 
             this.allPreviewData = updatedData;
-
-            console.log('[ClearBindings] Cleared:', clearedCount);
-
-            // Refresh pagination
             this.applyPreviewPagination();
 
             if (clearedCount > 0) {

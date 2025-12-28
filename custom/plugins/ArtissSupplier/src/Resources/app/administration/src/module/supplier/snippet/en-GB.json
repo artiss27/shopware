@@ -185,7 +185,21 @@
         "statUnmatched": "Unmatched",
         "statTotal": "Total",
         "errorApplyPrices": "Error applying prices",
-        "successApplyPrices": "Prices successfully applied"
+        "successApplyPrices": "Prices successfully applied",
+        "errorLoadSupplier": "Error loading supplier data",
+        "errorLoadCurrencies": "Error loading currencies",
+        "errorMediaUpload": "Error uploading file",
+        "errorMediaRemove": "Error removing file",
+        "errorSetActiveMedia": "Error setting active file",
+        "errorLoadMatchPreview": "Error loading match preview",
+        "errorAutoMatch": "Error auto-matching products",
+        "errorNoManufacturer": "Please select at least one manufacturer in filters before auto-matching",
+        "infoNoAutoMatches": "No automatic matches found",
+        "infoCancelled": "Auto-matching stopped by user",
+        "infoBatchMatched": "Products found: {count}",
+        "successAutoMatch": "{count} products automatically matched",
+        "successClearBindings": "All automatic bindings cleared",
+        "errorConfirmMatches": "Error confirming matches"
       },
       "apply": {
         "title": "Apply Price Update Template",
