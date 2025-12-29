@@ -1186,12 +1186,20 @@ Component.register('price-template-create', {
                         this.minMatchPercentage
                     );
 
+                    console.log('[AutoMatch] Batch result:', {
+                        matched_count: result.matched?.length || 0,
+                        stats: result.stats,
+                        first_match: result.matched?.[0]
+                    });
+
                     if (!result.stats) {
                         break;
                     }
 
                     if (result.matched && result.matched.length > 0 && this.allPreviewData) {
-                        let batchMatched = 0;
+                        // Количество найденных в этом батче - берем напрямую из result
+                        const batchMatched = result.matched.length;
+                        console.log('[AutoMatch] Processing batch with', batchMatched, 'matches');
 
                         const updatedData = this.allPreviewData.map(item => {
                             // Find auto-match by product_id
@@ -1200,39 +1208,35 @@ Component.register('price-template-create', {
                             );
 
                             if (autoMatch) {
-                                if (item.status === 'unmatched' || item.status === 'auto_matched') {
-                                    // Calculate prices if we have price data
-                                    let newPrices = item.new_prices || { purchase: null, retail: null, list: null };
-                                    let availability = item.availability;
+                                // Calculate prices if we have price data
+                                let newPrices = item.new_prices || { purchase: null, retail: null, list: null };
+                                let availability = item.availability;
 
-                                    if (this.parsedPriceData && autoMatch.supplier_code) {
-                                        const priceData = this.parsedPriceData.find(p => p.code === autoMatch.supplier_code);
-                                        if (priceData) {
-                                            const modifiers = this.template.config.modifiers || [];
-                                            newPrices = this.calculatePricesWithModifiers(priceData, modifiers);
-                                            availability = priceData.availability || null;
-                                        }
+                                if (this.parsedPriceData && autoMatch.supplier_code) {
+                                    const priceData = this.parsedPriceData.find(p => p.code === autoMatch.supplier_code);
+                                    if (priceData) {
+                                        const modifiers = this.template.config.modifiers || [];
+                                        newPrices = this.calculatePricesWithModifiers(priceData, modifiers);
+                                        availability = priceData.availability || null;
                                     }
-
-                                    batchMatched++;
-
-                                    // Return new object with updated fields
-                                    return {
-                                        ...item,
-                                        product_id: autoMatch.product_id,
-                                        product_name: autoMatch.product_name,
-                                        product_number: autoMatch.product_number,
-                                        supplier_code: autoMatch.supplier_code,
-                                        supplier_name: autoMatch.supplier_name,
-                                        status: 'auto_matched',
-                                        confidence: autoMatch.confidence,
-                                        score: autoMatch.score,
-                                        matched_candidate: autoMatch.matched_candidate,
-                                        is_confirmed: false,
-                                        new_prices: newPrices,
-                                        availability: availability
-                                    };
                                 }
+
+                                // Return new object with updated fields
+                                return {
+                                    ...item,
+                                    product_id: autoMatch.product_id,
+                                    product_name: autoMatch.product_name,
+                                    product_number: autoMatch.product_number,
+                                    supplier_code: autoMatch.supplier_code,
+                                    supplier_name: autoMatch.supplier_name,
+                                    status: 'auto_matched',
+                                    confidence: autoMatch.confidence,
+                                    score: autoMatch.score,
+                                    matched_candidate: autoMatch.matched_candidate,
+                                    is_confirmed: false,
+                                    new_prices: newPrices,
+                                    availability: availability
+                                };
                             }
 
                             return item;
@@ -1240,6 +1244,15 @@ Component.register('price-template-create', {
 
                         this.allPreviewData = updatedData;
                         totalMatched += batchMatched;
+
+                        console.log('[AutoMatch] Total matched so far:', totalMatched);
+
+                        // Show notification for this batch
+                        this.createNotificationInfo({
+                            message: this.$t('supplier.priceUpdate.wizard.infoBatchMatched', {
+                                count: batchMatched
+                            })
+                        });
                     }
 
                     // Check if more batches remain
@@ -1258,7 +1271,7 @@ Component.register('price-template-create', {
 
                 if (totalMatched > 0) {
                     this.createNotificationSuccess({
-                        message: this.$tc('supplier.priceUpdate.wizard.successAutoMatch', 0, {
+                        message: this.$t('supplier.priceUpdate.wizard.successAutoMatch', {
                             count: totalMatched
                         })
                     });
