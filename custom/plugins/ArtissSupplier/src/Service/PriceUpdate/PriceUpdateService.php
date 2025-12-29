@@ -376,9 +376,29 @@ class PriceUpdateService
             throw new \RuntimeException('No products found with selected manufacturers');
         }
 
-        $productsArray = $products->getElements();
-        $totalItems = count($productsArray);
-        $batchProducts = array_slice($productsArray, $offset, $batchSize);
+        $matchedProductsMap = $template->getMatchedProducts() ?? [];
+
+        $unmatchedProducts = [];
+        foreach ($products as $product) {
+            if (!isset($matchedProductsMap[$product->getId()])) {
+                $unmatchedProducts[] = $product;
+            }
+        }
+
+        if (empty($unmatchedProducts)) {
+            return [
+                'matched' => [],
+                'stats' => [
+                    'total_catalog_items' => 0,
+                    'auto_matched' => 0,
+                    'processed' => 0,
+                    'remaining' => 0,
+                ],
+            ];
+        }
+
+        $totalItems = count($unmatchedProducts);
+        $batchProducts = array_slice($unmatchedProducts, $offset, $batchSize);
 
         if (empty($batchProducts)) {
             return [
