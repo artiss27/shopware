@@ -416,27 +416,26 @@ class PriceUpdateService
             $priceItem = $result['price_item'];
             $match = $result['match'];
 
-            // Calculate score as percentage of original tokens
+            // Calculate percentage from original tokens count
             $matchedTokens = $match['matched_tokens'] ?? 0;
             $originalTokensCount = $match['original_tokens_count'] ?? 1;
             $level = $match['level'] ?? 0;
 
-            // Score = percentage of matched tokens from original + level bonus
+            // Percentage ONLY from matched tokens (no bonuses!)
             $percentage = ($matchedTokens / $originalTokensCount) * 100;
-            $levelBonus = $level * 5;
-            $score = (int) ($percentage + $levelBonus);
+            $score = (int) round($percentage);
 
             // Skip if percentage is below minimum threshold
             if ($percentage < $minMatchPercentage) {
                 continue;
             }
 
-            // Confidence based on score
-            if ($score >= 100) {
+            // Confidence based on percentage only
+            if ($percentage >= 90) {
                 $confidence = 'excellent';
-            } elseif ($score >= 70) {
+            } elseif ($percentage >= 70) {
                 $confidence = 'good';
-            } elseif ($score >= 50) {
+            } elseif ($percentage >= 50) {
                 $confidence = 'medium';
             } else {
                 $confidence = 'low';
