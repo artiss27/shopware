@@ -169,6 +169,7 @@
         "columnTypeAvailability": "Наличие (остаток)",
         "buttonPreview": "Предпросмотр",
         "minMatchPercentage": "Мин. %",
+        "minMatchPercentageTooltip": "Минимальный процент совпадения токенов для автоподбора товаров",
         "buttonAutoMatch": "Автоподбор",
         "buttonStopAutoMatch": "Остановить",
         "buttonClearBindings": "Очистить все привязки",

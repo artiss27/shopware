@@ -192,6 +192,7 @@
         "errorMediaRemove": "Error removing file",
         "errorSetActiveMedia": "Error setting active file",
         "errorLoadMatchPreview": "Error loading match preview",
+        "minMatchPercentageTooltip": "Minimum percentage of token matching for automatic product matching",
         "errorAutoMatch": "Error auto-matching products",
         "errorNoManufacturer": "Please select at least one manufacturer in filters before auto-matching",
         "infoNoAutoMatches": "No automatic matches found",

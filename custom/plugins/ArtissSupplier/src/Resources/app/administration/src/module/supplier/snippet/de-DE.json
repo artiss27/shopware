@@ -159,6 +159,7 @@
         "errorMediaRemove": "Fehler beim Entfernen der Datei",
         "errorSetActiveMedia": "Fehler beim Festlegen der aktiven Datei",
         "errorLoadMatchPreview": "Fehler beim Laden der Übereinstimmungsvorschau",
+        "minMatchPercentageTooltip": "Mindestprozentsatz der Token-Übereinstimmung für automatischen Produktabgleich",
         "errorAutoMatch": "Fehler beim automatischen Abgleich der Produkte",
         "errorNoManufacturer": "Bitte wählen Sie mindestens einen Hersteller in den Filtern vor dem automatischen Abgleich",
         "infoNoAutoMatches": "Keine automatischen Übereinstimmungen gefunden",
