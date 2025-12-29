@@ -10,6 +10,16 @@ Component.register('price-template-create', {
 
     inject: ['repositoryFactory', 'priceUpdateService'],
 
+    metaInfo() {
+        return {
+            title: this.$createTitle(
+                this.isEdit
+                    ? this.$tc('supplier.priceUpdate.wizard.titleEdit')
+                    : this.$tc('supplier.priceUpdate.wizard.title')
+            )
+        };
+    },
+
     mixins: [
         Mixin.getByName('notification')
     ],
@@ -1184,9 +1194,9 @@ Component.register('price-template-create', {
                         let batchMatched = 0;
 
                         const updatedData = this.allPreviewData.map(item => {
-                            // Find auto-match by supplier_code from price list
+                            // Find auto-match by product_id
                             const autoMatch = result.matched.find(match =>
-                                match.supplier_code === item.supplier_code
+                                match.product_id === item.product_id
                             );
 
                             if (autoMatch) {

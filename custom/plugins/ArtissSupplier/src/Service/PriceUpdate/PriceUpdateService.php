@@ -370,27 +370,28 @@ class PriceUpdateService
             ];
         }
 
-        // Apply batch processing
-        $totalItems = count($priceData);
-        $batchData = array_slice($priceData, $offset, $batchSize);
-
-        if (empty($batchData)) {
-            return [
-                'matched' => [],
-                'stats' => [
-                    'total_price_items' => $totalItems,
-                    'auto_matched' => 0,
-                    'processed' => $offset,
-                    'remaining' => 0,
-                ],
-            ];
-        }
-
         // Get filtered products (only by manufacturer)
         $products = $this->getFilteredProducts($template, $context);
 
         if ($products->count() === 0) {
             throw new \RuntimeException('No products found with selected manufacturers');
+        }
+
+        // Apply batch processing BY CATALOG PRODUCTS (not price list!)
+        $productsArray = $products->getElements();
+        $totalItems = count($productsArray);
+        $batchProducts = array_slice($productsArray, $offset, $batchSize);
+
+        if (empty($batchProducts)) {
+            return [
+                'matched' => [],
+                'stats' => [
+                    'total_catalog_items' => $totalItems,
+                    'auto_matched' => 0,
+                    'processed' => $offset,
+                    'remaining' => 0,
+                ],
+            ];
         }
 
         // Get manufacturer name (use first manufacturer for simplicity)
@@ -402,9 +403,11 @@ class PriceUpdateService
         }
 
         // Run auto-matching algorithm on batch
+        // Pass ENTIRE PRICE LIST and BATCH OF CATALOG PRODUCTS
+        $batchProductCollection = new ProductCollection($batchProducts);
         $autoMatchResults = $this->productMatchingService->matchProducts(
-            $batchData,
-            $products,
+            $priceData,  // ВЕСЬ прайс
+            $batchProductCollection,  // БАТЧ из каталога
         );
 
         // Format results for frontend
@@ -457,13 +460,14 @@ class PriceUpdateService
             ];
         }
 
-        $processedCount = $offset + count($batchData);
+        $processedCount = $offset + count($batchProducts);
         $remainingCount = max(0, $totalItems - $processedCount);
 
         return [
             'matched' => $matched,
             'stats' => [
-                'total_price_items' => $totalItems,
+                'total_catalog_items' => $totalItems,
+                'total_price_items' => count($priceData),
                 'auto_matched' => count($matched),
                 'processed' => $processedCount,
                 'remaining' => $remainingCount,
