@@ -1178,7 +1178,6 @@ Component.register('price-template-create', {
                         break;
                     }
 
-                    // Call auto-match API for current batch
                     const result = await this.priceUpdateService.autoMatch(
                         this.template.id,
                         batchSize,
@@ -1186,29 +1185,19 @@ Component.register('price-template-create', {
                         this.minMatchPercentage
                     );
 
-                    console.log('[AutoMatch] Batch result:', {
-                        matched_count: result.matched?.length || 0,
-                        stats: result.stats,
-                        first_match: result.matched?.[0]
-                    });
-
                     if (!result.stats) {
                         break;
                     }
 
                     if (result.matched && result.matched.length > 0 && this.allPreviewData) {
-                        // Количество найденных в этом батче - берем напрямую из result
                         const batchMatched = result.matched.length;
-                        console.log('[AutoMatch] Processing batch with', batchMatched, 'matches');
 
                         const updatedData = this.allPreviewData.map(item => {
-                            // Find auto-match by product_id
                             const autoMatch = result.matched.find(match =>
                                 match.product_id === item.product_id
                             );
 
                             if (autoMatch) {
-                                // Calculate prices if we have price data
                                 let newPrices = item.new_prices || { purchase: null, retail: null, list: null };
                                 let availability = item.availability;
 
@@ -1221,7 +1210,6 @@ Component.register('price-template-create', {
                                     }
                                 }
 
-                                // Return new object with updated fields
                                 return {
                                     ...item,
                                     product_id: autoMatch.product_id,
@@ -1245,9 +1233,6 @@ Component.register('price-template-create', {
                         this.allPreviewData = updatedData;
                         totalMatched += batchMatched;
 
-                        console.log('[AutoMatch] Total matched so far:', totalMatched);
-
-                        // Show notification for this batch
                         this.createNotificationInfo({
                             message: this.$t('supplier.priceUpdate.wizard.infoBatchMatched', {
                                 count: batchMatched
@@ -1255,16 +1240,13 @@ Component.register('price-template-create', {
                         });
                     }
 
-                    // Check if more batches remain
                     if (result.stats.remaining === 0) {
                         break;
                     }
 
-                    // Move to next batch
                     offset = result.stats.processed;
                 }
 
-                // Refresh pagination
                 if (this.allPreviewData) {
                     this.applyPreviewPagination();
                 }

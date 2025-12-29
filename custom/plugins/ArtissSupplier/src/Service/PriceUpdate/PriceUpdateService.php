@@ -370,14 +370,12 @@ class PriceUpdateService
             ];
         }
 
-        // Get filtered products (only by manufacturer)
         $products = $this->getFilteredProducts($template, $context);
 
         if ($products->count() === 0) {
             throw new \RuntimeException('No products found with selected manufacturers');
         }
 
-        // Apply batch processing BY CATALOG PRODUCTS (not price list!)
         $productsArray = $products->getElements();
         $totalItems = count($productsArray);
         $batchProducts = array_slice($productsArray, $offset, $batchSize);
@@ -394,7 +392,6 @@ class PriceUpdateService
             ];
         }
 
-        // Get manufacturer name (use first manufacturer for simplicity)
         $manufacturerId = is_array($filters['manufacturers']) ? $filters['manufacturers'][0] : $filters['manufacturers'];
         $manufacturer = $this->getManufacturerName($manufacturerId, $context);
 
@@ -402,35 +399,28 @@ class PriceUpdateService
             throw new \RuntimeException('Manufacturer not found');
         }
 
-        // Run auto-matching algorithm on batch
-        // Pass ENTIRE PRICE LIST and BATCH OF CATALOG PRODUCTS
         $batchProductCollection = new ProductCollection($batchProducts);
         $autoMatchResults = $this->productMatchingService->matchProducts(
-            $priceData,  // ВЕСЬ прайс
-            $batchProductCollection,  // БАТЧ из каталога
+            $priceData,
+            $batchProductCollection
         );
 
-        // Format results for frontend
         $matched = [];
         foreach ($autoMatchResults as $result) {
             $priceItem = $result['price_item'];
             $match = $result['match'];
 
-            // Calculate percentage from original tokens count
             $matchedTokens = $match['matched_tokens'] ?? 0;
             $originalTokensCount = $match['original_tokens_count'] ?? 1;
             $level = $match['level'] ?? 0;
 
-            // Percentage ONLY from matched tokens (no bonuses!)
             $percentage = ($matchedTokens / $originalTokensCount) * 100;
             $score = (int) round($percentage);
 
-            // Skip if percentage is below minimum threshold
             if ($percentage < $minMatchPercentage) {
                 continue;
             }
 
-            // Confidence based on percentage only
             if ($percentage >= 90) {
                 $confidence = 'excellent';
             } elseif ($percentage >= 70) {
