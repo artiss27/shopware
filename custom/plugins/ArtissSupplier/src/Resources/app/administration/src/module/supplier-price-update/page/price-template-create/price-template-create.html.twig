@@ -289,6 +289,13 @@
                             valueProperty="value"
                         />
 
+                        <sw-text-field
+                            v-model:value="template.config.filters.product_name"
+                            :label="$tc('supplier.priceUpdate.wizard.labelFilterProductName')"
+                            :placeholder="$tc('supplier.priceUpdate.wizard.placeholderFilterProductName')"
+                            @update:value="onProductNameFilterChange"
+                        />
+
                         <sw-single-select
                             v-model:value="template.config.filters.availability_action"
                             :options="availabilityActionOptions"

@@ -11,6 +11,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 
 /**
  * Main service for price update workflow
@@ -863,41 +866,84 @@ class PriceUpdateService
 
     /**
      * Get filtered products based on template filters
+     * Strategy:
+     * 1. Find parent products that match filters (they have properties like categories, manufacturers, etc.)
+     * 2. For parent products with variants: get their variants
+     * 3. For parent products without variants: include them directly
+     * This ensures variants inherit properties from their parents correctly
      */
     private function getFilteredProducts(PriceTemplateEntity $template, Context $context): ProductCollection
     {
         $filters = $template->getConfig()['filters'] ?? [];
-        $criteria = new Criteria();
+        
+        // Step 1: Find parent products that match all filters
+        $parentCriteria = new Criteria();
+        $parentCriteria->addFilter(new EqualsFilter('parentId', null)); // Only parent products
 
         // Add filters
         if (!empty($filters['categories']) && is_array($filters['categories'])) {
-            // Use categories association for filtering
-            $criteria->addFilter(new EqualsAnyFilter('categories.id', $filters['categories']));
+            $parentCriteria->addFilter(new EqualsAnyFilter('categories.id', $filters['categories']));
         }
 
         if (!empty($filters['manufacturers']) && is_array($filters['manufacturers'])) {
-            $criteria->addFilter(new EqualsAnyFilter('manufacturerId', $filters['manufacturers']));
+            $parentCriteria->addFilter(new EqualsAnyFilter('manufacturerId', $filters['manufacturers']));
         }
 
         if (!empty($filters['equipment_types']) && is_array($filters['equipment_types'])) {
-            // Equipment types are product properties (not custom fields!)
-            $criteria->addFilter(new EqualsAnyFilter('properties.id', $filters['equipment_types']));
+            $parentCriteria->addFilter(new EqualsAnyFilter('properties.id', $filters['equipment_types']));
         }
 
         if (!empty($filters['supplier'])) {
-            // Supplier is stored in custom fields as product_supplier_id
-            $criteria->addFilter(new EqualsFilter('customFields.product_supplier_id', $filters['supplier']));
+            $parentCriteria->addFilter(new EqualsFilter('customFields.product_supplier_id', $filters['supplier']));
         }
 
-        // Load associations needed for matching
-        $criteria->addAssociation('children');
-        $criteria->addAssociation('categories');
-        $criteria->setLimit(10000); // Large limit for all products
+        // Filter by product name (partial match)
+        if (!empty($filters['product_name']) && is_string($filters['product_name'])) {
+            $productName = trim($filters['product_name']);
+            if (!empty($productName)) {
+                $parentCriteria->addFilter(new ContainsFilter('name', $productName));
+            }
+        }
 
-        /** @var ProductCollection $products */
-        $products = $this->productRepository->search($criteria, $context)->getEntities();
+        $parentCriteria->addAssociation('categories');
+        $parentCriteria->setLimit(10000);
 
-        return $products;
+        /** @var ProductCollection $parentProducts */
+        $parentProducts = $this->productRepository->search($parentCriteria, $context)->getEntities();
+
+        // Step 2: Separate parents into two groups
+        $parentIdsWithVariants = [];
+        $productsWithoutVariants = new ProductCollection();
+
+        foreach ($parentProducts as $parent) {
+            if ($parent->getChildCount() > 0) {
+                // Parent has variants - we'll get variants later
+                $parentIdsWithVariants[] = $parent->getId();
+            } else {
+                // Product without variants - include directly
+                $productsWithoutVariants->add($parent);
+            }
+        }
+
+        // Step 3: Get variants for parents that have variants
+        $allProducts = new ProductCollection($productsWithoutVariants->getElements());
+
+        if (!empty($parentIdsWithVariants)) {
+            $variantCriteria = new Criteria();
+            $variantCriteria->addFilter(new EqualsAnyFilter('parentId', $parentIdsWithVariants));
+            $variantCriteria->addAssociation('categories');
+            $variantCriteria->setLimit(10000);
+
+            /** @var ProductCollection $variants */
+            $variants = $this->productRepository->search($variantCriteria, $context)->getEntities();
+            
+            // Merge variants into result
+            foreach ($variants as $variant) {
+                $allProducts->add($variant);
+            }
+        }
+
+        return $allProducts;
     }
 
     private function getTemplate(string $templateId, Context $context): PriceTemplateEntity

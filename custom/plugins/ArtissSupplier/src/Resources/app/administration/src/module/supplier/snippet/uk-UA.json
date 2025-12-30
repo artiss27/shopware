@@ -157,6 +157,8 @@
         "labelFilterManufacturers": "Виробники",
         "labelFilterEquipmentTypes": "Типи обладнання",
         "placeholderEquipmentTypes": "Оберіть типи обладнання...",
+        "labelFilterProductName": "Найменування",
+        "placeholderFilterProductName": "Введіть частину назви товару...",
         "columnActive": "Активний",
         "columnFileName": "Ім'я файлу",
         "columnUploadDate": "Дата завантаження",

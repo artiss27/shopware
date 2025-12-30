@@ -143,6 +143,8 @@
         "labelFilterManufacturers": "Manufacturers",
         "labelFilterEquipmentTypes": "Equipment Types",
         "placeholderEquipmentTypes": "Select equipment types...",
+        "labelFilterProductName": "Product Name",
+        "placeholderFilterProductName": "Enter part of product name...",
         "columnActive": "Active",
         "columnFileName": "File Name",
         "columnUploadDate": "Upload Date",

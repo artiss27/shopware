@@ -157,6 +157,8 @@
         "labelFilterManufacturers": "Производители",
         "labelFilterEquipmentTypes": "Типы оборудования",
         "placeholderEquipmentTypes": "Выберите типы оборудования...",
+        "labelFilterProductName": "Наименование",
+        "placeholderFilterProductName": "Введите часть названия товара...",
         "columnActive": "Активный",
         "columnFileName": "Имя файла",
         "columnUploadDate": "Дата загрузки",

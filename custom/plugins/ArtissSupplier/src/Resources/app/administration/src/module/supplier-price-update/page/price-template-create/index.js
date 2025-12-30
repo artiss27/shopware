@@ -424,6 +424,7 @@ Component.register('price-template-create', {
                     categories: [],
                     manufacturers: [],
                     equipment_types: [],
+                    product_name: null,
                     availability_action: 'dont_change',
                     zero_stock_for_missing: false
                 }
@@ -650,6 +651,13 @@ Component.register('price-template-create', {
         async onEquipmentTypesChange(selectedValues) {
             if (this.template?.config?.filters) {
                 this.template.config.filters.equipment_types = Array.isArray(selectedValues) ? selectedValues : [];
+                await this.autoSaveTemplate();
+            }
+        },
+
+        async onProductNameFilterChange(value) {
+            if (this.template?.config?.filters) {
+                this.template.config.filters.product_name = value || null;
                 await this.autoSaveTemplate();
             }
         },

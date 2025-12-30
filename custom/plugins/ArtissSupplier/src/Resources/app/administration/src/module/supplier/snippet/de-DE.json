@@ -125,6 +125,8 @@
         "labelFilterManufacturers": "Hersteller",
         "labelFilterEquipmentTypes": "Gerätetypen",
         "placeholderEquipmentTypes": "Gerätetypen auswählen...",
+        "labelFilterProductName": "Produktname",
+        "placeholderFilterProductName": "Teil des Produktnamens eingeben...",
         "columnActive": "Aktiv",
         "columnFileName": "Dateiname",
         "columnUploadDate": "Hochladedatum",
