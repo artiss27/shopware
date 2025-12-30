@@ -78,6 +78,7 @@
                             :uploadTag="uploadTag"
                             autoUpload
                             @media-upload-finish="onMediaUploadFinish"
+                            @media-upload-fail="onMediaUploadFail"
                         />
 
                         <sw-media-upload-v2
@@ -86,6 +87,7 @@
                             :uploadTag="uploadTag"
                             :label="$tc('supplier.priceUpdate.wizard.labelUploadFile')"
                             :target-folder-id="mediaFolderId"
+                            @file-input-change="onFileInputChange"
                         />
                         <div v-else>
                             <sw-loader />

@@ -686,11 +686,47 @@ Component.register('price-template-create', {
             }
         },
 
+        onFileInputChange(files) {
+            // Validate file names before upload
+            // Note: Transliteration of Cyrillic file names is handled by sw-media-upload-v2 extension
+            if (!files || files.length === 0) {
+                return;
+            }
+
+            for (const file of files) {
+                if (!file.name || file.name.trim() === '') {
+                    this.createNotificationError({
+                        message: this.$tc('supplier.priceUpdate.wizard.errorEmptyFileName') || 
+                                'Имя файла не может быть пустым. Пожалуйста, выберите файл с корректным именем.'
+                    });
+                    return;
+                }
+            }
+        },
+
         onMediaUploadFail(error) {
             console.error('Media upload failed:', error);
-            const errorMessage = error?.response?.data?.errors?.[0]?.detail || 
-                               error?.message || 
-                               this.$tc('supplier.priceUpdate.wizard.errorUpload');
+            
+            // Extract error message from various possible error structures
+            let errorMessage = this.$tc('supplier.priceUpdate.wizard.errorUpload');
+            
+            if (error?.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+                const firstError = error.response.data.errors[0];
+                if (firstError?.detail) {
+                    errorMessage = firstError.detail;
+                } else if (firstError?.title) {
+                    errorMessage = firstError.title;
+                }
+            } else if (error?.message) {
+                errorMessage = error.message;
+            }
+            
+            // Handle specific error codes
+            if (error?.response?.data?.errors?.[0]?.code === 'CONTENT__MEDIA_EMPTY_FILE_NAME') {
+                errorMessage = this.$tc('supplier.priceUpdate.wizard.errorEmptyFileName') || 
+                             'Имя файла не может быть пустым. Пожалуйста, убедитесь, что файл имеет имя перед загрузкой.';
+            }
+            
             this.createNotificationError({
                 message: errorMessage
             });
