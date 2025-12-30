@@ -119,31 +119,41 @@ class PropertyOptionMergeService
         $productPropertyCount = $this->countProductPropertyToUpdate($sourceOptionIds);
         $configuratorSettingCount = $this->countConfiguratorSettingToUpdate($sourceOptionIds);
 
-        // Update product_property
-        $qb = $this->connection->createQueryBuilder();
-        $qb->update('product_property')
-            ->set('property_group_option_id', ':targetId')
-            ->where('property_group_option_id IN (:sourceIds)')
-            ->setParameter('targetId', $targetOptionBin)
-            ->setParameter('sourceIds', $sourceOptionIdsBin, ArrayParameterType::BINARY)
-            ->executeStatement();
+        // Begin transaction to ensure atomicity
+        $this->connection->beginTransaction();
 
-        // Update product_configurator_setting
-        $qb = $this->connection->createQueryBuilder();
-        $qb->update('product_configurator_setting')
-            ->set('property_group_option_id', ':targetId')
-            ->where('property_group_option_id IN (:sourceIds)')
-            ->setParameter('targetId', $targetOptionBin)
-            ->setParameter('sourceIds', $sourceOptionIdsBin, ArrayParameterType::BINARY)
-            ->executeStatement();
+        try {
+            // Update product_property
+            $qb = $this->connection->createQueryBuilder();
+            $qb->update('product_property')
+                ->set('property_group_option_id', ':targetId')
+                ->where('property_group_option_id IN (:sourceIds)')
+                ->setParameter('targetId', $targetOptionBin)
+                ->setParameter('sourceIds', $sourceOptionIdsBin, ArrayParameterType::STRING)
+                ->executeStatement();
 
-        // Delete source options using repository
-        $idsToDelete = [];
-        foreach ($sourceOptionIds as $sourceOptionId) {
-            $idsToDelete[] = ['id' => $sourceOptionId];
-        }
-        if (!empty($idsToDelete)) {
-            $this->propertyGroupOptionRepository->delete($idsToDelete, $context);
+            // Update product_configurator_setting
+            $qb = $this->connection->createQueryBuilder();
+            $qb->update('product_configurator_setting')
+                ->set('property_group_option_id', ':targetId')
+                ->where('property_group_option_id IN (:sourceIds)')
+                ->setParameter('targetId', $targetOptionBin)
+                ->setParameter('sourceIds', $sourceOptionIdsBin, ArrayParameterType::STRING)
+                ->executeStatement();
+
+            // Delete source options using repository
+            $idsToDelete = [];
+            foreach ($sourceOptionIds as $sourceOptionId) {
+                $idsToDelete[] = ['id' => $sourceOptionId];
+            }
+            if (!empty($idsToDelete)) {
+                $this->propertyGroupOptionRepository->delete($idsToDelete, $context);
+            }
+
+            $this->connection->commit();
+        } catch (\Exception $e) {
+            $this->connection->rollBack();
+            throw new \RuntimeException('Merge failed and was rolled back: ' . $e->getMessage(), 0, $e);
         }
 
         $targetOption = $this->getOptionById($targetOptionId, $context);
@@ -206,7 +216,7 @@ class PropertyOptionMergeService
         $count = $qb->select('COUNT(*)')
             ->from('product_property')
             ->where('property_group_option_id IN (:optionIds)')
-            ->setParameter('optionIds', $optionIdsBin, ArrayParameterType::BINARY)
+            ->setParameter('optionIds', $optionIdsBin, ArrayParameterType::STRING)
             ->executeQuery()
             ->fetchOne();
 
@@ -224,7 +234,7 @@ class PropertyOptionMergeService
         $count = $qb->select('COUNT(*)')
             ->from('product_configurator_setting')
             ->where('property_group_option_id IN (:optionIds)')
-            ->setParameter('optionIds', $optionIdsBin, ArrayParameterType::BINARY)
+            ->setParameter('optionIds', $optionIdsBin, ArrayParameterType::STRING)
             ->executeQuery()
             ->fetchOne();
 
@@ -272,7 +282,7 @@ class PropertyOptionMergeService
         $productIds = $qb->select('DISTINCT LOWER(HEX(product_id)) as product_id')
             ->from('product_property')
             ->where('property_group_option_id IN (:optionIds)')
-            ->setParameter('optionIds', $optionIdsBin, ArrayParameterType::BINARY)
+            ->setParameter('optionIds', $optionIdsBin, ArrayParameterType::STRING)
             ->executeQuery()
             ->fetchAllAssociative();
 
