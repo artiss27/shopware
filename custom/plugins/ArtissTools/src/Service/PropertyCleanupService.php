@@ -15,6 +15,7 @@ class PropertyCleanupService
         private readonly EntityRepository $propertyGroupOptionRepository,
         private readonly EntityRepository $customFieldSetRepository,
         private readonly EntityRepository $customFieldRepository,
+        private readonly EntityRepository $productRepository,
         private readonly Connection $connection
     ) {
     }
@@ -66,12 +67,13 @@ class PropertyCleanupService
 
     /**
      * Check if property option is used
+     * Returns true if option is used in product_property or product_configurator_setting (variants)
      */
     private function isPropertyOptionUsed(string $optionId): bool
     {
         $optionIdBin = hex2bin($optionId);
 
-        // Check in product_property
+        // Check in product_property (used as product properties, not variants)
         $productPropertyCount = (int) $this->connection->fetchOne(
             'SELECT COUNT(*) FROM product_property WHERE property_group_option_id = :optionId',
             ['optionId' => $optionIdBin]
@@ -81,17 +83,43 @@ class PropertyCleanupService
             return true;
         }
 
-        // Check in product_configurator_setting
+        // Check in product_configurator_setting (used in variants) - this is critical!
+        // Options used in variants MUST NOT be deleted
         $configuratorSettingCount = (int) $this->connection->fetchOne(
             'SELECT COUNT(*) FROM product_configurator_setting WHERE property_group_option_id = :optionId',
             ['optionId' => $optionIdBin]
         );
 
-        return $configuratorSettingCount > 0;
+        if ($configuratorSettingCount > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if property group is used in variants (product_configurator_setting)
+     * This prevents deletion of groups that are used for product variants
+     */
+    private function isPropertyGroupUsedInVariants(string $groupId): bool
+    {
+        $groupIdBin = hex2bin($groupId);
+
+        // Check if any option from this group is used in product_configurator_setting
+        $count = (int) $this->connection->fetchOne(
+            'SELECT COUNT(*) 
+            FROM product_configurator_setting pcs
+            INNER JOIN property_group_option pgo ON pcs.property_group_option_id = pgo.id
+            WHERE pgo.property_group_id = :groupId',
+            ['groupId' => $groupIdBin]
+        );
+
+        return $count > 0;
     }
 
     /**
      * Find unused custom field sets and fields
+     * Only returns sets that are related to 'product' entity
      */
     public function findUnusedCustomFields(Context $context): array
     {
@@ -110,6 +138,12 @@ class PropertyCleanupService
                 'relations' => $this->getSetRelations($set),
                 'unusedFields' => [],
             ];
+
+            // Only process sets that are related to 'product' entity
+            // Skip sets related to other entities (art_supplier, media, etc.)
+            if (!in_array('product', $setData['relations'])) {
+                continue;
+            }
 
             // Check if set has relations
             $hasRelations = !empty($setData['relations']);
@@ -135,7 +169,8 @@ class PropertyCleanupService
 
                 $isUsed = $this->isCustomFieldUsed(
                     $field->getName(),
-                    $setData['relations']
+                    $setData['relations'],
+                    $context
                 );
 
                 if (!$isUsed) {
@@ -186,15 +221,39 @@ class PropertyCleanupService
 
     /**
      * Check if custom field is used in any entity
+     * Only checks entities that the custom field set is actually related to
      */
-    private function isCustomFieldUsed(string $fieldName, array $entityNames): bool
+    private function isCustomFieldUsed(string $fieldName, array $entityNames, Context $context): bool
     {
-        // If no relations, check common entities
+        // If no relations specified, only check product (most common case)
+        // Don't check all entities by default - only check what's actually related
         if (empty($entityNames)) {
-            $entityNames = ['product', 'category', 'customer', 'order'];
+            $entityNames = ['product'];
         }
 
         foreach ($entityNames as $entityName) {
+            // Special handling for product - use DAL repository to check custom fields
+            if ($entityName === 'product') {
+                // Use Shopware DAL to check if custom field is used in products
+                // This is the most reliable method as it uses the same mechanism as Shopware itself
+                $criteria = new Criteria();
+                $criteria->addFilter(
+                    new \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter(
+                        \Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter::CONNECTION_AND,
+                        [new EqualsFilter('customFields.' . $fieldName, null)]
+                    )
+                );
+                $criteria->setLimit(1); // We only need to know if at least one exists
+                
+                $result = $this->productRepository->searchIds($criteria, $context);
+                
+                if ($result->getTotal() > 0) {
+                    return true;
+                }
+
+                continue;
+            }
+
             $tableName = $entityName;
 
             // Check if table exists
@@ -253,7 +312,9 @@ class PropertyCleanupService
 
             foreach ($optionIds as $optionId) {
                 // Double-check that option is still unused
+                // CRITICAL: Never delete options used in variants (product_configurator_setting)
                 if ($this->isPropertyOptionUsed($optionId)) {
+                    // Option is used - skip deletion
                     continue;
                 }
 
@@ -275,8 +336,11 @@ class PropertyCleanupService
                     );
 
                     if ($remainingOptions === 0) {
-                        $this->deletePropertyGroup($groupIdHex);
-                        $deletedGroups[] = $groupIdHex;
+                        // Check if group is used in variants before deleting
+                        if (!$this->isPropertyGroupUsedInVariants($groupIdHex)) {
+                            $this->deletePropertyGroup($groupIdHex);
+                            $deletedGroups[] = $groupIdHex;
+                        }
                     }
                 }
             }
