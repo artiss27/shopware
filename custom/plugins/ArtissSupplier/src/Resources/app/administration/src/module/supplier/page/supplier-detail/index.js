@@ -8,8 +8,7 @@ Component.register('supplier-detail', {
     template,
 
     inject: [
-        'repositoryFactory',
-        'customFieldDataProviderService'
+        'repositoryFactory'
     ],
 
     mixins: [
@@ -262,12 +261,14 @@ Component.register('supplier-detail', {
                 criteria.addAssociation('customFields');
                 criteria.addFilter(Criteria.equals('name', 'supplier_fields'));
 
-                const result = await customFieldSetRepository.search(criteria);
+                const result = await customFieldSetRepository.search(criteria, Shopware.Context.api);
                 this.customFieldSets = Array.from(result);
             } catch (error) {
+                console.error('Error loading custom field sets:', error);
                 this.createNotificationError({
                     message: this.$tc('supplier.detail.errorLoadFields')
                 });
+                this.customFieldSets = [];
             }
         },
 
