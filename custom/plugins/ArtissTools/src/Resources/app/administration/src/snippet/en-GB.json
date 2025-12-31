@@ -549,7 +549,14 @@
                 "result": {
                     "affectedProducts": "Affected products",
                     "valuesRead": "Total values to process",
-                    "optionsCreated": "Options created"
+                    "valuesWritten": "Values written",
+                    "valuesTransferred": "Values transferred",
+                    "optionsCreated": "Options created",
+                    "optionsMapped": "Options mapped",
+                    "associationsCreated": "Associations created",
+                    "optionsDeleted": "Options deleted",
+                    "groupsDeleted": "Groups deleted",
+                    "fieldsDeleted": "Fields deleted"
                 },
                 "confirm": {
                     "title": "Confirm transfer",
@@ -558,6 +565,14 @@
                 "messages": {
                     "previewComplete": "Preview completed",
                     "executeSuccess": "Transfer executed successfully"
+                },
+                "errors": {
+                    "missingSourceGroup": "Select source property group",
+                    "missingTargetGroup": "Select target property group",
+                    "missingSourceField": "Select source custom field",
+                    "missingTargetField": "Select target custom field",
+                    "missingOptions": "Select at least one option",
+                    "sameSourceAndTargetField": "Source and target fields cannot be the same"
                 }
             },
             "mergeOptions": {

@@ -216,6 +216,65 @@
             },
             "errors": {
                 "loadFailed": "Не удалось загрузить данные"
+            },
+            "transfer": {
+                "title": "Перенос свойств",
+                "mode": {
+                    "label": "Режим переноса"
+                },
+                "modes": {
+                    "propertyToCustomField": "Свойство → Поле",
+                    "propertyToProperty": "Свойство → Свойство",
+                    "customFieldToProperty": "Поле → Свойство",
+                    "customFieldToCustomField": "Поле → Поле"
+                },
+                "source": "Источник",
+                "target": "Цель",
+                "propertyGroup": "Группа свойств",
+                "sourcePropertyGroup": "Группа свойств (источник)",
+                "targetPropertyGroup": "Группа свойств (цель)",
+                "customFieldSet": "Набор полей",
+                "sourceCustomFieldSet": "Набор полей (источник)",
+                "targetCustomFieldSet": "Набор полей (цель)",
+                "customField": "Поле",
+                "sourceCustomField": "Поле (источник)",
+                "targetCustomField": "Поле (цель)",
+                "options": "Опции",
+                "moveOption": "Переместить (очистить источник)",
+                "deleteEmptyOption": "Удалить пустые источники",
+                "buttons": {
+                    "preview": "Предпросмотр",
+                    "execute": "Выполнить",
+                    "confirmExecute": "Подтвердить выполнение"
+                },
+                "result": {
+                    "affectedProducts": "Затронуто товаров",
+                    "valuesRead": "Всего значений для обработки",
+                    "valuesWritten": "Значений записано",
+                    "valuesTransferred": "Значений перенесено",
+                    "optionsCreated": "Создано опций",
+                    "optionsMapped": "Опций сопоставлено",
+                    "associationsCreated": "Связей создано",
+                    "optionsDeleted": "Удалено опций",
+                    "groupsDeleted": "Удалено групп",
+                    "fieldsDeleted": "Удалено полей"
+                },
+                "confirm": {
+                    "title": "Подтверждение переноса",
+                    "message": "Вы уверены, что хотите выполнить перенос? Это действие нельзя отменить."
+                },
+                "messages": {
+                    "previewComplete": "Предпросмотр завершён",
+                    "executeSuccess": "Перенос выполнен успешно"
+                },
+                "errors": {
+                    "missingSourceGroup": "Выберите группу свойств (источник)",
+                    "missingTargetGroup": "Выберите группу свойств (цель)",
+                    "missingSourceField": "Выберите поле (источник)",
+                    "missingTargetField": "Выберите поле (цель)",
+                    "missingOptions": "Выберите хотя бы одну опцию",
+                    "sameSourceAndTargetField": "Источник и цель не могут быть одинаковыми"
+                }
             }
         }
     }

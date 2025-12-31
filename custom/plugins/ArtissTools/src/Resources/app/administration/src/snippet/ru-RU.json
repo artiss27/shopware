@@ -556,7 +556,14 @@
                 "result": {
                     "affectedProducts": "Затронуто товаров",
                     "valuesRead": "Всего значений для обработки",
-                    "optionsCreated": "Создано опций"
+                    "valuesWritten": "Значений записано",
+                    "valuesTransferred": "Значений перенесено",
+                    "optionsCreated": "Создано опций",
+                    "optionsMapped": "Опций сопоставлено",
+                    "associationsCreated": "Связей создано",
+                    "optionsDeleted": "Удалено опций",
+                    "groupsDeleted": "Удалено групп",
+                    "fieldsDeleted": "Удалено полей"
                 },
                 "confirm": {
                     "title": "Подтверждение переноса",
@@ -565,6 +572,14 @@
                 "messages": {
                     "previewComplete": "Предпросмотр завершен",
                     "executeSuccess": "Перенос выполнен успешно"
+                },
+                "errors": {
+                    "missingSourceGroup": "Выберите группу свойств (источник)",
+                    "missingTargetGroup": "Выберите группу свойств (цель)",
+                    "missingSourceField": "Выберите поле (источник)",
+                    "missingTargetField": "Выберите поле (цель)",
+                    "missingOptions": "Выберите хотя бы одну опцию",
+                    "sameSourceAndTargetField": "Источник и цель не могут быть одинаковыми"
                 }
             },
             "mergeOptions": {

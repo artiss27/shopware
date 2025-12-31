@@ -407,7 +407,14 @@
                 "result": {
                     "affectedProducts": "Betroffene Produkte",
                     "valuesRead": "Gesamtwerte zur Verarbeitung",
-                    "optionsCreated": "Erstellte Optionen"
+                    "valuesWritten": "Geschriebene Werte",
+                    "valuesTransferred": "Übertragene Werte",
+                    "optionsCreated": "Erstellte Optionen",
+                    "optionsMapped": "Zugeordnete Optionen",
+                    "associationsCreated": "Erstellte Zuordnungen",
+                    "optionsDeleted": "Gelöschte Optionen",
+                    "groupsDeleted": "Gelöschte Gruppen",
+                    "fieldsDeleted": "Gelöschte Felder"
                 },
                 "confirm": {
                     "title": "Übertragung bestätigen",
@@ -416,6 +423,14 @@
                 "messages": {
                     "previewComplete": "Vorschau abgeschlossen",
                     "executeSuccess": "Übertragung erfolgreich ausgeführt"
+                },
+                "errors": {
+                    "missingSourceGroup": "Quell-Eigenschaftsgruppe auswählen",
+                    "missingTargetGroup": "Ziel-Eigenschaftsgruppe auswählen",
+                    "missingSourceField": "Quell-Custom-Field auswählen",
+                    "missingTargetField": "Ziel-Custom-Field auswählen",
+                    "missingOptions": "Mindestens eine Option auswählen",
+                    "sameSourceAndTargetField": "Quell- und Zielfeld dürfen nicht identisch sein"
                 }
             },
             "mergeOptions": {

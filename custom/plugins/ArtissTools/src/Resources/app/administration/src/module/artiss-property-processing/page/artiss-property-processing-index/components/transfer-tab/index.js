@@ -463,14 +463,10 @@ Component.register('artiss-property-processing-transfer-tab', {
                         });
                         return false;
                     }
-                    if (!this.transferCF2TargetFieldName) {
-                        this.createNotificationWarning({
-                            message: this.$tc('artissTools.propertyProcessing.transfer.errors.missingTargetField')
-                        });
-                        return false;
-                    }
-                    // Validate that source and target fields are different
-                    if (this.transferCF2SourceSetId === this.transferCF2TargetSetId && 
+                    // Target field is optional - if not specified, use source field
+                    // Validate that source and target fields are different only if target is specified
+                    if (this.transferCF2TargetFieldName && 
+                        this.transferCF2SourceSetId === this.transferCF2TargetSetId && 
                         this.transferCF2SourceFieldName === this.transferCF2TargetFieldName) {
                         this.createNotificationWarning({
                             message: this.$tc('artissTools.propertyProcessing.transfer.errors.sameSourceAndTargetField')
@@ -527,7 +523,9 @@ Component.register('artiss-property-processing-transfer-tab', {
 
                 case 'custom_field_to_custom_field':
                     params.sourceFieldName = this.transferCF2SourceFieldName || null;
+                    params.sourceSetId = extractId(this.transferCF2SourceSetId);
                     params.targetFieldName = this.transferCF2TargetFieldName || null;
+                    params.targetSetId = extractId(this.transferCF2TargetSetId);
                     break;
             }
 

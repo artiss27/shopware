@@ -327,7 +327,9 @@ class PropertyTransferService
     private function transferCustomFieldToCustomField(array $params, bool $dryRun, Context $context): array
     {
         $sourceFieldName = $params['sourceFieldName'] ?? null;
+        $sourceSetId = $params['sourceSetId'] ?? null;
         $targetFieldName = $params['targetFieldName'] ?? null;
+        $targetSetId = $params['targetSetId'] ?? null;
         $move = $params['move'] ?? false;
         $deleteEmptySource = $params['deleteEmptySource'] ?? false;
 
@@ -337,6 +339,18 @@ class PropertyTransferService
             'fieldsDeleted' => 0,
             'productIds' => []
         ];
+
+        // If target field is not specified, it means we're just moving the field to another set
+        // In this case, we only need to change set_id, no need to update products
+        if (empty($targetFieldName) && !empty($sourceSetId) && !empty($targetSetId) && $sourceSetId !== $targetSetId) {
+            return $this->moveCustomFieldToSet($sourceFieldName, $sourceSetId, $targetSetId, $dryRun, $deleteEmptySource, $context);
+        }
+
+        // If target field is specified, it means we're transferring data from source to target field
+        // Use source field name if target is not specified
+        if (empty($targetFieldName)) {
+            $targetFieldName = $sourceFieldName;
+        }
 
         if (!$dryRun) {
             $this->connection->beginTransaction();
@@ -362,7 +376,7 @@ class PropertyTransferService
                     $customFields[$targetFieldName] = $sourceValue;
                     $stats['valuesTransferred']++;
 
-                    if ($move) {
+                    if ($move && $sourceFieldName !== $targetFieldName) {
                         unset($customFields[$sourceFieldName]);
                     }
 
@@ -373,6 +387,87 @@ class PropertyTransferService
             if ($deleteEmptySource && !$dryRun) {
                 $this->deleteCustomField($sourceFieldName, $context);
                 $stats['fieldsDeleted'] = 1;
+            }
+
+            if (!$dryRun) {
+                $this->connection->commit();
+            }
+
+            return ['success' => true, 'stats' => $stats];
+
+        } catch (\Exception $e) {
+            if (!$dryRun) {
+                $this->connection->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Move custom field from one set to another (change set_id only)
+     * Products don't need to be updated as data is stored by field name, not set_id
+     */
+    private function moveCustomFieldToSet(
+        string $fieldName,
+        string $sourceSetId,
+        string $targetSetId,
+        bool $dryRun,
+        bool $deleteEmptySource,
+        Context $context
+    ): array {
+        $stats = [
+            'affectedProducts' => 0,
+            'valuesTransferred' => 0,
+            'fieldsDeleted' => 0,
+            'productIds' => []
+        ];
+
+        if (!$dryRun) {
+            $this->connection->beginTransaction();
+        }
+
+        try {
+            // Find the custom field by name and source set using direct SQL
+            $sourceSetIdBin = Uuid::fromHexToBytes($sourceSetId);
+            $targetSetIdBin = Uuid::fromHexToBytes($targetSetId);
+
+            $fieldId = $this->connection->fetchOne(
+                'SELECT id FROM custom_field WHERE name = :fieldName AND set_id = :setId LIMIT 1',
+                [
+                    'fieldName' => $fieldName,
+                    'setId' => $sourceSetIdBin
+                ]
+            );
+
+            if (!$fieldId) {
+                throw new \RuntimeException("Custom field '{$fieldName}' not found in source set");
+            }
+
+            if (!$dryRun) {
+                // Change set_id using direct SQL update (DAL doesn't support updating setId)
+                $this->connection->executeStatement(
+                    'UPDATE custom_field SET set_id = :targetSetId WHERE id = :fieldId',
+                    [
+                        'targetSetId' => $targetSetIdBin,
+                        'fieldId' => $fieldId
+                    ]
+                );
+            }
+
+            // Note: No need to update products - custom fields in products are stored by name, not set_id
+            $stats['valuesTransferred'] = 1; // Field moved
+
+            if ($deleteEmptySource && !$dryRun) {
+                // Check if source set is now empty
+                $remainingCount = (int) $this->connection->fetchOne(
+                    'SELECT COUNT(*) FROM custom_field WHERE set_id = :setId',
+                    ['setId' => $sourceSetIdBin]
+                );
+
+                if ($remainingCount === 0) {
+                    // Set is empty, but we don't delete sets here - only fields
+                    // The set deletion should be handled separately if needed
+                }
             }
 
             if (!$dryRun) {

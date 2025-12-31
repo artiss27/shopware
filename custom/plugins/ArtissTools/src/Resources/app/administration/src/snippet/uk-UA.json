@@ -407,7 +407,14 @@
                 "result": {
                     "affectedProducts": "Затронуто товарів",
                     "valuesRead": "Всього значень для обробки",
-                    "optionsCreated": "Створено опцій"
+                    "valuesWritten": "Значень записано",
+                    "valuesTransferred": "Значень перенесено",
+                    "optionsCreated": "Створено опцій",
+                    "optionsMapped": "Опцій зіставлено",
+                    "associationsCreated": "Зв'язків створено",
+                    "optionsDeleted": "Видалено опцій",
+                    "groupsDeleted": "Видалено груп",
+                    "fieldsDeleted": "Видалено полів"
                 },
                 "confirm": {
                     "title": "Підтвердження переносу",
@@ -416,6 +423,14 @@
                 "messages": {
                     "previewComplete": "Попередній перегляд завершено",
                     "executeSuccess": "Перенесення виконано успішно"
+                },
+                "errors": {
+                    "missingSourceGroup": "Виберіть групу властивостей (джерело)",
+                    "missingTargetGroup": "Виберіть групу властивостей (ціль)",
+                    "missingSourceField": "Виберіть поле (джерело)",
+                    "missingTargetField": "Виберіть поле (ціль)",
+                    "missingOptions": "Виберіть хоча б одну опцію",
+                    "sameSourceAndTargetField": "Джерело та ціль не можуть бути однаковими"
                 }
             },
             "mergeOptions": {
