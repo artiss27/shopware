@@ -608,7 +608,15 @@ class PropertyTransferService
         }
         
         $customFields = $productEntity->getCustomFields() ?? [];
-        $customFields[$fieldName] = $values;
+        
+        // Convert array to string - join values with comma or use single value if only one
+        // Custom fields typically expect string values, not arrays
+        if (count($values) === 1) {
+            $customFields[$fieldName] = $values[0];
+        } else {
+            // Join multiple values with comma and space
+            $customFields[$fieldName] = implode(', ', $values);
+        }
         
         // Update product using repository
         $this->productRepository->update([
