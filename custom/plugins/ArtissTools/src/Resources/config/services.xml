@@ -219,6 +219,21 @@
             <tag name="console.command"/>
         </service>
 
+        <!-- Dimension Parser Service -->
+        <service id="ArtissTools\Service\DimensionParserService">
+            <argument type="service" id="logger"/>
+        </service>
+
+        <!-- Parse Dimensions Command -->
+        <service id="ArtissTools\Command\ParseDimensionsCommand">
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="ArtissTools\Service\DimensionParserService"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="logger"/>
+            <argument>%kernel.project_dir%</argument>
+            <tag name="console.command"/>
+        </service>
+
         <!-- Subscribers -->
         <service id="ArtissTools\Subscriber\PluginLifecycleSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
