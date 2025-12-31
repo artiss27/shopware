@@ -123,23 +123,130 @@ class PropertyOptionMergeService
         $this->connection->beginTransaction();
 
         try {
-            // Update product_property
-            $qb = $this->connection->createQueryBuilder();
-            $qb->update('product_property')
-                ->set('property_group_option_id', ':targetId')
-                ->where('property_group_option_id IN (:sourceIds)')
-                ->setParameter('targetId', $targetOptionBin)
-                ->setParameter('sourceIds', $sourceOptionIdsBin, ArrayParameterType::STRING)
-                ->executeStatement();
+            // Step 1: Delete source associations where target already exists on the same product
+            $this->connection->executeStatement(
+                'DELETE pp_source FROM product_property pp_source
+                 INNER JOIN product_property pp_target 
+                    ON pp_source.product_id = pp_target.product_id 
+                    AND pp_source.product_version_id = pp_target.product_version_id
+                 WHERE pp_source.property_group_option_id IN (:sourceIds)
+                 AND pp_target.property_group_option_id = :targetId',
+                [
+                    'sourceIds' => $sourceOptionIdsBin,
+                    'targetId' => $targetOptionBin
+                ],
+                [
+                    'sourceIds' => ArrayParameterType::STRING
+                ]
+            );
 
-            // Update product_configurator_setting
-            $qb = $this->connection->createQueryBuilder();
-            $qb->update('product_configurator_setting')
-                ->set('property_group_option_id', ':targetId')
-                ->where('property_group_option_id IN (:sourceIds)')
-                ->setParameter('targetId', $targetOptionBin)
-                ->setParameter('sourceIds', $sourceOptionIdsBin, ArrayParameterType::STRING)
-                ->executeStatement();
+            // Step 2: For products with multiple source options, keep only one (to avoid duplicates after update)
+            // Get products that have multiple source options
+            $productsWithMultipleSources = $this->connection->fetchAllAssociative(
+                'SELECT product_id, product_version_id, MIN(property_group_option_id) as keep_option_id
+                 FROM product_property 
+                 WHERE property_group_option_id IN (:sourceIds)
+                 GROUP BY product_id, product_version_id
+                 HAVING COUNT(*) > 1',
+                ['sourceIds' => $sourceOptionIdsBin],
+                ['sourceIds' => ArrayParameterType::STRING]
+            );
+
+            // Delete duplicate source associations (keep only one per product)
+            foreach ($productsWithMultipleSources as $row) {
+                $this->connection->executeStatement(
+                    'DELETE FROM product_property 
+                     WHERE product_id = :productId 
+                     AND product_version_id = :versionId
+                     AND property_group_option_id IN (:sourceIds)
+                     AND property_group_option_id != :keepId',
+                    [
+                        'productId' => $row['product_id'],
+                        'versionId' => $row['product_version_id'],
+                        'sourceIds' => $sourceOptionIdsBin,
+                        'keepId' => $row['keep_option_id']
+                    ],
+                    [
+                        'sourceIds' => ArrayParameterType::STRING
+                    ]
+                );
+            }
+
+            // Step 3: Now safely update remaining source options to target
+            $this->connection->executeStatement(
+                'UPDATE product_property 
+                 SET property_group_option_id = :targetId
+                 WHERE property_group_option_id IN (:sourceIds)',
+                [
+                    'targetId' => $targetOptionBin,
+                    'sourceIds' => $sourceOptionIdsBin
+                ],
+                [
+                    'sourceIds' => ArrayParameterType::STRING
+                ]
+            );
+
+            // Same logic for product_configurator_setting
+            // Step 1: Delete where target exists
+            $this->connection->executeStatement(
+                'DELETE pcs_source FROM product_configurator_setting pcs_source
+                 INNER JOIN product_configurator_setting pcs_target 
+                    ON pcs_source.product_id = pcs_target.product_id 
+                    AND pcs_source.product_version_id = pcs_target.product_version_id
+                 WHERE pcs_source.property_group_option_id IN (:sourceIds)
+                 AND pcs_target.property_group_option_id = :targetId',
+                [
+                    'sourceIds' => $sourceOptionIdsBin,
+                    'targetId' => $targetOptionBin
+                ],
+                [
+                    'sourceIds' => ArrayParameterType::STRING
+                ]
+            );
+
+            // Step 2: Handle multiple sources per product
+            $configsWithMultipleSources = $this->connection->fetchAllAssociative(
+                'SELECT product_id, product_version_id, MIN(property_group_option_id) as keep_option_id
+                 FROM product_configurator_setting 
+                 WHERE property_group_option_id IN (:sourceIds)
+                 GROUP BY product_id, product_version_id
+                 HAVING COUNT(*) > 1',
+                ['sourceIds' => $sourceOptionIdsBin],
+                ['sourceIds' => ArrayParameterType::STRING]
+            );
+
+            foreach ($configsWithMultipleSources as $row) {
+                $this->connection->executeStatement(
+                    'DELETE FROM product_configurator_setting 
+                     WHERE product_id = :productId 
+                     AND product_version_id = :versionId
+                     AND property_group_option_id IN (:sourceIds)
+                     AND property_group_option_id != :keepId',
+                    [
+                        'productId' => $row['product_id'],
+                        'versionId' => $row['product_version_id'],
+                        'sourceIds' => $sourceOptionIdsBin,
+                        'keepId' => $row['keep_option_id']
+                    ],
+                    [
+                        'sourceIds' => ArrayParameterType::STRING
+                    ]
+                );
+            }
+
+            // Step 3: Update remaining
+            $this->connection->executeStatement(
+                'UPDATE product_configurator_setting 
+                 SET property_group_option_id = :targetId
+                 WHERE property_group_option_id IN (:sourceIds)',
+                [
+                    'targetId' => $targetOptionBin,
+                    'sourceIds' => $sourceOptionIdsBin
+                ],
+                [
+                    'sourceIds' => ArrayParameterType::STRING
+                ]
+            );
 
             // Delete source options using repository
             $idsToDelete = [];

@@ -651,29 +651,40 @@ class PropertyTransferService
 
     private function addProductPropertyAssociation(string $productId, string $optionId): void
     {
+        // Get product's version_id from database
+        $productVersionId = $this->connection->fetchOne(
+            'SELECT version_id FROM product WHERE id = :productId LIMIT 1',
+            ['productId' => Uuid::fromHexToBytes($productId)]
+        );
+
+        if (!$productVersionId) {
+            // Product not found, skip
+            return;
+        }
+
         // Check if association already exists
-        $exists = $this->connection->createQueryBuilder()
-            ->select('1')
-            ->from('product_property')
-            ->where('product_id = :productId')
-            ->andWhere('property_group_option_id = :optionId')
-            ->setParameter('productId', Uuid::fromHexToBytes($productId))
-            ->setParameter('optionId', Uuid::fromHexToBytes($optionId))
-            ->executeQuery()
-            ->fetchOne();
+        $exists = $this->connection->fetchOne(
+            'SELECT 1 FROM product_property 
+             WHERE product_id = :productId 
+             AND product_version_id = :versionId 
+             AND property_group_option_id = :optionId',
+            [
+                'productId' => Uuid::fromHexToBytes($productId),
+                'versionId' => $productVersionId,
+                'optionId' => Uuid::fromHexToBytes($optionId)
+            ]
+        );
 
         if (!$exists) {
-            $this->connection->createQueryBuilder()
-                ->insert('product_property')
-                ->values([
-                    'product_id' => ':productId',
-                    'product_version_id' => ':versionId',
-                    'property_group_option_id' => ':optionId'
-                ])
-                ->setParameter('productId', Uuid::fromHexToBytes($productId))
-                ->setParameter('versionId', Uuid::fromHexToBytes(Uuid::randomHex()))
-                ->setParameter('optionId', Uuid::fromHexToBytes($optionId))
-                ->executeStatement();
+            $this->connection->executeStatement(
+                'INSERT INTO product_property (product_id, product_version_id, property_group_option_id) 
+                 VALUES (:productId, :versionId, :optionId)',
+                [
+                    'productId' => Uuid::fromHexToBytes($productId),
+                    'versionId' => $productVersionId,
+                    'optionId' => Uuid::fromHexToBytes($optionId)
+                ]
+            );
         }
     }
 
@@ -683,7 +694,7 @@ class PropertyTransferService
 
         $this->propertyGroupOptionRepository->create([[
             'id' => $optionId,
-            'propertyGroupId' => $groupId,
+            'groupId' => $groupId,
             'name' => $sourceOption['name']
         ]], $context);
 
@@ -696,7 +707,7 @@ class PropertyTransferService
 
         $this->propertyGroupOptionRepository->create([[
             'id' => $optionId,
-            'propertyGroupId' => $groupId,
+            'groupId' => $groupId,
             'name' => $name
         ]], $context);
 
