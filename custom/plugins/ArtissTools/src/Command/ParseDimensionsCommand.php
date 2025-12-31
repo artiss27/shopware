@@ -22,6 +22,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Parse dimensions from custom fields and property group options and save to product dimensions
+ *
  * 
  * @example
  *   # Parse dimensions from custom field and property group with cleanup
@@ -398,7 +399,6 @@ EOF
         }
 
         $binaryProductId = \Shopware\Core\Framework\Uuid\Uuid::fromHexToBytes($productId);
-        $locales = ['uk-UA', 'ru-RU', 'en-GB', 'de-DE'];
         
         foreach ($propertyGroupIds as $groupId) {
             if (!\Shopware\Core\Framework\Uuid\Uuid::isValid($groupId)) {
@@ -407,53 +407,18 @@ EOF
             
             $binaryGroupId = \Shopware\Core\Framework\Uuid\Uuid::fromHexToBytes($groupId);
             
-            // Find property options in this group
-            $optionsSql = "SELECT id FROM property_group_option WHERE property_group_id = ?";
-            $binaryOptionIds = $this->connection->fetchFirstColumn($optionsSql, [$binaryGroupId]);
-            
-            if (empty($binaryOptionIds)) {
-                continue;
-            }
-            
-            // Find which option is assigned to this product
-            $placeholders = implode(',', array_fill(0, count($binaryOptionIds), '?'));
+            // Find property option assigned to this product from this group
             $sql = "
-                SELECT pp.property_group_option_id
-                FROM product_property pp
-                WHERE pp.product_id = ?
-                AND pp.property_group_option_id IN ({$placeholders})
-                LIMIT 1
-            ";
-            $foundBinaryOptionId = $this->connection->fetchOne($sql, array_merge([$binaryProductId], $binaryOptionIds));
-            
-            if (!$foundBinaryOptionId) {
-                continue;
-            }
-            
-            // Get the name of this option
-            foreach ($locales as $locale) {
-                $nameSql = "
-                    SELECT pgot.name
-                    FROM property_group_option_translation pgot
-                    INNER JOIN language l ON pgot.language_id = l.id
-                    WHERE pgot.property_group_option_id = ?
-                    AND l.locale_code = ?
-                    LIMIT 1
-                ";
-                $result = $this->connection->fetchOne($nameSql, [$foundBinaryOptionId, $locale]);
-                if ($result) {
-                    return $result;
-                }
-            }
-            
-            // Try without locale
-            $nameSql = "
                 SELECT pgot.name
-                FROM property_group_option_translation pgot
-                WHERE pgot.property_group_option_id = ?
+                FROM product_property pp
+                INNER JOIN property_group_option pgo ON pp.property_group_option_id = pgo.id
+                INNER JOIN property_group_option_translation pgot ON pgo.id = pgot.property_group_option_id
+                WHERE pp.product_id = ?
+                AND pgo.property_group_id = ?
                 LIMIT 1
             ";
-            $result = $this->connection->fetchOne($nameSql, [$foundBinaryOptionId]);
+            $result = $this->connection->fetchOne($sql, [$binaryProductId, $binaryGroupId]);
+            
             if ($result) {
                 return $result;
             }
