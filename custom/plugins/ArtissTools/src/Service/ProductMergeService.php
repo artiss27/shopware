@@ -192,7 +192,7 @@ class ProductMergeService
                     $firstVariantId = $product->getId();
                 }
 
-                // Get variant-forming options for this product
+                // Get variant-forming options for this product (only these should remain)
                 $variantOptions = $this->getVariantOptions($product, $variantFormingPropertyGroupIds);
 
                 $updateData = [
@@ -204,6 +204,26 @@ class ProductMergeService
                 if (!empty($variantOptions)) {
                     $updateData['options'] = $variantOptions;
                 }
+
+                // Set only variant-forming properties, clear all others
+                $variantPropertyIds = array_column($variantOptions, 'id');
+                if (!empty($variantPropertyIds)) {
+                    $updateData['properties'] = $variantOptions;
+                } else {
+                    $updateData['properties'] = [];
+                }
+
+                // Clear fields that should be inherited from parent (set to null)
+                $updateData['manufacturerId'] = null;
+                $updateData['taxId'] = null;
+                $updateData['minPurchase'] = null;
+                $updateData['purchaseSteps'] = null;
+                $updateData['categories'] = [];
+                $updateData['description'] = null;
+                $updateData['active'] = null;
+
+                // Clear visibilities - variants inherit from parent
+                $updateData['visibilities'] = [];
 
                 $updates[] = $updateData;
             }
@@ -260,7 +280,8 @@ class ProductMergeService
             'customFields',
             'prices',
             'tax',
-            'manufacturer'
+            'manufacturer',
+            'visibilities'
         ]);
 
         $products = $this->productRepository->search($criteria, $context)->getEntities();
@@ -642,41 +663,57 @@ class ProductMergeService
 
         $this->productRepository->update([$updateData], $context);
 
-        // Remove common custom fields from variants (only product_custom_properties_*)
-        if (!empty($commonCustomFields)) {
-            $this->removeCommonCustomFieldsFromVariants($products, array_keys($commonCustomFields), $context);
-        }
+        // Clear common fields from variants so they inherit from parent
+        $this->clearCommonFieldsFromVariants($products, $commonFields, array_keys($commonCustomFields), $context);
     }
 
     /**
-     * Remove common custom fields from variants that were moved to parent
+     * Clear common fields from variants so they inherit from parent
      */
-    private function removeCommonCustomFieldsFromVariants(array $products, array $fieldKeys, Context $context): void
+    private function clearCommonFieldsFromVariants(array $products, array $commonFields, array $commonCustomFieldKeys, Context $context): void
     {
         $variantUpdates = [];
 
         foreach ($products as $product) {
-            $customFields = $product->getCustomFields();
-            if (!$customFields) {
-                continue;
+            $updateData = [
+                'id' => $product->getId()
+            ];
+
+            // Clear common dimensions and weight (only if they are common)
+            if (isset($commonFields['width'])) {
+                $updateData['width'] = null;
+            }
+            if (isset($commonFields['height'])) {
+                $updateData['height'] = null;
+            }
+            if (isset($commonFields['length'])) {
+                $updateData['length'] = null;
+            }
+            if (isset($commonFields['weight'])) {
+                $updateData['weight'] = null;
+            }
+            if (isset($commonFields['minPurchase'])) {
+                $updateData['minPurchase'] = null;
+            }
+            if (isset($commonFields['purchaseSteps'])) {
+                $updateData['purchaseSteps'] = null;
             }
 
-            $updatedCustomFields = $customFields;
-            $hasChanges = false;
-
-            foreach ($fieldKeys as $key) {
-                if (isset($updatedCustomFields[$key])) {
-                    unset($updatedCustomFields[$key]);
-                    $hasChanges = true;
+            // Clear common custom fields
+            if (!empty($commonCustomFieldKeys)) {
+                $customFields = $product->getCustomFields();
+                if ($customFields) {
+                    $updatedCustomFields = $customFields;
+                    foreach ($commonCustomFieldKeys as $key) {
+                        if (isset($updatedCustomFields[$key])) {
+                            unset($updatedCustomFields[$key]);
+                        }
+                    }
+                    $updateData['customFields'] = $updatedCustomFields;
                 }
             }
 
-            if ($hasChanges) {
-                $variantUpdates[] = [
-                    'id' => $product->getId(),
-                    'customFields' => $updatedCustomFields
-                ];
-            }
+            $variantUpdates[] = $updateData;
         }
 
         if (!empty($variantUpdates)) {
@@ -752,32 +789,90 @@ class ProductMergeService
     }
 
     /**
-     * Process media (move common to parent, keep unique on variants)
+     * Process media (copy first product's media to parent, remove duplicates from variants)
      */
     private function processMedia(ProductEntity $parent, array $products, Context $context): void
     {
-        $mediaAnalysis = $this->analyzeMedia($products, $parent, 'existing');
-        
-        // This is a simplified version - in reality you'd need to:
-        // 1. Find common media IDs
-        // 2. Add them to parent if not already there
-        // 3. Remove duplicates from children
-        // This requires more complex logic with product_media table
-        
-        // For now, we'll just ensure parent has cover if any product has cover
+        // Get first product's media
+        $firstProduct = reset($products);
+        if (!$firstProduct || !$firstProduct->getMedia()) {
+            return;
+        }
+
+        // Collect all media IDs from first product
+        $parentMediaIds = [];
+        $parentCoverId = null;
+
+        foreach ($firstProduct->getMedia() as $media) {
+            $parentMediaIds[] = $media->getMediaId();
+        }
+
+        if ($firstProduct->getCover()) {
+            $parentCoverId = $firstProduct->getCover()->getMediaId();
+        }
+
+        if (empty($parentMediaIds)) {
+            return;
+        }
+
+        // Copy media to parent
+        $parentUpdate = [
+            'id' => $parent->getId(),
+            'media' => array_map(function ($mediaId) {
+                return ['mediaId' => $mediaId];
+            }, $parentMediaIds)
+        ];
+
+        if ($parentCoverId) {
+            $parentUpdate['cover'] = ['mediaId' => $parentCoverId];
+        }
+
+        $this->productRepository->update([$parentUpdate], $context);
+
+        // Clear media from variants that are present in parent
+        $variantUpdates = [];
         foreach ($products as $product) {
-            if ($product->getCover()) {
-                $coverMediaId = $product->getCover()->getMediaId();
-                if ($coverMediaId && !$parent->getCover()) {
-                    $this->productRepository->update([
-                        [
-                            'id' => $parent->getId(),
-                            'coverId' => $product->getCoverId()
-                        ]
-                    ], $context);
-                    break;
+            $variantMediaIds = [];
+            if ($product->getMedia()) {
+                foreach ($product->getMedia() as $media) {
+                    $variantMediaIds[] = $media->getMediaId();
                 }
             }
+
+            if (empty($variantMediaIds)) {
+                continue;
+            }
+
+            // Find media IDs that are unique to this variant (not in parent)
+            $uniqueMediaIds = array_diff($variantMediaIds, $parentMediaIds);
+
+            // If variant has some media that's in parent, update it
+            if (count($uniqueMediaIds) !== count($variantMediaIds)) {
+                $updateData = [
+                    'id' => $product->getId(),
+                ];
+
+                // Keep only unique media
+                if (!empty($uniqueMediaIds)) {
+                    $updateData['media'] = array_map(function ($mediaId) {
+                        return ['mediaId' => $mediaId];
+                    }, array_values($uniqueMediaIds));
+                } else {
+                    // All media is from parent, clear it
+                    $updateData['media'] = [];
+                }
+
+                // Clear cover if it's in parent
+                if ($product->getCover() && in_array($product->getCover()->getMediaId(), $parentMediaIds)) {
+                    $updateData['coverId'] = null;
+                }
+
+                $variantUpdates[] = $updateData;
+            }
+        }
+
+        if (!empty($variantUpdates)) {
+            $this->productRepository->update($variantUpdates, $context);
         }
     }
 
