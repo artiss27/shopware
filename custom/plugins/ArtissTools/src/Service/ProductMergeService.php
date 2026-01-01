@@ -178,22 +178,52 @@ class ProductMergeService
                 }
 
                 // Process properties, custom fields, and media for new parent
-                $this->processNewParentData($targetParent, $products, $context);
+                $this->processNewParentData($targetParent, $products, $variantFormingPropertyGroupIds, $context);
             }
 
-            // Set parent_id for all selected products
+            // Process configurator settings first to create configurator options on parent
+            $this->processConfiguratorSettings($targetParent, $products, $variantFormingPropertyGroupIds, $context);
+
+            // Set parent_id and variant options for all selected products
             $updates = [];
+            $firstVariantId = null;
             foreach ($products as $product) {
-                $updates[] = [
+                if ($firstVariantId === null) {
+                    $firstVariantId = $product->getId();
+                }
+
+                // Get variant-forming options for this product
+                $variantOptions = $this->getVariantOptions($product, $variantFormingPropertyGroupIds);
+
+                $updateData = [
                     'id' => $product->getId(),
                     'parentId' => $newParentId
                 ];
+
+                // Set options that define this variant
+                if (!empty($variantOptions)) {
+                    $updateData['options'] = $variantOptions;
+                }
+
+                $updates[] = $updateData;
             }
 
             $this->productRepository->update($updates, $context);
 
-            // Process configurator settings with selected variant-forming properties
-            $this->processConfiguratorSettings($targetParent, $products, $variantFormingPropertyGroupIds, $context);
+            // Set main variant and variant listing config on parent
+            if ($firstVariantId) {
+                $this->productRepository->update([
+                    [
+                        'id' => $newParentId,
+                        'mainVariantId' => $firstVariantId,
+                        'variantListingConfig' => [
+                            'displayParent' => true,
+                            'mainVariantId' => $firstVariantId,
+                            'configuratorGroupConfig' => null
+                        ]
+                    ]
+                ], $context);
+            }
 
             // Process media
             $this->processMedia($targetParent, $products, $context);
@@ -354,7 +384,10 @@ class ProductMergeService
 
         foreach ($allCustomFields as $key => $values) {
             $uniqueValues = array_unique(array_column($values, 'value'), SORT_REGULAR);
-            if (count($uniqueValues) === 1 && count($values) === $totalProducts) {
+            // Only move to parent if: 1) from product_custom_properties set, 2) same value across all products
+            $isFromProductCustomProperties = str_starts_with($key, 'product_custom_properties_');
+
+            if ($isFromProductCustomProperties && count($uniqueValues) === 1 && count($values) === $totalProducts) {
                 $commonFields[$key] = $uniqueValues[0];
             } else {
                 $uniqueFields[$key] = $values;
@@ -466,7 +499,9 @@ class ProductMergeService
     private function cloneProductForParent(ProductEntity $sourceProduct, string $newName, Context $context): string
     {
         $newId = Uuid::randomHex();
-        $newProductNumber = $sourceProduct->getProductNumber() . '-PARENT-' . substr($newId, 0, 8);
+
+        // Generate parent product number with P- prefix
+        $newProductNumber = 'P-' . $sourceProduct->getProductNumber();
 
         $productData = [
             'id' => $newId,
@@ -478,6 +513,19 @@ class ProductMergeService
             'active' => $sourceProduct->getActive(),
             'markAsTopseller' => $sourceProduct->getMarkAsTopseller(),
         ];
+
+        // Copy price - required field
+        if ($sourceProduct->getPrice()) {
+            $productData['price'] = $sourceProduct->getPrice();
+        }
+
+        // Copy minPurchase and purchaseSteps
+        if ($sourceProduct->getMinPurchase()) {
+            $productData['minPurchase'] = $sourceProduct->getMinPurchase();
+        }
+        if ($sourceProduct->getPurchaseSteps()) {
+            $productData['purchaseSteps'] = $sourceProduct->getPurchaseSteps();
+        }
 
         // Copy categories
         if ($sourceProduct->getCategories()) {
@@ -496,32 +544,75 @@ class ProductMergeService
             $productData['description'] = $sourceProduct->getDescription();
         }
 
+        // Copy dimensions and weight
+        if ($sourceProduct->getWidth()) {
+            $productData['width'] = $sourceProduct->getWidth();
+        }
+        if ($sourceProduct->getHeight()) {
+            $productData['height'] = $sourceProduct->getHeight();
+        }
+        if ($sourceProduct->getLength()) {
+            $productData['length'] = $sourceProduct->getLength();
+        }
+        if ($sourceProduct->getWeight()) {
+            $productData['weight'] = $sourceProduct->getWeight();
+        }
+
+        // Copy sales channel visibilities
+        $productData['visibilities'] = $this->copySalesChannelVisibilities($sourceProduct);
+
         $this->productRepository->create([$productData], $context);
 
         return $newId;
     }
 
     /**
+     * Copy sales channel visibilities from source product
+     */
+    private function copySalesChannelVisibilities(ProductEntity $sourceProduct): array
+    {
+        $visibilities = [];
+
+        if ($sourceProduct->getVisibilities()) {
+            foreach ($sourceProduct->getVisibilities() as $visibility) {
+                $visibilities[] = [
+                    'salesChannelId' => $visibility->getSalesChannelId(),
+                    'visibility' => $visibility->getVisibility()
+                ];
+            }
+        }
+
+        return $visibilities;
+    }
+
+    /**
      * Process data for new parent (remove non-common properties, custom fields, etc.)
      */
-    private function processNewParentData(ProductEntity $parent, array $products, Context $context): void
+    private function processNewParentData(ProductEntity $parent, array $products, array $variantFormingPropertyGroupIds, Context $context): void
     {
         $propertyAnalysis = $this->analyzeProperties($products, $parent, 'new', $context);
         $customFieldsAnalysis = $this->analyzeCustomFields($products);
 
-        // Set only common properties
+        // Set only common properties, excluding variant-forming property groups
         $commonPropertyIds = [];
         foreach ($propertyAnalysis['common'] as $groupId => $optionIds) {
-            $commonPropertyIds = array_merge($commonPropertyIds, $optionIds);
+            // Skip variant-forming property groups
+            if (!in_array($groupId, $variantFormingPropertyGroupIds)) {
+                $commonPropertyIds = array_merge($commonPropertyIds, $optionIds);
+            }
         }
 
         // Set only common custom fields
         $commonCustomFields = $customFieldsAnalysis['common'];
 
+        // Analyze common fields across all products
+        $commonFields = $this->analyzeCommonFields($products);
+
         $updateData = [
             'id' => $parent->getId(),
         ];
 
+        // Set common properties (excluding variant-forming)
         if (!empty($commonPropertyIds)) {
             $updateData['properties'] = array_map(function ($id) {
                 return ['id' => $id];
@@ -530,11 +621,97 @@ class ProductMergeService
             $updateData['properties'] = [];
         }
 
+        // Set common custom fields
         if (!empty($commonCustomFields)) {
             $updateData['customFields'] = $commonCustomFields;
         }
 
+        // Copy common dimensions and weight if they match across all products
+        if (isset($commonFields['width'])) {
+            $updateData['width'] = $commonFields['width'];
+        }
+        if (isset($commonFields['height'])) {
+            $updateData['height'] = $commonFields['height'];
+        }
+        if (isset($commonFields['length'])) {
+            $updateData['length'] = $commonFields['length'];
+        }
+        if (isset($commonFields['weight'])) {
+            $updateData['weight'] = $commonFields['weight'];
+        }
+
         $this->productRepository->update([$updateData], $context);
+
+        // Remove common custom fields from variants (only product_custom_properties_*)
+        if (!empty($commonCustomFields)) {
+            $this->removeCommonCustomFieldsFromVariants($products, array_keys($commonCustomFields), $context);
+        }
+    }
+
+    /**
+     * Remove common custom fields from variants that were moved to parent
+     */
+    private function removeCommonCustomFieldsFromVariants(array $products, array $fieldKeys, Context $context): void
+    {
+        $variantUpdates = [];
+
+        foreach ($products as $product) {
+            $customFields = $product->getCustomFields();
+            if (!$customFields) {
+                continue;
+            }
+
+            $updatedCustomFields = $customFields;
+            $hasChanges = false;
+
+            foreach ($fieldKeys as $key) {
+                if (isset($updatedCustomFields[$key])) {
+                    unset($updatedCustomFields[$key]);
+                    $hasChanges = true;
+                }
+            }
+
+            if ($hasChanges) {
+                $variantUpdates[] = [
+                    'id' => $product->getId(),
+                    'customFields' => $updatedCustomFields
+                ];
+            }
+        }
+
+        if (!empty($variantUpdates)) {
+            $this->productRepository->update($variantUpdates, $context);
+        }
+    }
+
+    /**
+     * Analyze common fields across products (dimensions, weight, etc.)
+     */
+    private function analyzeCommonFields(array $products): array
+    {
+        $commonFields = [];
+        $fieldNames = ['width', 'height', 'length', 'weight', 'minPurchase', 'purchaseSteps'];
+
+        foreach ($fieldNames as $fieldName) {
+            $values = [];
+            $getter = 'get' . ucfirst($fieldName);
+
+            foreach ($products as $product) {
+                if (method_exists($product, $getter)) {
+                    $value = $product->$getter();
+                    if ($value !== null) {
+                        $values[] = $value;
+                    }
+                }
+            }
+
+            // If all products have the same value for this field
+            if (!empty($values) && count(array_unique($values)) === 1 && count($values) === count($products)) {
+                $commonFields[$fieldName] = $values[0];
+            }
+        }
+
+        return $commonFields;
     }
 
     /**
@@ -622,6 +799,28 @@ class ProductMergeService
         $criteria = new Criteria([$optionId]);
         $result = $this->propertyGroupOptionRepository->search($criteria, $context);
         return $result->first();
+    }
+
+    /**
+     * Get variant options for a product based on selected variant-forming property groups
+     */
+    private function getVariantOptions(ProductEntity $product, array $variantFormingPropertyGroupIds): array
+    {
+        $options = [];
+        $properties = $product->getProperties();
+
+        if (!$properties) {
+            return $options;
+        }
+
+        foreach ($properties as $property) {
+            // Only include properties from variant-forming groups
+            if (in_array($property->getGroupId(), $variantFormingPropertyGroupIds)) {
+                $options[] = ['id' => $property->getId()];
+            }
+        }
+
+        return $options;
     }
 
     /**
