@@ -128,3 +128,8 @@ supplier-rebuild: ## Rebuild supplier plugin (administration)
 supplier-update:
 	docker compose exec web bin/console plugin:update ArtissSupplier
 ###< supplier ###
+
+
+theme-compile:
+	docker compose exec web bin/console cache:clear
+	docker compose exec web bin/console theme:compile

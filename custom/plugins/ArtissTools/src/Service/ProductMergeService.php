@@ -218,17 +218,16 @@ class ProductMergeService
                 $updateData['taxId'] = null;
                 $updateData['minPurchase'] = null;
                 $updateData['purchaseSteps'] = null;
-                $updateData['categories'] = [];
                 $updateData['description'] = null;
                 $updateData['active'] = null;
-
-                // Clear visibilities - variants inherit from parent
-                $updateData['visibilities'] = [];
 
                 $updates[] = $updateData;
             }
 
             $this->productRepository->update($updates, $context);
+
+            // Clear categories and visibilities from variants (must be done after parentId is set)
+            $this->clearVariantAssociations($products, $context);
 
             // Set main variant and variant listing config on parent
             if ($firstVariantId) {
@@ -873,6 +872,35 @@ class ProductMergeService
 
         if (!empty($variantUpdates)) {
             $this->productRepository->update($variantUpdates, $context);
+        }
+    }
+
+    /**
+     * Clear categories and visibilities from variants so they inherit from parent
+     */
+    private function clearVariantAssociations(array $products, Context $context): void
+    {
+        foreach ($products as $product) {
+            // Delete all category associations for this variant
+            if ($product->getCategories() && $product->getCategories()->count() > 0) {
+                foreach ($product->getCategories() as $category) {
+                    $this->connection->executeStatement(
+                        'DELETE FROM product_category WHERE product_id = :productId AND category_id = :categoryId',
+                        [
+                            'productId' => Uuid::fromHexToBytes($product->getId()),
+                            'categoryId' => Uuid::fromHexToBytes($category->getId())
+                        ]
+                    );
+                }
+            }
+
+            // Delete all visibility associations for this variant
+            if ($product->getVisibilities() && $product->getVisibilities()->count() > 0) {
+                $this->connection->executeStatement(
+                    'DELETE FROM product_visibility WHERE product_id = :productId',
+                    ['productId' => Uuid::fromHexToBytes($product->getId())]
+                );
+            }
         }
     }
 

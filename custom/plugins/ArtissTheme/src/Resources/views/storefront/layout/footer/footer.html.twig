@@ -1,0 +1,14 @@
+{#vendor/shopware/storefront/Resources/views/storefront/layout/footer/footer.html.twig#}
+
+{% sw_extends '@Storefront/storefront/layout/footer/footer.html.twig' %}
+
+{% block layout_footer_navigation_information_headline %}
+{% endblock %}
+{% block layout_footer_navigation_information_content %}
+{% endblock %}
+
+{% block layout_footer_copyright %}
+    <div class="footer-copyright">
+        © 2009 - {{ "now"|date("Y") }} {{ 'footer.copyrightInfo'|trans|sw_sanitize }}
+    </div>
+{% endblock %}
