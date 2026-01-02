@@ -28,7 +28,8 @@
                     "title": "Merge Mode",
                     "label": "Select mode",
                     "new": "Create new parent product",
-                    "existing": "Use existing parent product"
+                    "existing": "Use existing parent product",
+                    "mergeAllMedia": "Media only in parent product"
                 },
                 "targetParent": {
                     "title": "Target Parent Product",

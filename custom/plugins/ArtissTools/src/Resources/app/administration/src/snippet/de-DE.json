@@ -22,6 +22,15 @@
             },
             "placeholders": {
                 "merge": "Platzhalter für Produktzusammenführung"
+            },
+            "merge": {
+                "mode": {
+                    "title": "Zusammenführungsmodus",
+                    "label": "Modus auswählen",
+                    "new": "Neues Hauptprodukt erstellen",
+                    "existing": "Bestehendes Hauptprodukt verwenden",
+                    "mergeAllMedia": "Medien nur im Hauptprodukt"
+                }
             }
         },
         "backups": {

@@ -139,6 +139,7 @@ class ProductMergeService
         ?string $targetParentId = null,
         ?string $newParentName = null,
         array $variantFormingPropertyGroupIds = [],
+        bool $mergeAllMedia = true,
         Context $context
     ): array {
         $this->connection->beginTransaction();
@@ -181,7 +182,10 @@ class ProductMergeService
                 $this->processNewParentData($targetParent, $products, $variantFormingPropertyGroupIds, $context);
             }
 
-            // Process configurator settings first to create configurator options on parent
+            // Process media BEFORE setting parentId (copy media to parent first)
+            $this->processMedia($targetParent, $products, $mergeAllMedia, $context);
+
+            // Process configurator settings to create configurator options on parent
             $this->processConfiguratorSettings($targetParent, $products, $variantFormingPropertyGroupIds, $context);
 
             // Set parent_id and variant options for all selected products
@@ -205,14 +209,6 @@ class ProductMergeService
                     $updateData['options'] = $variantOptions;
                 }
 
-                // Set only variant-forming properties, clear all others
-                $variantPropertyIds = array_column($variantOptions, 'id');
-                if (!empty($variantPropertyIds)) {
-                    $updateData['properties'] = $variantOptions;
-                } else {
-                    $updateData['properties'] = [];
-                }
-
                 // Clear fields that should be inherited from parent (set to null)
                 $updateData['manufacturerId'] = null;
                 $updateData['taxId'] = null;
@@ -226,8 +222,12 @@ class ProductMergeService
 
             $this->productRepository->update($updates, $context);
 
-            // Clear categories and visibilities from variants (must be done after parentId is set)
-            $this->clearVariantAssociations($products, $context);
+            // Reload products after setting parentId to get fresh data
+            $productIds = array_map(fn($p) => $p->getId(), $products);
+            $products = array_values($this->loadProductsWithAssociations($productIds, $context));
+
+            // Clear categories, visibilities, and common properties from variants
+            $this->clearVariantAssociations($products, $variantFormingPropertyGroupIds, $context);
 
             // Set main variant and variant listing config on parent
             if ($firstVariantId) {
@@ -243,9 +243,6 @@ class ProductMergeService
                     ]
                 ], $context);
             }
-
-            // Process media
-            $this->processMedia($targetParent, $products, $context);
 
             $this->connection->commit();
 
@@ -790,116 +787,198 @@ class ProductMergeService
     /**
      * Process media (copy first product's media to parent, remove duplicates from variants)
      */
-    private function processMedia(ProductEntity $parent, array $products, Context $context): void
+    private function processMedia(ProductEntity $parent, array $products, bool $mergeAllMedia, Context $context): void
     {
-        // Get first product's media
+        if (!$mergeAllMedia) {
+            // Don't merge media, parent will have no media, variants keep their media
+            return;
+        }
+
+        // Take media ONLY from first product (donor)
         $firstProduct = reset($products);
-        if (!$firstProduct || !$firstProduct->getMedia()) {
+        if (!$firstProduct) {
             return;
         }
 
-        // Collect all media IDs from first product
-        $parentMediaIds = [];
-        $parentCoverId = null;
+        $donorMediaIds = [];
+        $donorCoverId = null;
 
-        foreach ($firstProduct->getMedia() as $media) {
-            $parentMediaIds[] = $media->getMediaId();
+        // Collect media from donor
+        if ($firstProduct->getMedia()) {
+            foreach ($firstProduct->getMedia() as $productMedia) {
+                $donorMediaIds[] = $productMedia->getMediaId();
+            }
         }
 
+        // Get cover from donor
         if ($firstProduct->getCover()) {
-            $parentCoverId = $firstProduct->getCover()->getMediaId();
+            $donorCoverId = $firstProduct->getCover()->getMediaId();
         }
 
-        if (empty($parentMediaIds)) {
+        if (empty($donorMediaIds)) {
             return;
         }
 
-        // Copy media to parent
+        // Copy donor's media to parent
+        $mediaArray = [];
+        foreach ($donorMediaIds as $index => $mediaId) {
+            $mediaArray[] = [
+                'mediaId' => $mediaId,
+                'position' => $index
+            ];
+        }
+
         $parentUpdate = [
             'id' => $parent->getId(),
-            'media' => array_map(function ($mediaId) {
-                return ['mediaId' => $mediaId];
-            }, $parentMediaIds)
+            'media' => $mediaArray
         ];
 
-        if ($parentCoverId) {
-            $parentUpdate['cover'] = ['mediaId' => $parentCoverId];
+        // Set cover from donor
+        if ($donorCoverId) {
+            // First, find the product_media_id for this media on the parent
+            // We need to update after media is added to get the correct product_media_id
+            $parentUpdate['coverId'] = $donorCoverId;
         }
 
         $this->productRepository->update([$parentUpdate], $context);
 
-        // Clear media from variants that are present in parent
-        $variantUpdates = [];
-        foreach ($products as $product) {
-            $variantMediaIds = [];
-            if ($product->getMedia()) {
-                foreach ($product->getMedia() as $media) {
-                    $variantMediaIds[] = $media->getMediaId();
-                }
-            }
+        // Now set the cover - need to find the product_media.id for the cover media
+        if ($donorCoverId) {
+            $productMediaId = $this->connection->fetchOne(
+                'SELECT LOWER(HEX(id)) FROM product_media WHERE product_id = :productId AND media_id = :mediaId LIMIT 1',
+                [
+                    'productId' => Uuid::fromHexToBytes($parent->getId()),
+                    'mediaId' => Uuid::fromHexToBytes($donorCoverId)
+                ]
+            );
 
-            if (empty($variantMediaIds)) {
-                continue;
-            }
-
-            // Find media IDs that are unique to this variant (not in parent)
-            $uniqueMediaIds = array_diff($variantMediaIds, $parentMediaIds);
-
-            // If variant has some media that's in parent, update it
-            if (count($uniqueMediaIds) !== count($variantMediaIds)) {
-                $updateData = [
-                    'id' => $product->getId(),
-                ];
-
-                // Keep only unique media
-                if (!empty($uniqueMediaIds)) {
-                    $updateData['media'] = array_map(function ($mediaId) {
-                        return ['mediaId' => $mediaId];
-                    }, array_values($uniqueMediaIds));
-                } else {
-                    // All media is from parent, clear it
-                    $updateData['media'] = [];
-                }
-
-                // Clear cover if it's in parent
-                if ($product->getCover() && in_array($product->getCover()->getMediaId(), $parentMediaIds)) {
-                    $updateData['coverId'] = null;
-                }
-
-                $variantUpdates[] = $updateData;
+            if ($productMediaId) {
+                $this->productRepository->update([[
+                    'id' => $parent->getId(),
+                    'coverId' => $productMediaId
+                ]], $context);
             }
         }
 
-        if (!empty($variantUpdates)) {
-            $this->productRepository->update($variantUpdates, $context);
+        // Delete ALL media from ALL variants using direct SQL
+        foreach ($products as $product) {
+            $this->connection->executeStatement(
+                'DELETE FROM product_media WHERE product_id = :productId',
+                ['productId' => Uuid::fromHexToBytes($product->getId())]
+            );
         }
     }
 
     /**
-     * Clear categories and visibilities from variants so they inherit from parent
+     * Clear categories, visibilities, and common properties from variants so they inherit from parent
      */
-    private function clearVariantAssociations(array $products, Context $context): void
+    private function clearVariantAssociations(array $products, array $variantFormingPropertyGroupIds, Context $context): void
     {
-        foreach ($products as $product) {
-            // Delete all category associations for this variant
-            if ($product->getCategories() && $product->getCategories()->count() > 0) {
-                foreach ($product->getCategories() as $category) {
+        // Get parent ID from first product
+        if (empty($products)) {
+            return;
+        }
+
+        $firstProduct = reset($products);
+        $parentId = $firstProduct->getParentId();
+
+        if (!$parentId) {
+            return;
+        }
+
+        // Load parent with properties
+        $parentProducts = $this->loadProductsWithAssociations([$parentId], $context);
+        $parent = $parentProducts[$parentId] ?? null;
+
+        if (!$parent) {
+            return;
+        }
+
+        // Delete variant-forming properties from parent
+        if ($parent->getProperties()) {
+            foreach ($parent->getProperties() as $property) {
+                if (in_array($property->getGroupId(), $variantFormingPropertyGroupIds)) {
                     $this->connection->executeStatement(
-                        'DELETE FROM product_category WHERE product_id = :productId AND category_id = :categoryId',
+                        'DELETE FROM product_property WHERE product_id = :productId AND property_group_option_id = :propertyId',
                         [
-                            'productId' => Uuid::fromHexToBytes($product->getId()),
-                            'categoryId' => Uuid::fromHexToBytes($category->getId())
+                            'productId' => Uuid::fromHexToBytes($parent->getId()),
+                            'propertyId' => Uuid::fromHexToBytes($property->getId())
                         ]
                     );
                 }
             }
+        }
+
+        // Collect parent non-variant-forming property values (property_id => value)
+        $parentPropertyValues = [];
+        if ($parent->getProperties()) {
+            foreach ($parent->getProperties() as $property) {
+                if (!in_array($property->getGroupId(), $variantFormingPropertyGroupIds)) {
+                    $parentPropertyValues[$property->getId()] = $property->getId();
+                }
+            }
+        }
+
+        foreach ($products as $product) {
+            // Delete all category associations for this variant
+            $this->connection->executeStatement(
+                'DELETE FROM product_category WHERE product_id = :productId',
+                ['productId' => Uuid::fromHexToBytes($product->getId())]
+            );
 
             // Delete all visibility associations for this variant
-            if ($product->getVisibilities() && $product->getVisibilities()->count() > 0) {
-                $this->connection->executeStatement(
-                    'DELETE FROM product_visibility WHERE product_id = :productId',
-                    ['productId' => Uuid::fromHexToBytes($product->getId())]
-                );
+            $this->connection->executeStatement(
+                'DELETE FROM product_visibility WHERE product_id = :productId',
+                ['productId' => Uuid::fromHexToBytes($product->getId())]
+            );
+
+            // For properties: keep only those that differ from parent (and are not variant-forming)
+            if ($product->getProperties()) {
+                foreach ($product->getProperties() as $property) {
+                    $isVariantForming = in_array($property->getGroupId(), $variantFormingPropertyGroupIds);
+                    $sameAsParent = isset($parentPropertyValues[$property->getId()]);
+
+                    // Delete if:
+                    // 1. Variant-forming property, OR
+                    // 2. Same value as parent
+                    if ($isVariantForming || $sameAsParent) {
+                        $this->connection->executeStatement(
+                            'DELETE FROM product_property WHERE product_id = :productId AND property_group_option_id = :propertyId',
+                            [
+                                'productId' => Uuid::fromHexToBytes($product->getId()),
+                                'propertyId' => Uuid::fromHexToBytes($property->getId())
+                            ]
+                        );
+                    }
+                }
+            }
+
+            // Handle custom fields: remove common product_custom_properties_* fields from variants
+            $parentCustomFields = $parent->getCustomFields() ?? [];
+            $productCustomFields = $product->getCustomFields() ?? [];
+
+            if (!empty($parentCustomFields) && !empty($productCustomFields)) {
+                $updatedCustomFields = $productCustomFields;
+                $hasChanges = false;
+
+                foreach ($productCustomFields as $key => $value) {
+                    // Only process product_custom_properties_* fields
+                    if (str_starts_with($key, 'product_custom_properties_')) {
+                        // If parent has the same field with same value, remove from variant
+                        if (isset($parentCustomFields[$key]) && $parentCustomFields[$key] === $value) {
+                            unset($updatedCustomFields[$key]);
+                            $hasChanges = true;
+                        }
+                    }
+                }
+
+                // Update variant custom fields if changed
+                if ($hasChanges) {
+                    $this->productRepository->update([[
+                        'id' => $product->getId(),
+                        'customFields' => $updatedCustomFields
+                    ]], $context);
+                }
             }
         }
     }

@@ -9,6 +9,12 @@
             ]"
             :label="$tc('artissTools.products.merge.mode.label')"
         />
+
+        <sw-checkbox-field
+            v-model:value="mergeAllMedia"
+            :label="$tc('artissTools.products.merge.mode.mergeAllMedia')"
+            class="sw-field--last"
+        />
     </sw-card>
 
     {# Target Parent Selection (for existing mode) #}

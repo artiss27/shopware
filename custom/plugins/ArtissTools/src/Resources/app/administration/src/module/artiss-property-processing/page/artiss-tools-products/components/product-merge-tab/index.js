@@ -27,7 +27,8 @@ Component.register('artiss-product-merge-tab', {
         return {
             isLoading: false,
             mode: 'new', // 'new' or 'existing'
-            
+            mergeAllMedia: true, // Merge all media to parent by default
+
             // Target parent (for existing mode)
             targetParent: null,
             targetParentSearchTerm: '',
@@ -35,7 +36,7 @@ Component.register('artiss-product-merge-tab', {
             showTargetParentResults: false,
             targetParentCategory: null,
             targetParentManufacturer: null,
-            
+
             // Products to merge
             mergeProductSearchTerm: '',
             mergeProductResults: [],
@@ -48,14 +49,14 @@ Component.register('artiss-product-merge-tab', {
             mergeProductsTotal: 0,
             selectedProductIdsInModal: [],
             modalFilterName: '',
-            
+
             // Parent name (for new mode)
             newParentName: '',
-            
+
             // Variant-forming properties selection
             selectedVariantFormingProperties: [],
             availableVariantFormingProperties: [],
-            
+
             // Preview data
             previewData: null,
             showPreview: false,
@@ -431,7 +432,8 @@ Component.register('artiss-product-merge-tab', {
                     mode: this.mode,
                     selectedProductIds: this.selectedProducts.map(p => p.id),
                     newParentName: this.mode === 'new' ? this.newParentName : null,
-                    variantFormingPropertyGroupIds: this.selectedVariantFormingProperties
+                    variantFormingPropertyGroupIds: this.selectedVariantFormingProperties,
+                    mergeAllMedia: this.mergeAllMedia
                 };
 
                 if (this.mode === 'existing' && this.targetParent) {

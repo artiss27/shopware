@@ -124,6 +124,7 @@ class ProductMergeController extends AbstractController
             $targetParentId = $data['targetParentId'] ?? null;
             $newParentName = $data['newParentName'] ?? null;
             $variantFormingPropertyGroupIds = $data['variantFormingPropertyGroupIds'] ?? [];
+            $mergeAllMedia = $data['mergeAllMedia'] ?? true;
 
             if (empty($selectedProductIds)) {
                 return new JsonResponse([
@@ -145,6 +146,7 @@ class ProductMergeController extends AbstractController
                 $targetParentId,
                 $newParentName,
                 $variantFormingPropertyGroupIds,
+                $mergeAllMedia,
                 $context
             );
 
