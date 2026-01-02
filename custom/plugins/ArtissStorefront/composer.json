@@ -1,0 +1,35 @@
+{
+    "name": "artiss/storefront",
+    "description": "Custom storefront solutions by Artiss",
+    "version": "1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Artiss"
+        }
+    ],
+    "require": {
+        "shopware/core": "~6.6.0 || ~6.7.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "ArtissStorefront\\ArtissStorefront",
+        "label": {
+            "de-DE": "Artiss Storefront",
+            "en-GB": "Artiss Storefront",
+            "ru-RU": "Artiss Storefront",
+            "uk-UA": "Artiss Storefront"
+        },
+        "description": {
+            "de-DE": "Custom storefront solutions",
+            "en-GB": "Custom storefront solutions",
+            "ru-RU": "Кастомные решения для витрины",
+            "uk-UA": "Кастомні рішення для вітрини"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "ArtissStorefront\\": "src/"
+        }
+    }
+}

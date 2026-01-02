@@ -1,0 +1,88 @@
+{% sw_extends '@Storefront/storefront/base.html.twig' %}
+
+{% block base_main_inner %}
+    <div class="container">
+        <div class="brands-page">
+            {% block brands_page_header %}
+                <div class="brands-header">
+                    <h1 class="brands-title">Всі бренди</h1>
+                    <div class="brands-search">
+                        <input type="text"
+                               id="brandsSearch"
+                               class="form-control brands-search-input"
+                               placeholder="Пошук бренду...">
+                    </div>
+                </div>
+            {% endblock %}
+
+            {% block brands_page_content %}
+                <div class="brands-listing">
+                    {% if manufacturers.total > 0 %}
+                        <div class="row brands-grid">
+                            {% for manufacturer in manufacturers %}
+                                {% block brands_item %}
+                                    <div class="col-6 col-md-4 col-lg-3 brands-item">
+                                        <a href="{{ path('frontend.search.page', {'manufacturer': manufacturer.id}) }}"
+                                           class="brands-link">
+                                            <div class="brands-card">
+                                                {% block brands_item_media %}
+                                                    <div class="brands-logo">
+                                                        {% if manufacturer.media %}
+                                                            <img src="{{ manufacturer.media.url }}"
+                                                                 alt="{{ manufacturer.translated.name }}"
+                                                                 loading="lazy"
+                                                                 class="brands-logo-image">
+                                                        {% else %}
+                                                            <div class="brands-logo-placeholder">
+                                                                <span class="brands-logo-text">
+                                                                    {{ manufacturer.translated.name|slice(0, 2)|upper }}
+                                                                </span>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endblock %}
+
+                                                {% block brands_item_name %}
+                                                    <div class="brands-name">
+                                                        {{ manufacturer.translated.name }}
+                                                    </div>
+                                                {% endblock %}
+                                            </div>
+                                        </a>
+                                    </div>
+                                {% endblock %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {% block brands_page_empty %}
+                            <div class="brands-empty">
+                                <p>Бренди не знайдено</p>
+                            </div>
+                        {% endblock %}
+                    {% endif %}
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+
+    {# Search functionality #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('brandsSearch');
+            const brandItems = document.querySelectorAll('.brands-item');
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+
+                brandItems.forEach(item => {
+                    const brandName = item.querySelector('.brands-name').textContent.toLowerCase();
+                    if (brandName.includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
