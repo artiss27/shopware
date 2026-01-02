@@ -10,6 +10,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ProductMergeService
 {
@@ -18,7 +19,8 @@ class ProductMergeService
         private readonly EntityRepository $mediaRepository,
         private readonly EntityRepository $propertyGroupRepository,
         private readonly EntityRepository $propertyGroupOptionRepository,
-        private readonly Connection $connection
+        private readonly Connection $connection,
+        private readonly SystemConfigService $systemConfigService
     ) {
     }
 
@@ -578,6 +580,18 @@ class ProductMergeService
         // Copy sales channel visibilities
         $productData['visibilities'] = $this->copySalesChannelVisibilities($sourceProduct);
 
+        // Copy properties
+        if ($sourceProduct->getProperties()) {
+            $productData['properties'] = array_map(function ($property) {
+                return ['id' => $property->getId()];
+            }, $sourceProduct->getProperties()->getElements());
+        }
+
+        // Copy custom fields
+        if ($sourceProduct->getCustomFields()) {
+            $productData['customFields'] = $sourceProduct->getCustomFields();
+        }
+
         $this->productRepository->create([$productData], $context);
 
         return $newId;
@@ -607,144 +621,114 @@ class ProductMergeService
      */
     private function processNewParentData(ProductEntity $parent, array $products, array $variantFormingPropertyGroupIds, Context $context): void
     {
-        $propertyAnalysis = $this->analyzeProperties($products, $parent, 'new', $context);
-        $customFieldsAnalysis = $this->analyzeCustomFields($products);
+        // Parent is already a copy of donor (first product) with all its data
+        // Now we need to remove properties and custom fields that differ between variants
 
-        // Set only common properties, excluding variant-forming property groups
-        $commonPropertyIds = [];
-        foreach ($propertyAnalysis['common'] as $groupId => $optionIds) {
-            // Skip variant-forming property groups
-            if (!in_array($groupId, $variantFormingPropertyGroupIds)) {
-                $commonPropertyIds = array_merge($commonPropertyIds, $optionIds);
-            }
-        }
-
-        // Set only common custom fields
-        $commonCustomFields = $customFieldsAnalysis['common'];
-
-        // Analyze common fields across all products
-        $commonFields = $this->analyzeCommonFields($products);
-
-        $updateData = [
-            'id' => $parent->getId(),
-        ];
-
-        // Set common properties (excluding variant-forming)
-        if (!empty($commonPropertyIds)) {
-            $updateData['properties'] = array_map(function ($id) {
-                return ['id' => $id];
-            }, $commonPropertyIds);
-        } else {
-            $updateData['properties'] = [];
-        }
-
-        // Set common custom fields
-        if (!empty($commonCustomFields)) {
-            $updateData['customFields'] = $commonCustomFields;
-        }
-
-        // Copy common dimensions and weight if they match across all products
-        if (isset($commonFields['width'])) {
-            $updateData['width'] = $commonFields['width'];
-        }
-        if (isset($commonFields['height'])) {
-            $updateData['height'] = $commonFields['height'];
-        }
-        if (isset($commonFields['length'])) {
-            $updateData['length'] = $commonFields['length'];
-        }
-        if (isset($commonFields['weight'])) {
-            $updateData['weight'] = $commonFields['weight'];
-        }
-
-        $this->productRepository->update([$updateData], $context);
-
-        // Clear common fields from variants so they inherit from parent
-        $this->clearCommonFieldsFromVariants($products, $commonFields, array_keys($commonCustomFields), $context);
+        $this->simplifyParentData($parent, $products, $variantFormingPropertyGroupIds, $context);
     }
 
     /**
-     * Clear common fields from variants so they inherit from parent
+     * Simplify parent data by removing properties/custom fields that differ between variants
      */
-    private function clearCommonFieldsFromVariants(array $products, array $commonFields, array $commonCustomFieldKeys, Context $context): void
+    private function simplifyParentData(ProductEntity $parent, array $products, array $variantFormingPropertyGroupIds, Context $context): void
     {
-        $variantUpdates = [];
+        // Get custom field set name from config
+        $customFieldSetName = $this->systemConfigService->get('ArtissTools.config.productMergeCustomFieldSet') ?? 'product_custom_properties';
 
-        foreach ($products as $product) {
-            $updateData = [
-                'id' => $product->getId()
-            ];
+        // Get list of custom field technical names from this set
+        $customFieldNames = $this->getCustomFieldNamesFromSet($customFieldSetName, $context);
 
-            // Clear common dimensions and weight (only if they are common)
-            if (isset($commonFields['width'])) {
-                $updateData['width'] = null;
+        // 1. Get all properties from parent
+        $parentProperties = [];
+        if ($parent->getProperties()) {
+            foreach ($parent->getProperties() as $property) {
+                $parentProperties[$property->getId()] = [
+                    'groupId' => $property->getGroupId(),
+                    'optionId' => $property->getId()
+                ];
             }
-            if (isset($commonFields['height'])) {
-                $updateData['height'] = null;
-            }
-            if (isset($commonFields['length'])) {
-                $updateData['length'] = null;
-            }
-            if (isset($commonFields['weight'])) {
-                $updateData['weight'] = null;
-            }
-            if (isset($commonFields['minPurchase'])) {
-                $updateData['minPurchase'] = null;
-            }
-            if (isset($commonFields['purchaseSteps'])) {
-                $updateData['purchaseSteps'] = null;
+        }
+
+        // 2. Check which properties differ between variants
+        $propertiesToRemoveFromParent = [];
+        foreach ($parentProperties as $propertyId => $propertyData) {
+            $groupId = $propertyData['groupId'];
+
+            // Skip variant-forming properties - they should not be on parent anyway
+            if (in_array($groupId, $variantFormingPropertyGroupIds)) {
+                $propertiesToRemoveFromParent[] = $propertyId;
+                continue;
             }
 
-            // Clear common custom fields
-            if (!empty($commonCustomFieldKeys)) {
-                $customFields = $product->getCustomFields();
-                if ($customFields) {
-                    $updatedCustomFields = $customFields;
-                    foreach ($commonCustomFieldKeys as $key) {
-                        if (isset($updatedCustomFields[$key])) {
-                            unset($updatedCustomFields[$key]);
+            // Check if ALL variants have this exact property value
+            foreach ($products as $productIndex => $product) {
+                $hasThisProperty = false;
+                if ($product->getProperties()) {
+                    foreach ($product->getProperties() as $variantProperty) {
+                        if ($variantProperty->getId() === $propertyId) {
+                            $hasThisProperty = true;
+                            break;
                         }
                     }
-                    $updateData['customFields'] = $updatedCustomFields;
+                }
+
+                // If at least one variant doesn't have this property → remove from parent
+                if (!$hasThisProperty) {
+                    $propertiesToRemoveFromParent[] = $propertyId;
+                    break;
                 }
             }
-
-            $variantUpdates[] = $updateData;
         }
 
-        if (!empty($variantUpdates)) {
-            $this->productRepository->update($variantUpdates, $context);
+        // 3. Remove different properties from parent
+        foreach ($propertiesToRemoveFromParent as $propertyId) {
+            $this->connection->executeStatement(
+                'DELETE FROM product_property WHERE product_id = :productId AND property_group_option_id = :propertyId',
+                [
+                    'productId' => Uuid::fromHexToBytes($parent->getId()),
+                    'propertyId' => Uuid::fromHexToBytes($propertyId)
+                ]
+            );
         }
-    }
 
-    /**
-     * Analyze common fields across products (dimensions, weight, etc.)
-     */
-    private function analyzeCommonFields(array $products): array
-    {
-        $commonFields = [];
-        $fieldNames = ['width', 'height', 'length', 'weight', 'minPurchase', 'purchaseSteps'];
+        // 4. Get all custom fields from parent with the configured prefix
+        $parentCustomFields = $parent->getCustomFields() ?? [];
+        $customFieldsToRemoveFromParent = [];
 
-        foreach ($fieldNames as $fieldName) {
-            $values = [];
-            $getter = 'get' . ucfirst($fieldName);
+        foreach ($parentCustomFields as $key => $value) {
+            // Only process fields from configured set
+            if (!in_array($key, $customFieldNames)) {
+                continue;
+            }
 
-            foreach ($products as $product) {
-                if (method_exists($product, $getter)) {
-                    $value = $product->$getter();
-                    if ($value !== null) {
-                        $values[] = $value;
-                    }
+            // Check if ALL variants have this exact custom field value
+            foreach ($products as $productIndex => $product) {
+                $variantCustomFields = $product->getCustomFields() ?? [];
+
+                // If variant doesn't have this field OR has different value → remove from parent
+                if (!isset($variantCustomFields[$key]) || $variantCustomFields[$key] !== $value) {
+                    $customFieldsToRemoveFromParent[] = $key;
+                    break;
                 }
             }
-
-            // If all products have the same value for this field
-            if (!empty($values) && count(array_unique($values)) === 1 && count($values) === count($products)) {
-                $commonFields[$fieldName] = $values[0];
-            }
         }
 
-        return $commonFields;
+        // 5. Remove different custom fields from parent using direct SQL
+        if (!empty($customFieldsToRemoveFromParent)) {
+            $updatedParentCustomFields = $parentCustomFields;
+            foreach ($customFieldsToRemoveFromParent as $key) {
+                unset($updatedParentCustomFields[$key]);
+            }
+
+            // Update all language translations for this product
+            $this->connection->executeStatement(
+                'UPDATE product_translation SET custom_fields = :customFields WHERE product_id = :productId',
+                [
+                    'customFields' => json_encode($updatedParentCustomFields),
+                    'productId' => Uuid::fromHexToBytes($parent->getId())
+                ]
+            );
+        }
     }
 
     /**
@@ -909,13 +893,26 @@ class ProductMergeService
             }
         }
 
-        // Collect parent non-variant-forming property values (property_id => value)
-        $parentPropertyValues = [];
+        // Get custom field set name from config
+        $customFieldSetName = $this->systemConfigService->get('ArtissTools.config.productMergeCustomFieldSet') ?? 'product_custom_properties';
+
+        // Get list of custom field technical names from this set
+        $customFieldNames = $this->getCustomFieldNamesFromSet($customFieldSetName, $context);
+
+        // Collect parent properties (non-variant-forming)
+        $parentPropertyIds = [];
         if ($parent->getProperties()) {
             foreach ($parent->getProperties() as $property) {
-                if (!in_array($property->getGroupId(), $variantFormingPropertyGroupIds)) {
-                    $parentPropertyValues[$property->getId()] = $property->getId();
-                }
+                $parentPropertyIds[] = $property->getId();
+            }
+        }
+
+        // Collect parent custom fields from configured set
+        $parentCustomFields = $parent->getCustomFields() ?? [];
+        $parentCustomFieldKeys = [];
+        foreach ($parentCustomFields as $key => $value) {
+            if (in_array($key, $customFieldNames)) {
+                $parentCustomFieldKeys[$key] = $value;
             }
         }
 
@@ -932,16 +929,11 @@ class ProductMergeService
                 ['productId' => Uuid::fromHexToBytes($product->getId())]
             );
 
-            // For properties: keep only those that differ from parent (and are not variant-forming)
+            // Delete properties that exist in parent (including variant-forming since they were already removed from parent)
             if ($product->getProperties()) {
                 foreach ($product->getProperties() as $property) {
-                    $isVariantForming = in_array($property->getGroupId(), $variantFormingPropertyGroupIds);
-                    $sameAsParent = isset($parentPropertyValues[$property->getId()]);
-
-                    // Delete if:
-                    // 1. Variant-forming property, OR
-                    // 2. Same value as parent
-                    if ($isVariantForming || $sameAsParent) {
+                    // Delete if property exists in parent
+                    if (in_array($property->getId(), $parentPropertyIds)) {
                         $this->connection->executeStatement(
                             'DELETE FROM product_property WHERE product_id = :productId AND property_group_option_id = :propertyId',
                             [
@@ -953,31 +945,29 @@ class ProductMergeService
                 }
             }
 
-            // Handle custom fields: remove common product_custom_properties_* fields from variants
-            $parentCustomFields = $parent->getCustomFields() ?? [];
-            $productCustomFields = $product->getCustomFields() ?? [];
-
-            if (!empty($parentCustomFields) && !empty($productCustomFields)) {
+            // Delete custom fields from configured set that exist in parent with same value
+            if (!empty($parentCustomFieldKeys)) {
+                $productCustomFields = $product->getCustomFields() ?? [];
                 $updatedCustomFields = $productCustomFields;
                 $hasChanges = false;
 
-                foreach ($productCustomFields as $key => $value) {
-                    // Only process product_custom_properties_* fields
-                    if (str_starts_with($key, 'product_custom_properties_')) {
-                        // If parent has the same field with same value, remove from variant
-                        if (isset($parentCustomFields[$key]) && $parentCustomFields[$key] === $value) {
-                            unset($updatedCustomFields[$key]);
-                            $hasChanges = true;
-                        }
+                foreach ($parentCustomFieldKeys as $key => $parentValue) {
+                    // If variant has this field with same value, remove it
+                    if (isset($productCustomFields[$key]) && $productCustomFields[$key] === $parentValue) {
+                        unset($updatedCustomFields[$key]);
+                        $hasChanges = true;
                     }
                 }
 
-                // Update variant custom fields if changed
+                // Update variant custom fields if changed using direct SQL
                 if ($hasChanges) {
-                    $this->productRepository->update([[
-                        'id' => $product->getId(),
-                        'customFields' => $updatedCustomFields
-                    ]], $context);
+                    $this->connection->executeStatement(
+                        'UPDATE product_translation SET custom_fields = :customFields WHERE product_id = :productId',
+                        [
+                            'customFields' => json_encode($updatedCustomFields),
+                            'productId' => Uuid::fromHexToBytes($product->getId())
+                        ]
+                    );
                 }
             }
         }
@@ -1036,6 +1026,30 @@ class ProductMergeService
 
         $children = $this->productRepository->search($criteria, $context)->getEntities();
         return array_values($children->getElements());
+    }
+
+    /**
+     * Get custom field technical names from a custom field set
+     */
+    private function getCustomFieldNamesFromSet(string $setName, Context $context): array
+    {
+        // Query custom_field_set table to get the set ID and custom fields
+        $setId = $this->connection->fetchOne(
+            'SELECT LOWER(HEX(id)) FROM custom_field_set WHERE name = :name LIMIT 1',
+            ['name' => $setName]
+        );
+
+        if (!$setId) {
+            return [];
+        }
+
+        // Query custom_field table to get all fields in this set
+        $fields = $this->connection->fetchAllAssociative(
+            'SELECT name FROM custom_field WHERE set_id = :setId',
+            ['setId' => Uuid::fromHexToBytes($setId)]
+        );
+
+        return array_column($fields, 'name');
     }
 }
 

@@ -35,4 +35,30 @@
         </input-field>
     </card>
 
+    <card>
+        <title>Product Merge Settings</title>
+        <title lang="de-DE">Produktzusammenführungseinstellungen</title>
+        <title lang="ru-RU">Настройки объединения товаров</title>
+        <title lang="uk-UA">Налаштування об'єднання товарів</title>
+
+        <input-field type="single-select">
+            <name>productMergeCustomFieldSet</name>
+            <label>Main custom properties set</label>
+            <label lang="de-DE">Hauptset für benutzerdefinierte Eigenschaften</label>
+            <label lang="ru-RU">Основные кастомные свойства товаров</label>
+            <label lang="uk-UA">Основні кастомні властивості товарів</label>
+            <helpText>Custom field set used for product variant merging. Fields from this set will be compared between variants.</helpText>
+            <helpText lang="de-DE">Benutzerdefinierter Feldsatz für die Zusammenführung von Produktvarianten. Felder aus diesem Set werden zwischen Varianten verglichen.</helpText>
+            <helpText lang="ru-RU">Набор кастомных полей для объединения товаров в варианты. Поля из этого набора будут сравниваться между вариантами.</helpText>
+            <helpText lang="uk-UA">Набір кастомних полів для об'єднання товарів у варіанти. Поля з цього набору будуть порівнюватися між варіантами.</helpText>
+            <options>
+                <option>
+                    <id>product_custom_properties</id>
+                    <name>product_custom_properties</name>
+                </option>
+            </options>
+            <defaultValue>product_custom_properties</defaultValue>
+        </input-field>
+    </card>
+
 </config>

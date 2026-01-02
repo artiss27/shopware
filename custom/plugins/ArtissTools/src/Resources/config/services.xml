@@ -98,6 +98,7 @@
             <argument type="service" id="property_group.repository"/>
             <argument type="service" id="property_group_option.repository"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
         </service>
 
         <service id="ArtissTools\Controller\Api\ProductMergeController" public="true">
@@ -231,6 +232,18 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <argument type="service" id="logger"/>
             <argument>%kernel.project_dir%</argument>
+            <tag name="console.command"/>
+        </service>
+
+        <!-- Check Property Group Usage Command -->
+        <service id="ArtissTools\Command\CheckPropertyGroupUsageCommand">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="console.command"/>
+        </service>
+
+        <!-- Check Property Option Usage Command -->
+        <service id="ArtissTools\Command\CheckPropertyOptionUsageCommand">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
             <tag name="console.command"/>
         </service>
 
