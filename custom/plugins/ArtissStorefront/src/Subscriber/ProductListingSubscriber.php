@@ -18,6 +18,13 @@ class ProductListingSubscriber implements EventSubscriberInterface
 
     public function removePropertyFilters($event): void
     {
+        $request = $event->getRequest();
+
+        // Работаем ТОЛЬКО если есть параметр manufacturer (страница бренда)
+        if (!$request->query->has('manufacturer') && !$request->request->has('manufacturer')) {
+            return;
+        }
+
         $result = $event->getResult();
         $aggregations = $result->getAggregations();
 
