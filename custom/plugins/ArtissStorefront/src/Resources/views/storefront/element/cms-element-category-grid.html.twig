@@ -38,7 +38,7 @@
                         <div class="category-grid__content">
                             <h3 class="category-grid__title">{{ category.translated.name|default(category.name) }}</h3>
 
-                            {% if config.showDescription.value|default(true) and (category.translated.description|default(category.description)) %}
+                            {% if config.showDescription.value and (category.translated.description|default(category.description)) %}
                                 {% set descLength = config.descriptionLength.value|default(120) %}
                                 {% set description = (category.translated.description|default(category.description))|striptags %}
                                 <p class="category-grid__description">
@@ -46,7 +46,7 @@
                                 </p>
                             {% endif %}
 
-                            {% if config.showProductCount.value|default(true) and category.extensions.productCount is defined %}
+                            {% if config.showProductCount.value and category.extensions.productCount is defined %}
                                 {% set productCount = category.extensions.productCount.count %}
                                 <span class="category-grid__count">
                                     {{ productCount }}

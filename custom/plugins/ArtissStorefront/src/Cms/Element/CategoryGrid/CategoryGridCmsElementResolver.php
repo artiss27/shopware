@@ -129,6 +129,14 @@ class CategoryGridCmsElementResolver extends AbstractCmsElementResolver
             $productResult = $this->productRepository->search($productCriteria, $salesChannelContext->getContext());
             $productCount = $productResult->getTotal();
 
+            error_log(sprintf(
+                'CategoryGrid: %s (ID: %s) - Total: %d, Count: %d',
+                $child->getTranslated()['name'] ?? $child->getName() ?? 'Unknown',
+                substr($child->getId(), 0, 8),
+                $productCount,
+                $productResult->count()
+            ));
+
             $child->addExtension('productCount', new ArrayStruct(['count' => $productCount]));
             $categories[] = $child;
         }
