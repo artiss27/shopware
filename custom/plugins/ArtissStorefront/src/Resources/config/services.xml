@@ -35,14 +35,5 @@
         <service id="ArtissStorefront\Cms\Element\CategoryInfo\CategoryInfoCmsElementResolver">
             <tag name="shopware.cms.data_resolver"/>
         </service>
-
-        <!-- Category Layout Auto-Switcher Subscriber -->
-        <service id="ArtissStorefront\Subscriber\CategoryLayoutSubscriber">
-            <argument type="service" id="cms_page.repository"/>
-            <argument type="service" id="product.repository"/>
-            <argument type="service" id="category.repository"/>
-            <argument type="service" id="logger"/>
-            <tag name="kernel.event_subscriber"/>
-        </service>
     </services>
 </container>

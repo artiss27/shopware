@@ -247,6 +247,13 @@
             <tag name="console.command"/>
         </service>
 
+        <!-- Category Layout Assignment Command -->
+        <service id="ArtissTools\Command\CategoryLayoutAssignCommand">
+            <argument type="service" id="category.repository"/>
+            <argument type="service" id="product.repository"/>
+            <tag name="console.command"/>
+        </service>
+
         <!-- Subscribers -->
         <service id="ArtissTools\Subscriber\PluginLifecycleSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
