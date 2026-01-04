@@ -10,6 +10,7 @@ use Shopware\Core\Content\Cms\DataResolver\Element\AbstractCmsElementResolver;
 use Shopware\Core\Content\Cms\DataResolver\Element\ElementDataCollection;
 use Shopware\Core\Content\Cms\DataResolver\ResolverContext\EntityResolverContext;
 use Shopware\Core\Content\Cms\DataResolver\ResolverContext\ResolverContext;
+use Shopware\Core\Content\Category\CategoryCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -62,14 +63,7 @@ class CategoryGridCmsElementResolver extends AbstractCmsElementResolver
         // Fallback to request attributes (route parameters)
         if (!$categoryId && $context->getRequest()) {
             $request = $context->getRequest();
-            
-            if ($this->logger) {
-                $this->logger->debug('CategoryGridCmsElementResolver: Trying to get categoryId from request', [
-                    'route' => $request->attributes->get('_route'),
-                    'allAttributes' => array_keys($request->attributes->all()),
-                ]);
-            }
-            
+
             // Try route attributes first (most common case for navigation pages)
             $categoryId = $request->attributes->get('navigationId');
             
@@ -91,21 +85,8 @@ class CategoryGridCmsElementResolver extends AbstractCmsElementResolver
         }
 
         if (!$categoryId) {
-            if ($this->logger) {
-                $this->logger->debug('CategoryGridCmsElementResolver: No categoryId found', [
-                    'isEntityContext' => $context instanceof EntityResolverContext,
-                    'requestUri' => $context->getRequest()?->getRequestUri(),
-                ]);
-            }
             $slot->setData(new ArrayStruct(['categories' => []]));
             return;
-        }
-
-        if ($this->logger) {
-            $this->logger->debug('CategoryGridCmsElementResolver: Found categoryId', [
-                'categoryId' => $categoryId,
-                'source' => $context instanceof EntityResolverContext ? 'EntityResolverContext' : 'Request',
-            ]);
         }
 
         $criteria = new Criteria();
@@ -113,13 +94,15 @@ class CategoryGridCmsElementResolver extends AbstractCmsElementResolver
         $criteria->addFilter(new EqualsFilter('active', true));
         $criteria->addFilter(new EqualsFilter('visible', true));
         $criteria->addAssociation('media');
-        $criteria->addAssociation('translation');
 
-        // Use sales channel context for proper category filtering
         $children = $this->categoryRepository->search($criteria, $salesChannelContext->getContext());
 
+        // Convert to CategoryCollection and sort by position (same as navigation menu)
+        $categoryCollection = new CategoryCollection($children->getEntities());
+        $categoryCollection->sortByPosition();
+
         $categories = [];
-        foreach ($children->getEntities() as $child) {
+        foreach ($categoryCollection as $child) {
             $productCriteria = new Criteria();
             $productCriteria->addFilter(new EqualsFilter('categories.id', $child->getId()));
             $productCriteria->addFilter(new EqualsFilter('active', true));
@@ -129,23 +112,8 @@ class CategoryGridCmsElementResolver extends AbstractCmsElementResolver
             $productResult = $this->productRepository->search($productCriteria, $salesChannelContext->getContext());
             $productCount = $productResult->getTotal();
 
-            error_log(sprintf(
-                'CategoryGrid: %s (ID: %s) - Total: %d, Count: %d',
-                $child->getTranslated()['name'] ?? $child->getName() ?? 'Unknown',
-                substr($child->getId(), 0, 8),
-                $productCount,
-                $productResult->count()
-            ));
-
             $child->addExtension('productCount', new ArrayStruct(['count' => $productCount]));
             $categories[] = $child;
-        }
-
-        if ($this->logger) {
-            $this->logger->debug('CategoryGridCmsElementResolver: Setting slot data', [
-                'categoriesCount' => count($categories),
-                'categoryIds' => array_map(fn($cat) => $cat->getId(), $categories),
-            ]);
         }
 
         $slot->setData(new ArrayStruct([
