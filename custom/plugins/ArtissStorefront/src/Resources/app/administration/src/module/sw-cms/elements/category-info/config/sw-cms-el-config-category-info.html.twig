@@ -1,0 +1,68 @@
+{% block sw_cms_el_config_category_info %}
+<div class="sw-cms-el-config-category-info">
+    {% block sw_cms_el_config_category_info_description %}
+    <sw-cms-inherit-wrapper
+        v-model="element.config.description.value"
+        :label="$tc('sw-cms.elements.categoryInfo.config.label.description')"
+        @update:value="$emit('element-update', element)"
+        :element="element"
+        property-name="description"
+    >
+        <template #default="{ isInherited, updateCurrentValue }">
+            <sw-cms-mapping-field
+                v-model:config="element.config.description"
+                value-types="string"
+                :disabled="isInherited"
+                @update:config="onElementUpdate"
+            >
+                <sw-textarea-field
+                    v-model:value="element.config.description.value"
+                    :disabled="isInherited"
+                    :placeholder="$tc('sw-cms.elements.categoryInfo.config.placeholder.description')"
+                    @update:value="onElementUpdate"
+                />
+
+                <template #preview="{ demoValue }">
+                    <div class="sw-cms-el-config-category-info__mapping-preview">
+                        <div v-html="$sanitize(demoValue)"></div>
+                    </div>
+                </template>
+            </sw-cms-mapping-field>
+        </template>
+    </sw-cms-inherit-wrapper>
+    {% endblock %}
+
+    {% block sw_cms_el_config_category_info_media %}
+    <sw-cms-inherit-wrapper
+        v-model="element.config.media.value"
+        :label="$tc('sw-cms.elements.categoryInfo.config.label.media')"
+        @update:value="$emit('element-update', element)"
+        :element="element"
+        property-name="media"
+    >
+        <template #default="{ isInherited, updateCurrentValue }">
+            <sw-cms-mapping-field
+                v-model:config="element.config.media"
+                value-types="entity"
+                entity="media"
+                :disabled="isInherited"
+                @update:config="onElementUpdate"
+            >
+                <template #preview="{ demoValue }">
+                    <div class="sw-cms-el-config-category-info__mapping-preview">
+                        <img
+                            v-if="demoValue && demoValue.url"
+                            :src="demoValue.url"
+                            alt=""
+                        >
+                        <div v-else>
+                            {{ $tc('sw-cms.detail.label.mappingEmptyPreview') }}
+                        </div>
+                    </div>
+                </template>
+            </sw-cms-mapping-field>
+        </template>
+    </sw-cms-inherit-wrapper>
+    {% endblock %}
+</div>
+{% endblock %}

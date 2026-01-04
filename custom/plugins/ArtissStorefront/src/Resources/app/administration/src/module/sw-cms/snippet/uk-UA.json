@@ -1,0 +1,18 @@
+{
+    "sw-cms": {
+        "elements": {
+            "categoryInfo": {
+                "label": "Інформація про категорію",
+                "config": {
+                    "label": {
+                        "description": "Опис",
+                        "media": "Зображення"
+                    },
+                    "placeholder": {
+                        "description": "Введіть опис категорії..."
+                    }
+                }
+            }
+        }
+    }
+}

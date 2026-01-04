@@ -2,34 +2,37 @@
     {% set category = page.category %}
     {% set config = element.config %}
 
-    {% if category %}
+    {# Get data from element.data if mapped, otherwise fallback to page.category #}
+    {% set description = element.data.description|default(category.translated.description|default(null)) %}
+    {% set media = element.data.media|default(category.media|default(null)) %}
+    {% set categoryName = category.translated.name|default('') %}
+
+    {% if description or media %}
         <div class="cms-element-category-info">
-            <div class="category-info {% if category.media %}category-info--with-image{% endif %}">
-
-                <div class="category-info__content">
-                    {% if category.translated.description %}
-                        <div class="category-info__description">
-                            {{ category.translated.description|raw }}
-                        </div>
-                    {% endif %}
-                </div>
-
-                {% if category.media %}
+            <div class="category-info {% if media %}category-info--with-image{% endif %}">
+                {% if media %}
                     <div class="category-info__image">
                         {% sw_thumbnails 'category-info-thumbnail' with {
-                            media: category.media,
+                            media: media,
                             sizes: {
                                 'default': '500px'
                             },
                             attributes: {
                                 class: 'category-info__img',
-                                alt: category.translated.name,
+                                alt: categoryName,
                                 loading: 'lazy'
                             }
                         } %}
                     </div>
                 {% endif %}
 
+                {% if description %}
+                    <div class="category-info__content">
+                        <div class="category-info__description">
+                            {{ description|raw }}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
     {% endif %}

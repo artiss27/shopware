@@ -1,0 +1,29 @@
+.sw-cms-el-category-info {
+    padding: 20px;
+    min-height: 200px;
+
+    &__placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+        color: #758ca3;
+
+        .sw-icon {
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #52667a;
+        }
+
+        small {
+            font-size: 12px;
+            color: #758ca3;
+        }
+    }
+}

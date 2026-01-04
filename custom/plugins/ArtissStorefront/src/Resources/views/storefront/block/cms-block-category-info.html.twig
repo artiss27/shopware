@@ -1,0 +1,9 @@
+{% block block_category_info %}
+    {% set element = block.slots.getSlot('content') %}
+
+    {% if element %}
+        {% sw_include '@Storefront/storefront/element/cms-element-' ~ element.type ~ '.html.twig' ignore missing with {
+            'element': element
+        } %}
+    {% endif %}
+{% endblock %}

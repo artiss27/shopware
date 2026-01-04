@@ -1,0 +1,22 @@
+.sw-cms-el-preview-category-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    min-height: 180px;
+    width: 100%;
+
+    svg {
+        margin-bottom: 12px;
+        flex-shrink: 0;
+    }
+
+    p {
+        margin: 0;
+        font-size: 14px;
+        color: #52667a;
+        font-weight: 500;
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "sw-cms": {
+        "elements": {
+            "categoryInfo": {
+                "label": "Kategorie-Information",
+                "config": {
+                    "label": {
+                        "description": "Beschreibung",
+                        "media": "Bild"
+                    },
+                    "placeholder": {
+                        "description": "Kategoriebeschreibung eingeben..."
+                    }
+                }
+            }
+        }
+    }
+}
