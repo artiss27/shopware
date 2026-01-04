@@ -1,0 +1,40 @@
+{% block sw_cms_element_category_grid %}
+<div class="sw-cms-el-category-grid">
+    <template v-if="element.data && element.data.categories && element.data.categories.length > 0">
+        <div class="sw-cms-el-category-grid__grid">
+            <div
+                v-for="(category, index) in element.data.categories.slice(0, 4)"
+                :key="index"
+                class="sw-cms-el-category-grid__item"
+            >
+                <div class="sw-cms-el-category-grid__image">
+                    <sw-media-preview-v2
+                        v-if="category.media && category.media.id"
+                        :source="category.media.id"
+                        :show-controls="false"
+                    />
+                    <div v-else class="sw-cms-el-category-grid__image-placeholder">
+                        <sw-icon name="regular-image"></sw-icon>
+                    </div>
+                </div>
+                <div class="sw-cms-el-category-grid__content">
+                    <p class="sw-cms-el-category-grid__title">{{ category.translated.name }}</p>
+                    <p
+                        v-if="element.config.showProductCount.value && category.extensions && category.extensions.productCount"
+                        class="sw-cms-el-category-grid__count"
+                    >
+                        {{ category.extensions.productCount.count }} товарів
+                    </p>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template v-else>
+        <div class="sw-cms-el-category-grid__placeholder">
+            <sw-icon name="regular-th-large"></sw-icon>
+            <p>Сітка підкатегорій</p>
+            <small>Підкатегорії будуть відображені автоматично на основі поточної категорії</small>
+        </div>
+    </template>
+</div>
+{% endblock %}

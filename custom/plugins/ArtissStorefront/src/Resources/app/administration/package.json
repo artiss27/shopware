@@ -1,0 +1,8 @@
+{
+  "name": "artiss-storefront-administration",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "shopware-admin-build"
+  }
+}

@@ -1,0 +1,78 @@
+{% block element_category_grid %}
+    {% set config = element.config %}
+    {% set categories = element.data.categories|default([]) %}
+    {% set currentCategory = page.category|default(null) %}
+
+    {% if categories is iterable and categories|length > 0 %}
+        <div class="cms-element-category-grid">
+            <div class="category-grid">
+                {% for category in categories %}
+                    <a href="{{ seoUrl('frontend.navigation.page', { navigationId: category.id }) }}"
+                       class="category-grid__item"
+                       title="{{ category.translated.name|default(category.name) }}">
+
+                        <div class="category-grid__image-wrapper">
+                            {% if category.media %}
+                                {% sw_thumbnails 'category-grid-thumbnail' with {
+                                    media: category.media,
+                                    sizes: {
+                                        'default': '400px'
+                                    },
+                                    attributes: {
+                                        class: 'category-grid__image',
+                                        alt: category.translated.name|default(category.name),
+                                        loading: 'lazy'
+                                    }
+                                } %}
+                            {% else %}
+                                <div class="category-grid__image-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="category-grid__content">
+                            <h3 class="category-grid__title">{{ category.translated.name|default(category.name) }}</h3>
+
+                            {% if config.showDescription.value|default(true) and (category.translated.description|default(category.description)) %}
+                                {% set descLength = config.descriptionLength.value|default(120) %}
+                                {% set description = (category.translated.description|default(category.description))|striptags %}
+                                <p class="category-grid__description">
+                                    {{ description|slice(0, descLength) }}{% if description|length > descLength %}...{% endif %}
+                                </p>
+                            {% endif %}
+
+                            {% if config.showProductCount.value|default(true) and category.extensions.productCount is defined %}
+                                {% set productCount = category.extensions.productCount.count %}
+                                <span class="category-grid__count">
+                                    {{ productCount }}
+                                    {% if productCount == 1 %}
+                                        товар
+                                    {% elseif productCount >= 2 and productCount <= 4 %}
+                                        товари
+                                    {% else %}
+                                        товарів
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="category-grid__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="category-grid__empty">
+            <p>Підкатегорії не знайдено</p>
+        </div>
+    {% endif %}
+{% endblock %}

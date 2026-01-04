@@ -1,0 +1,54 @@
+{% block sw_cms_element_category_grid_config %}
+<div class="sw-cms-el-config-category-grid">
+    {% block sw_cms_element_category_grid_config_show_description %}
+    <sw-cms-inherit-wrapper
+        field="showDescription"
+        :element="element"
+        :label="'Показувати опис категорії'"
+    >
+        <template #default="{ isInherited }">
+            <mt-switch
+                v-model="element.config.showDescription.value"
+                :disabled="isInherited"
+                @update:model-value="onElementUpdate"
+            />
+        </template>
+    </sw-cms-inherit-wrapper>
+    {% endblock %}
+
+    {% block sw_cms_element_category_grid_config_show_product_count %}
+    <sw-cms-inherit-wrapper
+        field="showProductCount"
+        :element="element"
+        :label="'Показувати кількість товарів'"
+    >
+        <template #default="{ isInherited }">
+            <mt-switch
+                v-model="element.config.showProductCount.value"
+                :disabled="isInherited"
+                @update:model-value="onElementUpdate"
+            />
+        </template>
+    </sw-cms-inherit-wrapper>
+    {% endblock %}
+
+    {% block sw_cms_element_category_grid_config_description_length %}
+    <sw-cms-inherit-wrapper
+        v-if="element.config.showDescription.value"
+        field="descriptionLength"
+        :element="element"
+        :label="'Максимальна довжина опису (символів)'"
+    >
+        <template #default="{ isInherited }">
+            <mt-number-field
+                v-model="element.config.descriptionLength.value"
+                :disabled="isInherited"
+                :min="50"
+                :max="300"
+                @update:model-value="onElementUpdate"
+            />
+        </template>
+    </sw-cms-inherit-wrapper>
+    {% endblock %}
+</div>
+{% endblock %}

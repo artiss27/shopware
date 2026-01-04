@@ -1,0 +1,36 @@
+{% block element_category_info %}
+    {% set category = page.category %}
+    {% set config = element.config %}
+
+    {% if category %}
+        <div class="cms-element-category-info">
+            <div class="category-info {% if category.media %}category-info--with-image{% endif %}">
+
+                <div class="category-info__content">
+                    {% if category.translated.description %}
+                        <div class="category-info__description">
+                            {{ category.translated.description|raw }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if category.media %}
+                    <div class="category-info__image">
+                        {% sw_thumbnails 'category-info-thumbnail' with {
+                            media: category.media,
+                            sizes: {
+                                'default': '500px'
+                            },
+                            attributes: {
+                                class: 'category-info__img',
+                                alt: category.translated.name,
+                                loading: 'lazy'
+                            }
+                        } %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
