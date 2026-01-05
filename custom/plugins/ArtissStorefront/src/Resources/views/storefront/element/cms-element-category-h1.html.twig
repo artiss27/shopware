@@ -1,0 +1,7 @@
+{% block element_category_h1 %}
+    {% set h1 = element.data.h1|default(null) %}
+    
+    {% if h1 %}
+        <h1 class="cms-element-category-h1">{{ h1 }}</h1>
+    {% endif %}
+{% endblock %}
