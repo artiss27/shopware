@@ -36,6 +36,11 @@
             <tag name="shopware.cms.data_resolver"/>
         </service>
 
+        <!-- CMS Element Resolver: Category H1 -->
+        <service id="ArtissStorefront\Cms\Element\CategoryH1\CategoryH1CmsElementResolver">
+            <tag name="shopware.cms.data_resolver"/>
+        </service>
+
         <!-- Custom Field Installer - manages category custom fields -->
         <service id="ArtissStorefront\Service\CustomFieldInstaller">
             <argument type="service" id="custom_field_set.repository"/>

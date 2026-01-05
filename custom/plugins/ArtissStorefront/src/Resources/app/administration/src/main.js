@@ -1,5 +1,6 @@
 import './module/sw-cms/elements/category-grid';
 import './module/sw-cms/elements/category-info';
+import './module/sw-cms/elements/category-h1';
 import './module/sw-cms/blocks/category-grid';
 import './module/sw-cms/blocks/category-info';
 
