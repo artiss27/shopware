@@ -1,0 +1,12 @@
+{
+    "artiss-storefront": {
+        "category": {
+            "seo": {
+                "h1CardTitle": "H1 Tag",
+                "labelH1": "H1 Tag",
+                "placeholderH1": "Enter H1 tag for this category...",
+                "helpTextH1": "Custom H1 heading for SEO optimization. If empty, category name will be used on frontend."
+            }
+        }
+    }
+}

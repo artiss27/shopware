@@ -1,0 +1,25 @@
+{% block sw_category_detail_seo_list %}
+<sw-seo-url
+    v-if="category.seoUrls"
+    :is-loading="isLoading"
+    :has-default-template="false"
+    :disabled="!acl.can('category.editor')"
+    :urls="category.seoUrls"
+/>
+
+<mt-card
+    position-identifier="sw-category-detail-seo-h1"
+    :title="$tc('artiss-storefront.category.seo.h1CardTitle')"
+    :is-loading="isLoading"
+>
+    <mt-text-field
+        v-if="category"
+        v-model="category.customFields.category_h1_tag"
+        maxlength="255"
+        :disabled="!acl.can('category.editor')"
+        :label="$tc('artiss-storefront.category.seo.labelH1')"
+        :placeholder="$tc('artiss-storefront.category.seo.placeholderH1')"
+        :help-text="$tc('artiss-storefront.category.seo.helpTextH1')"
+    />
+</mt-card>
+{% endblock %}
