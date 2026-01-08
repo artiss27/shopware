@@ -1,0 +1,68 @@
+.parchment-page {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 60px 70px;
+  background: #f6ecd2;
+  border-radius: 6px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  position: relative;
+  font-family: "Georgia", "Times New Roman", serif;
+  color: #3b2f1e;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+            radial-gradient(circle at top left, rgba(0,0,0,0.04), transparent 40%),
+            radial-gradient(circle at bottom right, rgba(0,0,0,0.05), transparent 40%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #bfa97a;
+    padding-bottom: 15px;
+  }
+
+  h2 {
+    font-size: 24px;
+    margin-top: 40px;
+    border-left: 5px solid #bfa97a;
+    padding-left: 15px;
+  }
+
+  h3 {
+    font-size: 18px;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+
+  p {
+    font-size: 16px;
+    line-height: 1.75;
+    margin-top: 12px;
+  }
+
+  .lead {
+    font-size: 18px;
+    text-align: center;
+    font-style: italic;
+    margin-bottom: 30px;
+  }
+
+  ul, ol {
+    margin: 15px 0 15px 30px;
+
+    li {
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+  }
+
+  strong {
+    color: #2a1d0c;
+  }
+}
