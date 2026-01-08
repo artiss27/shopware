@@ -58,6 +58,7 @@ Enhances Shopware default styles without breaking functionality.
         border-right: none;
         border-radius: 50px 0 0 50px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 13px;
 
         &:focus {
             border-color: #007bff;
@@ -73,7 +74,7 @@ Enhances Shopware default styles without breaking functionality.
     .header-search-btn, .header-close-btn {
         border: 2px solid #e9ecef;
         border-left: none;
-        border-radius: 0 45% 45% 0 !important;
+        border-radius: 0 50% 50% 0 !important;
         background: #ffffff;
         color: #6c757d;
         padding: 0.5rem 1rem;
@@ -240,6 +241,7 @@ Enhances Shopware default styles without breaking functionality.
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                margin-right: 15px;
 
                 &:hover {
                     color: #0056b3;
