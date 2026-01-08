@@ -1,0 +1,131 @@
+/*
+Filter Panel Styles
+==================================================
+Filter panel enhancements.
+*/
+
+.filter-panel {
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    margin-bottom: 2rem;
+
+    &.is--sidebar {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+    }
+
+    .filter-panel-items-container {
+        gap: 1.5rem;
+    }
+}
+
+.filter-panel-item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .filter-panel-item-toggle {
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: #007bff;
+        }
+
+        svg {
+            transition: transform 0.3s ease;
+        }
+
+        &[aria-expanded="true"] svg {
+            transform: rotate(180deg);
+        }
+    }
+
+    .filter-panel-item-dropdown {
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #dee2e6;
+            border-radius: 3px;
+
+            &:hover {
+                background: #adb5bd;
+            }
+        }
+    }
+}
+
+.filter-multi-select-list-item,
+.filter-property-select-list-item {
+    transition: background 0.2s ease;
+    border-radius: 6px;
+    margin-bottom: 0.25rem;
+
+    &:hover {
+        background: rgba(0, 123, 255, 0.05);
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+        accent-color: #007bff;
+    }
+}
+
+.filter-property-select-preview {
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    .filter-property-select-list-item:hover & {
+        border-color: #007bff;
+    }
+}
+
+.filter-range-container {
+    .filter-range-min,
+    .filter-range-max {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+
+        &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+    }
+}
+
+.filter-boolean-input {
+    accent-color: #007bff;
+}
+
+.filter-panel-active-container {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+
+    .filter-active {
+        background: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+        border-radius: 20px;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(0, 123, 255, 0.15);
+        }
+    }
+}
