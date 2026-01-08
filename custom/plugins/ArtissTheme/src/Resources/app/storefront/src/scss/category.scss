@@ -1,0 +1,112 @@
+/*
+Category Info Styles
+==================================================
+Simple and unobtrusive category description with image wrapping.
+*/
+
+.cms-element-category-info {
+    margin-bottom: 2rem;
+    overflow: hidden;
+    display: block !important; /* override Shopware flex */
+
+    .category-info__media {
+        float: left;
+        margin: 0 1.5rem 1rem 0;
+        max-width: 320px;
+        width: auto;
+
+        @media (max-width: 767.98px) {
+            float: none;
+            margin: 0 0 1rem 0;
+            max-width: 100%;
+            width: 100%;
+        }
+    }
+
+    .category-info__img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: block;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+    }
+
+    .category-info__description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.55; /* tighter text */
+        overflow: visible;
+
+        p {
+            margin: 0 0 0.5rem 0;
+            color: #6c757d;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        strong, b {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+        }
+
+        ul, ol {
+            margin: 0.5rem 0;
+            padding-left: 1.25rem;
+            color: #6c757d;
+
+            li {
+                margin: 0.3rem 0;
+                color: #6c757d;
+            }
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: #495057;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0.75rem 0 0.4rem 0;
+
+            &:first-child {
+                margin-top: 0;
+            }
+        }
+    }
+
+    &::after {
+        content: '';
+        display: table;
+        clear: both;
+    }
+
+    @media (max-width: 767.98px) {
+        margin-bottom: 1.5rem;
+
+        .category-info__description {
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .category-info__img {
+            border-radius: 8px;
+        }
+    }
+}

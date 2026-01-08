@@ -9,31 +9,27 @@
 
     {% if description or media %}
         <div class="cms-element-category-info">
-            <div class="category-info {% if media %}category-info--with-image{% endif %}">
-                {% if media %}
-                    <div class="category-info__image">
-                        {% sw_thumbnails 'category-info-thumbnail' with {
-                            media: media,
-                            sizes: {
-                                'default': '500px'
-                            },
-                            attributes: {
-                                class: 'category-info__img',
-                                alt: categoryName,
-                                loading: 'lazy'
-                            }
-                        } %}
-                    </div>
-                {% endif %}
+            {% if media %}
+                <div class="category-info__media">
+                    {% sw_thumbnails 'category-info-thumbnail' with {
+                        media: media,
+                        sizes: {
+                            'default': '400px'
+                        },
+                        attributes: {
+                            class: 'category-info__img',
+                            alt: categoryName,
+                            loading: 'lazy'
+                        }
+                    } %}
+                </div>
+            {% endif %}
 
-                {% if description %}
-                    <div class="category-info__content">
-                        <div class="category-info__description">
-                            {{ description|raw }}
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
+            {% if description %}
+                <div class="category-info__description">
+                    {{ description|raw }}
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 {% endblock %}

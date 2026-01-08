@@ -7,7 +7,6 @@ Modern footer design with clean layout, elegant typography, and smooth hover eff
 .footer-main {
     background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
     color: #ecf0f1;
-    margin-top: 4rem;
     position: relative;
     overflow: hidden;
 
@@ -266,9 +265,6 @@ Modern footer design with clean layout, elegant typography, and smooth hover eff
 }
 
 @media (max-width: 991.98px) {
-    .footer-main {
-        margin-top: 2rem;
-    }
 
     .footer-top {
         padding: 2rem 0 1.5rem;
