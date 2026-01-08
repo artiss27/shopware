@@ -1,0 +1,162 @@
+/*
+Main Navigation Menu Styles
+==================================================
+Modern navigation with smooth hover effects and practical dropdown positioning.
+Enhances Shopware default styles without breaking Bootstrap functionality.
+*/
+
+.nav-main {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.main-navigation-menu {
+    .navbar-nav {
+        gap: 0.25rem;
+    }
+
+    .main-navigation-link {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        border-radius: 6px;
+
+        &:hover {
+            color: #007bff;
+            background: rgba(0, 123, 255, 0.05);
+        }
+
+        &.active {
+            color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
+        }
+
+        &.dropdown-toggle {
+            &::after {
+                display: none;
+            }
+        }
+    }
+
+    .main-navigation-link-text {
+        position: relative;
+        z-index: 1;
+
+        &::after {
+            display: none;
+        }
+    }
+
+    .nav-item {
+        &.dropdown {
+            position: static;
+
+            .dropdown-menu {
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+                margin-top: 0;
+                padding: 0.5rem 0.75rem;
+                animation: fadeInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+                &::after {
+                    display: none;
+                }
+            }
+        }
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.main-navigation-menu {
+    .dropdown-menu {
+        .nav-link {
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            &:hover {
+                background: rgba(0, 123, 255, 0.08);
+                color: #007bff;
+                padding-left: 1rem;
+            }
+
+            &.active {
+                background: rgba(0, 123, 255, 0.15);
+                color: #007bff;
+                font-weight: 600;
+            }
+        }
+
+        .nav-item {
+            margin-bottom: 0.25rem;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.navbar-toggler {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        border-color: #007bff;
+        background: rgba(0, 123, 255, 0.05);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+}
+
+@media (max-width: 991.98px) {
+    .nav-main {
+        border-bottom: none;
+        box-shadow: none;
+    }
+
+    .main-navigation-menu {
+        .main-navigation-link {
+            border-radius: 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+            &:hover {
+                background: rgba(0, 123, 255, 0.08);
+            }
+        }
+
+        .nav-item.dropdown {
+            position: relative;
+
+            .dropdown-menu {
+                border-radius: 0;
+                box-shadow: none;
+                border-top: 1px solid rgba(0, 0, 0, 0.05);
+                background: rgba(0, 0, 0, 0.02);
+                margin-top: 0;
+                padding: 0.25rem 0;
+            }
+        }
+    }
+}
