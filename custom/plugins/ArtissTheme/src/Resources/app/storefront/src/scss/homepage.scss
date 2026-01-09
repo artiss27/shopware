@@ -7,9 +7,12 @@ All styles are scoped to specific block classes to avoid global overrides.
 
 // Home Banner Block
 .home-banner {
+  border-radius: 16px;
+  overflow: hidden;
+
   .cms-block-container {
     position: relative;
-    background: linear-gradient(135deg, #f8f9fa 0%, #c3e1ff 100%);
+    //background: linear-gradient(135deg, #f8f9fa 0%, #c3e1ff 100%);
     padding: 4rem 2rem !important;
     border-radius: 16px;
     overflow: hidden;

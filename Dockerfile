@@ -23,6 +23,9 @@ RUN apk add --no-cache \
     # Clean up build dependencies
     apk del autoconf g++ make
 
+# Install MariaDB client for database backups (ArtissTools plugin)
+RUN apk add --no-cache mariadb-client
+
 # Return to default user (www-data:1000)
 USER www-data
 
