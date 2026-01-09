@@ -54,7 +54,14 @@ Product listing enhancements.
         transition: color 0.2s ease;
     }
 
+    .product-variant-characteristics {
+        display: none;
+    }
+
     .product-price-info {
+        .product-price-unit, .product-cheapest-price, .product-price-tax-link {
+            display: none;
+        }
         .product-price {
             font-size: 1.1rem;
             font-weight: 700;

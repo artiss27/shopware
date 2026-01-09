@@ -123,6 +123,8 @@ Filter panel enhancements.
     input[type="checkbox"],
     input[type="radio"] {
         accent-color: #007bff;
+        position: relative;
+        top: -3px;
     }
     .form-check {
         margin-bottom: 0;
