@@ -1,0 +1,140 @@
+/*
+Mobile Menu Styles
+==================================================
+Modern mobile navigation menu with elegant design.
+*/
+
+.navigation-offcanvas {
+    .navigation-offcanvas-headline {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #212529;
+        padding: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 0;
+    }
+
+    .navigation-offcanvas-container {
+        padding: 1rem 0;
+    }
+
+    .navigation-offcanvas-list-item {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        .navigation-offcanvas-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f8f9fa;
+
+            &:hover {
+                background: rgba(0, 123, 255, 0.05);
+                color: #007bff;
+                text-decoration: none;
+            }
+
+            &.active,
+            &.is-current-category {
+                background: rgba(0, 123, 255, 0.1);
+                color: #007bff;
+                font-weight: 600;
+            }
+
+            .navigation-offcanvas-link-icon {
+                width: 20px;
+                height: 20px;
+                color: #6c757d;
+                transition: color 0.2s ease;
+            }
+
+            &:hover .navigation-offcanvas-link-icon {
+                color: #007bff;
+            }
+
+            &.is-home-link {
+                background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                color: #ffffff;
+                font-weight: 600;
+
+                &:hover {
+                    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+                    color: #ffffff;
+                }
+
+                .navigation-offcanvas-link-icon {
+                    color: #ffffff;
+                }
+            }
+        }
+    }
+
+    .navigation-offcanvas-actions {
+        padding: 1rem 1.5rem;
+        border-top: 2px solid #e9ecef;
+        margin-top: 1rem;
+
+        .nav-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.75rem 0;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+.offcanvas {
+    .offcanvas-header {
+        border-bottom: 2px solid #e9ecef;
+        padding: 1.5rem;
+
+        .offcanvas-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .btn-close {
+            padding: 0.5rem;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    .offcanvas-body {
+        padding: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .navigation-offcanvas {
+        .navigation-offcanvas-headline {
+            font-size: 1.25rem;
+            padding: 1rem;
+        }
+
+        .navigation-offcanvas-list-item {
+            .navigation-offcanvas-link {
+                padding: 0.875rem 1rem;
+                font-size: 0.95rem;
+            }
+        }
+    }
+}

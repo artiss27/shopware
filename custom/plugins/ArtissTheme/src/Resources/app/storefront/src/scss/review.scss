@@ -1,0 +1,412 @@
+/*
+Product Reviews Styles
+==================================================
+Modern review system with elegant forms and review items.
+*/
+
+.product-detail-review {
+    margin-top: 2rem;
+
+    .product-detail-review-content {
+        margin-top: 1.5rem;
+    }
+
+    .product-detail-review-main {
+        .product-detail-review-actions {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+
+            .product-detail-review-language {
+                .form-check {
+                    margin-bottom: 0;
+                    // Uses global form-check styles - only specific override here
+                }
+            }
+
+            .product-detail-review-sortby {
+                .product-detail-review-sortby-form {
+                    // Uses global form styles - only specific overrides here
+                    .form-select {
+                        border-radius: 6px;
+                        padding: 0.5rem 2rem 0.5rem 0.75rem;
+                        font-size: 0.9rem;
+                    }
+                }
+            }
+        }
+
+        .product-detail-review-counter {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }
+    }
+}
+
+// Review Form
+.product-detail-review-form {
+    margin-bottom: 2rem;
+    // Card-like container styles are global - see card.scss
+
+    .review-form {
+        .product-detail-review-form-rating {
+            margin-bottom: 1.5rem;
+
+            label {
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 0.75rem;
+                display: block;
+            }
+
+            .product-detail-review-form-rating-input {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+
+                .product-detail-review-form-star {
+                    cursor: pointer;
+                    transition: transform 0.2s ease;
+                    padding: 0.25rem;
+
+                    &:hover {
+                        transform: scale(1.15);
+                    }
+
+                    .product-detail-review-form-radio {
+                        display: none;
+                    }
+
+                    svg {
+                        width: 32px;
+                        height: 32px;
+                        fill: #e9ecef;
+                        stroke: #adb5bd;
+                        transition: all 0.2s ease;
+                    }
+
+                    &.is-active svg,
+                    &:hover svg {
+                        fill: #ffc107;
+                        stroke: #ffc107;
+                    }
+                }
+
+                .product-detail-review-form-rating-text {
+                    margin: 0;
+                    color: #495057;
+                    font-weight: 500;
+                }
+            }
+        }
+
+        .product-detail-review-form-title,
+        .product-detail-review-form-content {
+            margin-bottom: 1.5rem;
+
+            .form-label {
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 0.5rem;
+            }
+
+            .form-control {
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+                &:focus {
+                    outline: none;
+                    border-color: #007bff;
+                    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+                }
+
+                &.is-invalid {
+                    border-color: #dc3545;
+
+                    &:focus {
+                        border-color: #dc3545;
+                        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+                    }
+                }
+            }
+
+            .form-text {
+                font-size: 0.85rem;
+                color: #6c757d;
+                margin-top: 0.5rem;
+            }
+        }
+
+        .product-detail-review-form-footer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+
+            .required-fields {
+                font-size: 0.85rem;
+                color: #6c757d;
+                margin-bottom: 1rem;
+            }
+
+            .product-detail-review-form-actions {
+                display: flex;
+                gap: 1rem;
+                justify-content: flex-end;
+
+                .product-detail-review-cancel {
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 8px;
+                    border: 2px solid #e9ecef;
+                    color: #495057;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+
+                    &:hover {
+                        border-color: #adb5bd;
+                        background: #f8f9fa;
+                        color: #212529;
+                    }
+                }
+
+                .btn-review-submit {
+                    // Uses global .btn-primary styles from button.scss
+                }
+            }
+        }
+    }
+}
+
+// Review Login Form
+.product-detail-review-login {
+    margin-bottom: 2rem;
+    // Card-like container styles are global - see card.scss
+
+    .login-card {
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        padding: 0;
+        // Override for transparent card in review context
+
+        .card-title {
+            margin-bottom: 1rem;
+            // Override for smaller margin
+        }
+
+        .login-form-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+
+            a {
+                color: #007bff;
+                text-decoration: none;
+                font-weight: 500;
+
+                &:hover {
+                    color: #0056b3;
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        // Form styles are global - see form.scss
+        .login-submit, .login-cancel {
+            margin-top: 1.5rem;
+            display: inline-block;
+            width: auto;
+            margin-left: 1rem;
+        }
+        .login-submit {
+            .btn {
+                padding: 0.4rem 3rem;
+            }
+        }
+    }
+}
+
+// Review Teaser Button
+.product-detail-review-teaser-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        color: #ffffff;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    .product-detail-review-teaser-hide {
+        display: none;
+    }
+
+    &.collapsed {
+        .product-detail-review-teaser-show {
+            display: none;
+        }
+
+        .product-detail-review-teaser-hide {
+            display: inline;
+        }
+    }
+}
+
+// Review Items
+.product-detail-review-list-content {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+
+    &:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .product-detail-review-item {
+        .product-detail-review-item-info {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+
+            .product-detail-review-item-date {
+                margin-bottom: 0.5rem;
+
+                p {
+                    margin: 0;
+                    color: #6c757d;
+                    font-size: 0.85rem;
+                }
+            }
+
+            .product-detail-review-item-points {
+                margin-bottom: 0.5rem;
+
+                .product-review-rating {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+
+                    .icon {
+                        width: 18px;
+                        height: 18px;
+                        fill: #ffc107;
+                    }
+                }
+            }
+
+            .product-detail-review-item-title {
+                margin-bottom: 0.5rem;
+
+                .h5 {
+                    margin: 0;
+                    color: #212529;
+                    font-weight: 600;
+                    font-size: 1.1rem;
+                }
+            }
+
+            .product-detail-review-item-verify {
+                text-align: right;
+
+                a {
+                    color: #28a745;
+                    text-decoration: none;
+
+                    &:hover {
+                        color: #1e7e34;
+                    }
+                }
+            }
+        }
+
+        .product-detail-review-item-content {
+            color: #495057;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .product-detail-review-item-comment {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #007bff;
+
+            .blockquote {
+                margin: 0;
+                padding: 0;
+
+                .blockquote-footer {
+                    font-size: 0.85rem;
+                    color: #6c757d;
+                    margin: 0;
+
+                    &::before {
+                        content: '';
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Review Pagination
+.product-detail-review-pagination {
+    margin-top: 2rem;
+
+    .product-detail-review-pagination-form {
+        .pagination {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+    }
+}
+
+@media (max-width: 767.98px) {
+    .product-detail-review-form,
+    .product-detail-review-login {
+        padding: 1.5rem;
+    }
+
+    .product-detail-review-list-content {
+        padding: 1rem;
+    }
+
+    .product-detail-review-form-footer {
+        .product-detail-review-form-actions {
+            flex-direction: column;
+
+            .product-detail-review-cancel,
+            .btn-review-submit {
+                width: 100%;
+            }
+        }
+    }
+}

@@ -1,4 +1,11 @@
 
+@import "form";
+@import "button";
+@import "tabs";
+@import "card";
+@import "modal";
+@import "alert";
+
 @import "menu";
 @import "category";
 @import "simple-page";
@@ -10,6 +17,15 @@
 @import "breadcrumbs";
 @import "sorting";
 @import "pagination";
+@import "account";
+@import "review";
+@import "cart";
+@import "profile";
+@import "address";
+@import "order-history";
+@import "offcanvas-cart";
+@import "mobile-menu";
+@import "checkout";
 
 
 h1 {

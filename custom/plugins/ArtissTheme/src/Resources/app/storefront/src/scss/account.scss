@@ -1,0 +1,303 @@
+/*
+Account Pages Styles
+==================================================
+Modern login and registration forms with elegant design.
+*/
+
+.account-register {
+    padding: 2rem 0;
+
+    h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+}
+
+.account-aside-list-group, .account-aside-footer {
+    padding: 1rem;
+}
+
+// Card styles are global - see card.scss
+// Only specific overrides here if needed
+
+.login-form,
+.register-form {
+    .login-form-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    // Form styles are global - see form.scss
+
+    .login-password-recover {
+        margin-bottom: 1.5rem;
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .login-submit,
+    .register-submit {
+        margin-top: 2rem;
+
+        .btn-primary {
+            width: 100%;
+            // Uses global .btn-primary styles from button.scss
+        }
+    }
+}
+
+.register-form {
+    .register-personal {
+        border: none;
+        padding: 0;
+        margin-bottom: 2rem;
+
+        .register-personal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(0, 123, 255, 0.1);
+        }
+    }
+
+    .register-address {
+        .register-billing,
+        .register-shipping {
+            border: none;
+            padding: 0;
+            margin-bottom: 2rem;
+
+            .card-title {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #212529;
+                margin-bottom: 1.5rem;
+                padding-bottom: 0.75rem;
+                border-bottom: 2px solid rgba(0, 123, 255, 0.1);
+            }
+        }
+    }
+
+    .register-different-shipping {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: rgba(0, 123, 255, 0.02);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 123, 255, 0.1);
+    }
+
+    .register-required-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 1.5rem;
+        text-align: center;
+    }
+
+    .privacy-notice {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: #6c757d;
+        line-height: 1.6;
+    }
+}
+
+.login-advantages {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+
+    .login-advantages-header {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 1rem;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            padding: 0.5rem 0 0.5rem 1.5rem;
+            color: #495057;
+            font-size: 0.9rem;
+            position: relative;
+            line-height: 1.6;
+
+            &::before {
+                content: '✓';
+                position: absolute;
+                left: 0;
+                color: #28a745;
+                font-weight: 700;
+            }
+        }
+    }
+}
+
+// Validation feedback styles are global - see form.scss
+
+// Account Overview Page
+.account-overview {
+    .account-welcome {
+        margin-bottom: 2rem;
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+    }
+
+    .account-overview-card {
+        margin-bottom: 2rem;
+
+        // Card styles are global - see card.scss
+
+        p {
+            color: #495057;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            // Button styles are global - see button.scss
+            // Only specific overrides here if needed
+        }
+    }
+
+    .order-table {
+        .order-table-body {
+            .order-item {
+                padding: 1.5rem;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+                    transform: translateY(-2px);
+                }
+            }
+        }
+    }
+}
+
+// Account Sidebar
+.account-sidebar {
+    .account-aside {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+        margin-bottom: 2rem;
+
+        .account-aside-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(0, 123, 255, 0.1);
+        }
+
+        .list-group {
+            .list-group-item {
+                border: none;
+                border-bottom: 1px solid #e9ecef;
+                padding: 1rem 0;
+                transition: all 0.2s ease;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                a {
+                    color: #495057;
+                    text-decoration: none;
+                    font-weight: 500;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    transition: color 0.2s ease;
+
+                    &:hover {
+                        color: #007bff;
+                    }
+
+                    .icon {
+                        width: 20px;
+                        height: 20px;
+                    }
+                }
+
+                &.active {
+                    background: transparent;
+
+                    a {
+                        color: #007bff;
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@media (max-width: 991.98px) {
+    .account-register {
+        padding: 1.5rem 0;
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    // Card responsive styles are global - see card.scss
+
+    .login-advantages {
+        margin-top: 1.5rem;
+        padding: 1.25rem;
+    }
+
+    .account-overview-card {
+        .card {
+            .card-body {
+                padding: 1.5rem;
+            }
+        }
+    }
+
+}

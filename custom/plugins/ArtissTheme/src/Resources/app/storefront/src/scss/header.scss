@@ -58,12 +58,15 @@ Enhances Shopware default styles without breaking functionality.
         border-right: none;
         border-radius: 50px 0 0 50px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        padding: 13px;
+        //padding: 13px;
 
         &:focus {
             border-color: #007bff;
             box-shadow: none;
             z-index: 3;
+            .header-search-btn, .header-close-btn {
+                border-color: #007bff !important;
+            }
         }
 
         &::placeholder {
@@ -73,36 +76,42 @@ Enhances Shopware default styles without breaking functionality.
 
     .header-search-btn, .header-close-btn {
         border: 2px solid #e9ecef;
-        border-left: none;
+        padding-right: 18px;
         border-radius: 0 50% 50% 0 !important;
-        background: #ffffff;
-        color: #6c757d;
-        padding: 0.5rem 1rem;
+        border-left: none;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: 48px;
+        background: #ffffff;
+        //border: 2px solid #e9ecef;
+        //border-left: none;
+        //border-radius: 0 50% 50% 0 !important;
+        //background: #ffffff;
+        //color: #6c757d;
+        ////transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        //min-width: 48px;
 
-        &:active {
-            transform: scale(0.98);
-        }
-
-        &:focus {
-            box-shadow: none;
-            border-color: #007bff;
-            z-index: 3;
-        }
+        //&:active {
+        //    transform: scale(0.98);
+        //}
+        //
+        //&:focus {
+        //    //box-shadow: none;
+        //    border-color: #007bff !important;
+        //    //z-index: 3;
+        //}
 
         .header-search-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 7px;
+            //width: 20px;
+            //height: 20px;
+            //display: flex;
+            //align-items: center;
+            //justify-content: center;
+            //margin-bottom: 7px;
+            //margin-right: 15px;
 
             svg {
-                width: 20px;
-                height: 20px;
-                stroke-width: 1.5;
+                //width: 20px;
+                //height: 20px;
+                //stroke-width: 1.5;
             }
         }
     }
@@ -138,6 +147,7 @@ Enhances Shopware default styles without breaking functionality.
             overflow-y: auto;
             list-style: none;
             margin: 0;
+            top: 0;
 
             &::after {
                 top: -7px;

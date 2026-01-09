@@ -1,0 +1,253 @@
+/*
+Offcanvas Cart Styles
+==================================================
+Modern sidebar cart with elegant design.
+*/
+
+.cart-offcanvas {
+
+}
+
+.offcanvas-cart {
+    padding: 1.5rem;
+
+    .offcanvas-cart-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+
+        h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #212529;
+            margin: 0;
+        }
+
+        .offcanvas-cart-header-count {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #6c757d;
+        }
+    }
+
+    .offcanvas-cart-items {
+        margin: 0;
+        padding: 0;
+        max-height: calc(100vh - 400px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #007bff #e9ecef;
+
+        &::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: #007bff;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .line-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.3s ease;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &:hover {
+                background: rgba(0, 123, 255, 0.02);
+            }
+
+            .line-item-label {
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 0.5rem;
+            }
+
+            .line-item-quantity {
+                .quantity-selector-group {
+                    border-radius: 8px;
+                    border: 2px solid #e9ecef;
+                    overflow: hidden;
+
+                    .btn-minus,
+                    .btn-plus {
+                        border: none;
+                        background: #f8f9fa;
+                        color: #495057;
+                        padding: 0.5rem 0.75rem;
+                        transition: all 0.2s ease;
+
+                        &:hover {
+                            background: #e9ecef;
+                            color: #007bff;
+                        }
+                    }
+
+                    .quantity-selector-group-input {
+                        border: none;
+                        text-align: center;
+                        font-weight: 600;
+                        padding: 0.5rem;
+                    }
+                }
+            }
+
+            .line-item-remove {
+                .btn {
+                    color: #dc3545;
+                    border: none;
+                    background: transparent;
+                    padding: 0.5rem;
+                    transition: all 0.2s ease;
+                    border-radius: 6px;
+
+                    &:hover {
+                        background: rgba(220, 53, 69, 0.1);
+                        color: #c82333;
+                    }
+                }
+            }
+
+            .line-item-price {
+                font-weight: 700;
+                color: #212529;
+                font-size: 1.1rem;
+            }
+        }
+    }
+
+    .offcanvas-cart-summary {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e9ecef;
+
+        .offcanvas-cart-summary-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+
+            .offcanvas-cart-summary-label {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #212529;
+            }
+
+            .offcanvas-cart-summary-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #007bff;
+            }
+        }
+    }
+
+    .offcanvas-cart-actions {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e9ecef;
+
+        .offcanvas-cart-promotion-form {
+            margin-bottom: 1.5rem;
+
+            label {
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+
+            .input-group {
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+                // Form styles are global - see form.scss
+
+                .offcanvas-cart-promotion-button {
+                    border: 2px solid #e9ecef;
+                    border-left: none;
+                    background: #f8f9fa;
+                    color: #495057;
+                    padding: 0.75rem 1rem;
+                    transition: all 0.3s ease;
+
+                    &:hover {
+                        background: #007bff;
+                        color: #ffffff;
+                        border-color: #007bff;
+                    }
+                }
+            }
+        }
+
+        .begin-checkout-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            color: #ffffff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin-bottom: 1rem;
+
+            &:hover {
+                background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+                color: #ffffff;
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+
+            &.disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
+            }
+        }
+
+        .btn-link {
+            width: 100%;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.75rem;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+@media (max-width: 575.98px) {
+    .offcanvas-cart {
+        padding: 1rem;
+
+        .offcanvas-cart-header {
+            h4 {
+                font-size: 1.25rem;
+            }
+        }
+    }
+}

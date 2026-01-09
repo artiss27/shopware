@@ -1,0 +1,226 @@
+/*
+Global Button Styles
+==================================================
+Centralized styles for all buttons across the storefront.
+*/
+
+// Base Button Styles
+.btn {
+    padding: 0.3rem 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    text-decoration: none;
+    line-height: 1.5;
+
+    &:disabled,
+    &.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        pointer-events: none;
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+}
+
+// Primary Button
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+
+    &:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        color: #ffffff;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25), 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+}
+
+// Secondary Button
+.btn-secondary {
+    background: #6c757d;
+    color: #ffffff;
+
+    &:hover {
+        background: #5a6268;
+        color: #ffffff;
+    }
+}
+
+// Outline Secondary Button
+.btn-outline-secondary {
+    border: 2px solid #e9ecef;
+    color: #495057;
+    background: #ffffff;
+
+    &:hover {
+        border-color: #adb5bd;
+        background: #f8f9fa;
+        color: #212529;
+    }
+}
+
+// Outline Primary Button
+.btn-outline-primary {
+    border: 2px solid #007bff;
+    color: #007bff;
+    background: #ffffff;
+
+    &:hover {
+        background: #007bff;
+        color: #ffffff;
+    }
+}
+
+// Light Button
+.btn-light {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    color: #495057;
+
+    &:hover {
+        background: #e9ecef;
+        border-color: #adb5bd;
+        color: #212529;
+    }
+}
+
+// Danger Button
+.btn-danger,
+.btn-outline-danger {
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    background: #ffffff;
+
+    &:hover {
+        background: #dc3545;
+        color: #ffffff;
+    }
+}
+
+// Link Button
+.btn-link {
+    background: transparent;
+    border: none;
+    color: #007bff;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    box-shadow: none;
+
+    &:hover {
+        color: #0056b3;
+        text-decoration: underline;
+        transform: none;
+        background: transparent;
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+}
+
+// Inline Link Button
+.btn-link-inline {
+    background: transparent;
+    border: none;
+    color: #007bff;
+    text-decoration: none;
+    padding: 0;
+    font-size: inherit;
+    font-weight: 500;
+    box-shadow: none;
+
+    &:hover {
+        color: #0056b3;
+        text-decoration: underline;
+        transform: none;
+        background: transparent;
+    }
+}
+
+// Buy Button (Product specific)
+.btn-buy {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    color: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    width: 100%;
+
+    &:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        color: #ffffff;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+// Large Button
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+// Small Button
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+// Button Groups
+.btn-group {
+    display: inline-flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+// Full Width Button
+.btn-block,
+.d-grid .btn {
+    width: 100%;
+}
+
+@media (max-width: 575.98px) {
+    .btn {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-lg {
+        padding: 0.875rem 1.75rem;
+        font-size: 1rem;
+    }
+}

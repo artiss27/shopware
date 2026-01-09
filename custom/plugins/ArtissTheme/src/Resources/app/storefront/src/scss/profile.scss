@@ -1,0 +1,225 @@
+/*
+Account Profile Page Styles
+==================================================
+Modern profile page with elegant forms and sections.
+*/
+
+.account-profile {
+    .account-welcome {
+        margin-bottom: 2rem;
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+    }
+
+    .account-profile-personal,
+    .account-profile-credentials {
+        margin-bottom: 2rem;
+        // Card styles are global - see card.scss
+
+        .form-group {
+            margin-bottom: 1.5rem;
+
+            .form-label {
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 0.5rem;
+            }
+
+            // Form styles are global - see form.scss
+        }
+
+        .account-profile-required-info {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 1.5rem;
+        }
+
+        // Card actions styles are global - see card.scss
+    }
+
+    .account-profile-credentials {
+        .account-profile-mail-label {
+            font-weight: 600;
+            color: #212529;
+            margin-right: 0.5rem;
+        }
+
+        .account-profile-mail {
+            color: #495057;
+        }
+
+        .account-profile-change {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .profile-content {
+        margin-top: 1.5rem;
+
+        .account-email,
+        .account-password {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1rem;
+            overflow: hidden;
+
+            .card-body {
+                padding: 2rem;
+            }
+
+            .card-title {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #212529;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid rgba(0, 123, 255, 0.1);
+            }
+
+            .text-muted {
+                color: #6c757d;
+                font-size: 0.9rem;
+                margin: 1rem 0;
+            }
+
+            .form-group {
+                margin-bottom: 1.5rem;
+
+                .form-label {
+                    font-weight: 600;
+                    color: #212529;
+                    margin-bottom: 0.5rem;
+                }
+
+                .form-control {
+                    border: 2px solid #e9ecef;
+                    border-radius: 8px;
+                    padding: 0.75rem 1rem;
+                    font-size: 0.95rem;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+                    &:focus {
+                        outline: none;
+                        border-color: #007bff;
+                        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+                    }
+                }
+            }
+
+            .card-actions {
+                margin-top: 2rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid #e9ecef;
+
+                .profile-form-submit {
+                    padding: 0.75rem 2rem;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+
+                    &.btn-light {
+                        background: #f8f9fa;
+                        border: 2px solid #e9ecef;
+                        color: #495057;
+
+                        &:hover {
+                            background: #e9ecef;
+                            border-color: #adb5bd;
+                            color: #212529;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .account-deleting {
+        padding: 1.5rem;
+        background: #fff3cd;
+        border-radius: 8px;
+        border: 1px solid #ffc107;
+        color: #856404;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+}
+
+.confirm-delete-account-modal {
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+        .modal-header {
+            border-bottom: 1px solid #e9ecef;
+            padding: 1.5rem;
+
+            .modal-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #212529;
+            }
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+
+            h6 {
+                font-weight: 600;
+                color: #212529;
+            }
+
+            .btn-outline-danger {
+                padding: 0.75rem 2rem;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    background: #dc3545;
+                    color: #ffffff;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 991.98px) {
+    .account-profile {
+        .account-profile-personal,
+        .account-profile-credentials {
+            .card-body {
+                padding: 1.5rem;
+            }
+        }
+
+        .profile-content {
+            .account-email,
+            .account-password {
+                .card-body {
+                    padding: 1.5rem;
+                }
+            }
+        }
+    }
+}

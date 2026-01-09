@@ -1,0 +1,129 @@
+/*
+Global Card Styles
+==================================================
+Centralized styles for all cards across the storefront.
+*/
+
+// Base Card Styles
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+
+    &:hover {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+}
+
+// Card Body
+.card-body {
+    padding: 2rem;
+}
+
+// Card Header
+.card-header {
+    padding: 1.5rem 2rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+    color: #212529;
+}
+
+// Card Title
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(0, 123, 255, 0.1);
+}
+
+// Card Actions
+.card-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+// Specific Card Variants
+
+// Login/Register Cards (larger border-radius)
+.login-card,
+.register-card {
+    border-radius: 16px;
+}
+
+// Checkout Cards
+.checkout-card {
+    // Uses base .card styles
+}
+
+// Account Cards
+.account-profile-personal,
+.account-profile-credentials {
+    // Uses base .card styles
+}
+
+// Review Cards (container-like elements, not .card class)
+.product-detail-review-form,
+.product-detail-review-login {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s ease;
+
+    &:hover {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+}
+
+// Address Cards
+.address-manager-select-address {
+    // Uses base .card styles
+}
+
+// Responsive
+@media (max-width: 991.98px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+    }
+
+    .card-header {
+        padding: 1.25rem 1.5rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .card-body {
+        padding: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .card-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .btn {
+            width: 100%;
+        }
+    }
+}

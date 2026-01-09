@@ -1,0 +1,176 @@
+/*
+Account Order History Page Styles
+==================================================
+Modern order history page with elegant design.
+*/
+
+.account-order-history {
+    .order-table {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+
+        .order-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.3s ease;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &:hover {
+                background: rgba(0, 123, 255, 0.02);
+            }
+
+            .order-item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                flex-wrap: wrap;
+                gap: 1rem;
+
+                .order-item-number {
+                    font-weight: 700;
+                    color: #212529;
+                    font-size: 1.1rem;
+                }
+
+                .order-item-date {
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                }
+            }
+
+            .order-item-details {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+
+                .order-item-status {
+                    .badge {
+                        padding: 0.5rem 1rem;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        font-size: 0.85rem;
+                    }
+                }
+
+                .order-item-total {
+                    font-weight: 700;
+                    color: #007bff;
+                    font-size: 1.25rem;
+                }
+            }
+
+            .order-item-actions {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid #e9ecef;
+
+                .btn {
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                    margin-right: 0.5rem;
+
+                    &.btn-primary {
+                        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                        border: none;
+                        color: #ffffff;
+
+                        &:hover {
+                            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+                        }
+                    }
+
+                    &.btn-outline-secondary {
+                        border: 2px solid #e9ecef;
+                        color: #495057;
+
+                        &:hover {
+                            border-color: #adb5bd;
+                            background: #f8f9fa;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .order-detail {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+        margin-bottom: 2rem;
+
+        .order-detail-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e9ecef;
+
+            h2 {
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: #212529;
+                margin-bottom: 0.5rem;
+            }
+
+            .order-detail-meta {
+                color: #6c757d;
+                font-size: 0.9rem;
+            }
+        }
+
+        .order-detail-content {
+            .order-detail-section {
+                margin-bottom: 2rem;
+
+                .order-detail-section-title {
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    color: #212529;
+                    margin-bottom: 1rem;
+                    padding-bottom: 0.75rem;
+                    border-bottom: 2px solid rgba(0, 123, 255, 0.1);
+                }
+
+                .order-detail-section-content {
+                    color: #495057;
+                    line-height: 1.7;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 991.98px) {
+    .account-order-history {
+        .order-table {
+            .order-item {
+                padding: 1rem;
+
+                .order-item-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .order-item-details {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+            }
+        }
+
+        .order-detail {
+            padding: 1.5rem;
+        }
+    }
+}

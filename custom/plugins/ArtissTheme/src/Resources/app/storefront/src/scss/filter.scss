@@ -24,48 +24,87 @@ Filter panel enhancements.
 
 .filter-panel-item {
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
 
     &:last-child {
         border-bottom: none;
         padding-bottom: 0;
+        margin-bottom: 0;
     }
 
     .filter-panel-item-toggle {
-        transition: color 0.2s ease;
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: #f8f9fa;
+        border: none;
+        border-radius: 8px;
+        color: #212529;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
 
         &:hover {
+            background: #e9ecef;
             color: #007bff;
+        }
+
+        &:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
         }
 
         svg {
             transition: transform 0.3s ease;
+            color: #6c757d;
+            flex-shrink: 0;
         }
 
-        &[aria-expanded="true"] svg {
-            transform: rotate(180deg);
+        &[aria-expanded="true"] {
+            background: linear-gradient(135deg, #e0f2ff 0%, #cce5ff 100%);
+            color: #007bff;
+            border-radius: 8px 8px 0 0;
+
+            svg {
+                transform: rotate(180deg);
+                color: #007bff;
+            }
         }
     }
 
     .filter-panel-item-dropdown {
         max-height: 300px;
         overflow-y: auto;
-        padding-right: 0.5rem;
+        padding: 1rem;
+        background: #ffffff;
+        border: 2px solid #e0f2ff;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        margin-top: -2px;
 
         &::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
 
         &::-webkit-scrollbar-track {
             background: #f8f9fa;
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
         &::-webkit-scrollbar-thumb {
-            background: #dee2e6;
-            border-radius: 3px;
+            background: #007bff;
+            border-radius: 4px;
+            border: 2px solid #f8f9fa;
 
             &:hover {
-                background: #adb5bd;
+                background: #0056b3;
             }
         }
     }
@@ -84,6 +123,9 @@ Filter panel enhancements.
     input[type="checkbox"],
     input[type="radio"] {
         accent-color: #007bff;
+    }
+    .form-check {
+        margin-bottom: 0;
     }
 }
 
