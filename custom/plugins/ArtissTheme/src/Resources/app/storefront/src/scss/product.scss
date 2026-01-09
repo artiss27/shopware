@@ -457,6 +457,9 @@ Modern product detail page with elegant gallery and buy widget.
 
 .product-detail-tabs {
   margin-top: 3rem;
+  .nav-item {
+    margin-right: 0;
+  }
 
   .product-detail-tab-navigation-link {
     padding: 1rem 3rem;
@@ -505,6 +508,35 @@ Modern product detail page with elegant gallery and buy widget.
             }
           }
         }
+      }
+    }
+  }
+}
+
+// Product Wishlist Button
+.product-wishlist {
+  .product-wishlist-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .product-wishlist-btn-content {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #495057;
+      transition: color 0.3s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .icon-wishlist {
+      color: #f15928;
+    }
+
+    &:hover {
+      .product-wishlist-btn-content {
+        color: #007bff;
       }
     }
   }

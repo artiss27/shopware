@@ -282,7 +282,7 @@ Enhances Shopware default styles without breaking functionality.
 .header-wishlist {
     .header-cart-badge,
     .header-wishlist-badge {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        background: linear-gradient(135deg, #dc3545 0%, #f15928 100%);
         box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);
         animation: pulse 2s infinite;
     }
@@ -294,7 +294,6 @@ Enhances Shopware default styles without breaking functionality.
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     padding: 0;
     margin-top: 0.5rem;
-    min-width: 280px;
 
     .account-menu-header {
         padding: 1rem 1.25rem;
@@ -367,6 +366,10 @@ Enhances Shopware default styles without breaking functionality.
                         font-weight: 600;
                     }
                 }
+            }
+
+            .account-aside-btn {
+                padding: 0 2rem;
             }
         }
     }
