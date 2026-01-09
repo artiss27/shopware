@@ -41,6 +41,20 @@ Product listing enhancements.
         .product-image {
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        .product-wishlist-btn {
+            padding: 0;
+            //background: none;
+            //border: none;
+            //&:focus {
+            //    border: none;
+            //}
+            .icon-wishlist {
+                color: #f15928;
+                position: relative;
+                top: 3px;
+            }
+        }
     }
 
     .product-badges {

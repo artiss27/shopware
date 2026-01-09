@@ -59,6 +59,8 @@ Modern pagination with elegant design and smooth transitions.
                 width: 16px;
                 height: 16px;
                 transition: transform 0.2s ease;
+                position: relative;
+                top: -2px;
             }
 
             &:hover .icon {
