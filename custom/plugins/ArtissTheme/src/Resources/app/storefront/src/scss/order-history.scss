@@ -4,149 +4,293 @@ Account Order History Page Styles
 Modern order history page with elegant design.
 */
 
-.account-order-history {
-    .order-table {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
+// Order History Page
+.account-orders {
+    .account-welcome {
+        margin-bottom: 2rem;
 
-        .order-item {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e9ecef;
-            transition: background 0.3s ease;
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 1rem;
+        }
 
-            &:last-child {
-                border-bottom: none;
-            }
-
-            &:hover {
-                background: rgba(0, 123, 255, 0.02);
-            }
-
-            .order-item-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-                flex-wrap: wrap;
-                gap: 1rem;
-
-                .order-item-number {
-                    font-weight: 700;
-                    color: #212529;
-                    font-size: 1.1rem;
-                }
-
-                .order-item-date {
-                    color: #6c757d;
-                    font-size: 0.9rem;
-                }
-            }
-
-            .order-item-details {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 1rem;
-
-                .order-item-status {
-                    .badge {
-                        padding: 0.5rem 1rem;
-                        border-radius: 6px;
-                        font-weight: 600;
-                        font-size: 0.85rem;
-                    }
-                }
-
-                .order-item-total {
-                    font-weight: 700;
-                    color: #007bff;
-                    font-size: 1.25rem;
-                }
-            }
-
-            .order-item-actions {
-                margin-top: 1rem;
-                padding-top: 1rem;
-                border-top: 1px solid #e9ecef;
-
-                .btn {
-                    padding: 0.5rem 1rem;
-                    border-radius: 6px;
-                    font-size: 0.85rem;
-                    font-weight: 500;
-                    transition: all 0.2s ease;
-                    margin-right: 0.5rem;
-
-                    &.btn-primary {
-                        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-                        border: none;
-                        color: #ffffff;
-
-                        &:hover {
-                            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-                        }
-                    }
-
-                    &.btn-outline-secondary {
-                        border: 2px solid #e9ecef;
-                        color: #495057;
-
-                        &:hover {
-                            border-color: #adb5bd;
-                            background: #f8f9fa;
-                        }
-                    }
-                }
-            }
+        p {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
         }
     }
 
-    .order-detail {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        padding: 2rem;
-        margin-bottom: 2rem;
+    .account-orders-main {
+        .account-orders-overview {
+            list-style: none;
+            padding: 0;
+            margin: 0;
 
-        .order-detail-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 2px solid #e9ecef;
+            .order-table {
+                background: #ffffff;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                margin-bottom: 1.5rem;
+                overflow: hidden;
+                transition: box-shadow 0.3s ease;
+                border: none;
 
-            h2 {
-                font-size: 1.75rem;
-                font-weight: 700;
-                color: #212529;
-                margin-bottom: 0.5rem;
-            }
+                &:hover {
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+                }
 
-            .order-detail-meta {
-                color: #6c757d;
-                font-size: 0.9rem;
+                .order-wrapper {
+                    padding: 1.5rem;
+
+                    .order-item-header {
+                        margin-bottom: 1.5rem;
+                        padding-bottom: 1rem;
+                        border-bottom: 1px solid #e9ecef;
+
+                        .order-table-header-heading {
+                            font-size: 1.25rem;
+                            font-weight: 700;
+                            color: #212529;
+                            margin-bottom: 0.5rem;
+                        }
+
+                        .order-table-header-order-status {
+                            //margin-top: 0.5rem;
+
+                            .order-item-status-badge {
+                                //padding: 0.5rem 1rem;
+                                border-radius: 6px;
+                                font-weight: 600;
+                                font-size: 0.85rem;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 0.5rem;
+
+                                &.bg-danger {
+                                    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+                                    color: #ffffff !important;
+                                }
+                            }
+                        }
+
+                        .order-table-header-context-menu-wrapper {
+                            position: relative;
+
+                            .notification-dot {
+                                position: absolute;
+                                top: -5px;
+                                right: -5px;
+                                width: 12px;
+                                height: 12px;
+                                border-radius: 50%;
+                                background: #dc3545;
+                                border: 2px solid #ffffff;
+                                z-index: 1;
+                            }
+
+                            .order-table-header-context-menu {
+                                border: 2px solid #e9ecef;
+                                border-radius: 8px;
+                                padding: 0.5rem;
+                                background: #f8f9fa;
+                                color: #495057;
+                                transition: all 0.3s ease;
+
+                                &:hover {
+                                    background: #e9ecef;
+                                    border-color: #007bff;
+                                    color: #007bff;
+                                }
+
+                                .icon {
+                                    width: 20px;
+                                    height: 20px;
+                                }
+                            }
+
+                            .dropdown-menu {
+                                border-radius: 8px;
+                                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+                                border: none;
+                                padding: 0.5rem 0;
+
+                                .dropdown-item {
+                                    padding: 0.75rem 1.5rem;
+                                    color: #495057;
+                                    font-size: 0.95rem;
+                                    transition: background-color 0.2s ease, color 0.2s ease;
+
+                                    &:hover {
+                                        background-color: #e9ecef;
+                                        color: #212529;
+                                    }
+
+                                    &.order-table-header-context-menu-content-link {
+                                        color: #007bff;
+
+                                        &:hover {
+                                            background-color: rgba(0, 123, 255, 0.1);
+                                            color: #0056b3;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        .order-table-header-order-number {
+                            margin-top: 1rem;
+                            padding-top: 1rem;
+                            border-top: 1px solid #e9ecef;
+
+                            .order-table-header-label {
+                                font-weight: 600;
+                                color: #212529;
+                                margin-right: 0.5rem;
+                            }
+
+                            .order-table-body-value {
+                                color: #495057;
+                            }
+                        }
+
+                        .order-table-header-order-table-header {
+                            margin-top: 1rem;
+                            padding-top: 1rem;
+                            border-top: 1px solid #e9ecef;
+
+                            .order-table-header-order-table-header-cell {
+                                font-weight: 600;
+                                color: #212529;
+                                font-size: 0.9rem;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                                padding: 0.5rem 0;
+                            }
+                        }
+
+                        .order-table-header-order-table-body {
+                            margin-top: 0.5rem;
+
+                            .order-table-header-order-table-body-cell {
+                                padding: 0.75rem 0;
+                                color: #495057;
+                                font-size: 0.95rem;
+
+                                .order-table-header-label {
+                                    font-weight: 600;
+                                    color: #212529;
+                                    margin-right: 0.5rem;
+                                }
+
+                                .order-table-body-value {
+                                    color: #495057;
+                                }
+
+                                .order-hide-btn {
+                                    // Uses global button styles
+                                }
+                            }
+                        }
+                    }
+
+                    .order-item-detail {
+                        margin-top: 1.5rem;
+                        padding-top: 1.5rem;
+                        border-top: 2px solid #e9ecef;
+
+                        .order-detail-content {
+                            .order-detail-content-header {
+                                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                                padding: 1rem 1.5rem;
+                                border-radius: 8px 8px 0 0;
+                                margin-bottom: 0.5rem;
+
+                                .order-detail-content-header-cell {
+                                    font-weight: 600;
+                                    color: #212529;
+                                    font-size: 0.9rem;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.5px;
+                                }
+                            }
+
+                            .order-detail-content-body {
+                                .order-detail-content-row {
+                                    padding: 1rem 1.5rem;
+                                    border-bottom: 1px solid #e9ecef;
+                                    transition: background 0.2s ease;
+
+                                    &:hover {
+                                        background: rgba(0, 123, 255, 0.02);
+                                    }
+
+                                    &:last-child {
+                                        border-bottom: none;
+                                    }
+                                }
+                            }
+
+                            .order-detail-content-footer {
+                                margin-top: 1.5rem;
+                                padding-top: 1.5rem;
+                                border-top: 2px solid #e9ecef;
+
+                                .order-item-detail-footer {
+                                    .order-item-detail-labels {
+                                        margin: 0;
+
+                                        dt {
+                                            font-weight: 600;
+                                            color: #212529;
+                                            padding: 0.5rem 0;
+                                        }
+
+                                        dd {
+                                            color: #495057;
+                                            padding: 0.5rem 0;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        .order-detail-content {
-            .order-detail-section {
-                margin-bottom: 2rem;
+        .account-orders-pagination {
+            margin-top: 2rem;
+            // Uses global pagination styles
+        }
+    }
+}
 
-                .order-detail-section-title {
-                    font-size: 1.25rem;
-                    font-weight: 700;
-                    color: #212529;
-                    margin-bottom: 1rem;
-                    padding-bottom: 0.75rem;
-                    border-bottom: 2px solid rgba(0, 123, 255, 0.1);
-                }
+// Order Edit Page (uses checkout structure)
+.page-account-order {
+    // Uses checkout.scss styles - see checkout.scss
+    // Additional specific styles can be added here if needed
+}
 
-                .order-detail-section-content {
-                    color: #495057;
-                    line-height: 1.7;
-                }
-            }
+// Order Detail Content List
+.order-detail-content-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .line-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid #e9ecef;
+        transition: background 0.2s ease;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background: rgba(0, 123, 255, 0.02);
         }
     }
 }
