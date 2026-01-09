@@ -321,8 +321,29 @@ Modern product detail page with elegant gallery and buy widget.
   }
 }
 
+// Gallery Thumbnails Column
+.gallery-slider-thumbnails-col {
+  &.is-left {
+    padding-right: 1rem;
+
+    @media (max-width: 991.98px) {
+      padding-right: 0;
+      margin-top: 1rem;
+    }
+  }
+
+  &.is-underneath {
+    margin-top: 1rem;
+  }
+}
+
+// Gallery Thumbnails Container
 .gallery-slider-thumbnails-container {
-  margin-top: 1rem;
+  position: relative;
+
+  &.is-underneath {
+    margin-top: 1rem;
+  }
 
   .gallery-slider-thumbnails {
     padding: 0.5rem 0;
@@ -330,18 +351,20 @@ Modern product detail page with elegant gallery and buy widget.
     margin: 0;
 
     .gallery-slider-thumbnails-item {
-      border-radius: 8px;
       overflow: hidden;
-      border: 2px solid transparent;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      opacity: 0.7;
-      margin-bottom: 0.5rem;
 
       .gallery-slider-thumbnails-item-inner {
         position: relative;
         overflow: hidden;
         display: block;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        opacity: 0.7;
+        margin-bottom: 0.5rem;
+        flex-shrink: 0;
+        min-width: 80px;
 
         .gallery-slider-thumbnails-image {
           width: 100%;
@@ -377,8 +400,56 @@ Modern product detail page with elegant gallery and buy widget.
       .gallery-slider-thumbnails-item {
         flex-shrink: 0;
         margin-bottom: 0;
-        min-width: 80px;
       }
+    }
+  }
+
+  // Thumbnails Controls
+  .gallery-slider-thumbnails-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+
+    .gallery-slider-thumbnails-controls-prev,
+    .gallery-slider-thumbnails-controls-next {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #e9ecef;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      color: #495057;
+      cursor: pointer;
+      flex-shrink: 0;
+
+      &:hover {
+        background: #ffffff;
+        border-color: #007bff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        color: #007bff;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .icon {
+        width: 18px;
+        height: 18px;
+      }
+    }
+    .gallery-slider-thumbnails-controls-prev {
+      top: -3rem;
+    }
+    .gallery-slider-thumbnails-controls-next {
+      //top: 0;
     }
   }
 }
