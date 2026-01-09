@@ -83,8 +83,8 @@ Enhances Shopware default styles without breaking Bootstrap functionality.
         .nav-link {
             transition: all 0.2s ease;
             border-radius: 6px;
-            padding: 0.5rem 0.75rem;
-            margin-bottom: 0.25rem;
+            padding: 0.4rem 0.75rem;
+            margin-bottom: 0.1rem;
             font-size: 0.9rem;
             line-height: 1.4;
 
@@ -106,7 +106,7 @@ Enhances Shopware default styles without breaking Bootstrap functionality.
         }
 
         .nav-item {
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.1rem;
 
             &:last-child {
                 margin-bottom: 0;

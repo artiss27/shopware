@@ -199,6 +199,14 @@ Modern footer design with clean layout, elegant typography, and smooth hover eff
     }
 }
 
+.footer-columns {
+    padding-bottom: 0;
+}
+
+.footer-logos {
+    padding: 0;
+}
+
 .footer-payment-logos,
 .footer-logo {
     display: flex;
@@ -224,6 +232,9 @@ Modern footer design with clean layout, elegant typography, and smooth hover eff
             max-height: 40px;
             width: auto;
         }
+    }
+    .footer-logo-image {
+        min-height: 50px;
     }
 }
 

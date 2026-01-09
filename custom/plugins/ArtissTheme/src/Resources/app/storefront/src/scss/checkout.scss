@@ -152,6 +152,16 @@ Modern checkout page with elegant design.
             }
         }
     }
+
+    .finish-content {
+        margin-bottom: 2rem;
+    }
+    .finish-info {
+        margin-top: 2rem;
+        .checkout-card {
+            min-height: 350px;
+        }
+    }
 }
 
 @media (max-width: 991.98px) {
