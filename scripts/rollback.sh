@@ -97,7 +97,7 @@ docker pull "${PREVIOUS_IMAGE}" || {
 
 # Stop current containers
 log_info "Stopping current containers..."
-docker compose -f docker-compose.prod.yml stop web worker cron || true
+docker compose --env-file .env.prod -f docker-compose.prod.yml stop web worker cron || true
 
 # Update .env.prod with previous image
 log_info "Updating environment with previous image..."
@@ -112,14 +112,16 @@ set +a
 
 # Start containers with previous image
 log_info "Starting containers with previous image..."
-docker compose -f docker-compose.prod.yml up -d web
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d web
 sleep 10
 
 # Wait for health check
 log_info "Waiting for health check..."
 MAX_WAIT=120
 ELAPSED=0
-while ! docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000/api/_info/health-check &> /dev/null; do
+while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:80/api/_info/health-check &> /dev/null && \
+      ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost/api/_info/health-check &> /dev/null && \
+      ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000/api/_info/health-check &> /dev/null; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
         log_error "Rollback failed - health check timeout"
         exit 1
@@ -132,7 +134,7 @@ echo ""
 
 # Start worker and cron
 log_info "Starting worker and cron containers..."
-docker compose -f docker-compose.prod.yml up -d worker cron
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d worker cron
 
 # Run health check
 log_info "Running health check..."

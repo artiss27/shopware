@@ -60,7 +60,7 @@ log_info "Volumes created"
 
 # Start infrastructure services first
 log_info "Starting infrastructure services..."
-docker compose -f docker-compose.prod.yml up -d database opensearch redis
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d database opensearch redis
 
 # Wait for services to be ready
 log_info "Waiting for services to be ready..."
@@ -69,7 +69,7 @@ sleep 10
 # Check database
 MAX_WAIT=120
 ELAPSED=0
-while ! docker compose -f docker-compose.prod.yml exec -T database mariadb-admin ping -h localhost -p"${DB_ROOT_PASSWORD}" &> /dev/null; do
+while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database mariadb-admin ping -h localhost -p"${DB_ROOT_PASSWORD}" &> /dev/null; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
         log_error "Database failed to become ready within ${MAX_WAIT}s"
         exit 1
@@ -83,7 +83,7 @@ log_info "Database is ready"
 
 # Wait for OpenSearch
 ELAPSED=0
-while ! docker compose -f docker-compose.prod.yml exec -T opensearch curl -f http://localhost:9200/_cluster/health &> /dev/null; do
+while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T opensearch curl -f http://localhost:9200/_cluster/health &> /dev/null; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
         log_error "OpenSearch failed to become ready within ${MAX_WAIT}s"
         exit 1
@@ -97,7 +97,7 @@ log_info "OpenSearch is ready"
 
 # Start web container
 log_info "Starting web container..."
-docker compose -f docker-compose.prod.yml up -d web
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d web
 sleep 15
 
 # Wait for web container to be healthy
@@ -108,9 +108,9 @@ ELAPSED=0
 CADDY_READY=false
 while [ $ELAPSED -lt 60 ]; do
     # Check if Caddy is listening on port 80 (or 8000 as fallback)
-    if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:80 &> /dev/null 2>&1 || \
-       docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost &> /dev/null 2>&1 || \
-       docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1; then
+    if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:80 &> /dev/null 2>&1 || \
+       docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost &> /dev/null 2>&1 || \
+       docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1; then
         CADDY_READY=true
         log_info "Caddy is running"
         break
@@ -124,19 +124,19 @@ echo ""
 if [ "$CADDY_READY" = false ]; then
     log_error "Caddy failed to start within 60s"
     log_error "Container status:"
-    docker compose -f docker-compose.prod.yml ps web
+    docker compose --env-file .env.prod -f docker-compose.prod.yml ps web
     log_error "Container logs (last 100 lines):"
-    docker compose -f docker-compose.prod.yml logs web --tail=100
+    docker compose --env-file .env.prod -f docker-compose.prod.yml logs web --tail=100
     log_error "Checking if Caddy process is running:"
-    docker compose -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i caddy || echo "Caddy process not found"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i caddy || echo "Caddy process not found"
     log_error "Checking if entrypoint script executed:"
-    docker compose -f docker-compose.prod.yml exec -T web ls -la /tmp/Caddyfile.proc 2>/dev/null || echo "Processed Caddyfile not found"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web ls -la /tmp/Caddyfile.proc 2>/dev/null || echo "Processed Caddyfile not found"
     log_error "Checking processed Caddyfile (first 50 lines):"
-    docker compose -f docker-compose.prod.yml exec -T web head -50 /tmp/Caddyfile.proc 2>/dev/null || echo "Cannot read processed Caddyfile"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web head -50 /tmp/Caddyfile.proc 2>/dev/null || echo "Cannot read processed Caddyfile"
     log_error "Checking Caddy validation:"
-    docker compose -f docker-compose.prod.yml exec -T web caddy validate --config /tmp/Caddyfile.proc 2>&1 || echo "Caddy validation failed or caddy not found"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web caddy validate --config /tmp/Caddyfile.proc 2>&1 || echo "Caddy validation failed or caddy not found"
     log_error "Checking environment variables:"
-    docker compose -f docker-compose.prod.yml exec -T web env 2>/dev/null | grep -E "CADDY_|APP_" | head -20 || echo "Cannot access container"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web env 2>/dev/null | grep -E "CADDY_|APP_" | head -20 || echo "Cannot access container"
     log_error ""
     log_error "TROUBLESHOOTING:"
     log_error "1. If CADDY_HOST is set to a domain (e.g., stage.artiss.ua), Caddy will try to get SSL certificate"
@@ -152,26 +152,26 @@ fi
 log_info "Step 2: Verifying Caddy is responding..."
 sleep 5
 # Check if Caddy is responding (try port 80 first, then 8000 as fallback)
-if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:80 &> /dev/null 2>&1 || \
-   docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost &> /dev/null 2>&1 || \
-   docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1 || \
-   docker compose -f docker-compose.prod.yml exec -T web curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -qE "[2345].." || \
-   docker compose -f docker-compose.prod.yml exec -T web curl -s -o /dev/null -w "%{http_code}" http://localhost:8000 | grep -qE "[2345].."; then
+if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:80 &> /dev/null 2>&1 || \
+   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost &> /dev/null 2>&1 || \
+   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1 || \
+   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -qE "[2345].." || \
+   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -s -o /dev/null -w "%{http_code}" http://localhost:8000 | grep -qE "[2345].."; then
     log_info "Caddy is responding (application may not be installed yet, that's ok)"
 else
     log_error "Caddy is not responding properly"
     log_error "Container status:"
-    docker compose -f docker-compose.prod.yml ps web
+    docker compose --env-file .env.prod -f docker-compose.prod.yml ps web
     log_error "Container logs (last 100 lines):"
-    docker compose -f docker-compose.prod.yml logs web --tail=100
+    docker compose --env-file .env.prod -f docker-compose.prod.yml logs web --tail=100
     log_error "Checking if Caddy is running:"
-    docker compose -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i caddy || echo "Caddy process not found or container not accessible"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i caddy || echo "Caddy process not found or container not accessible"
     log_error "Checking if PHP-FPM is running:"
-    docker compose -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i php-fpm || echo "PHP-FPM process not found or container not accessible"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i php-fpm || echo "PHP-FPM process not found or container not accessible"
     log_error "Checking processed Caddyfile:"
-    docker compose -f docker-compose.prod.yml exec -T web cat /tmp/Caddyfile.proc 2>/dev/null || echo "Processed Caddyfile not found or container not accessible"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web cat /tmp/Caddyfile.proc 2>/dev/null || echo "Processed Caddyfile not found or container not accessible"
     log_error "Checking environment variables:"
-    docker compose -f docker-compose.prod.yml exec -T web env 2>/dev/null | grep -E "CADDY_|APP_" | head -20 || echo "Cannot access container"
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web env 2>/dev/null | grep -E "CADDY_|APP_" | head -20 || echo "Cannot access container"
     exit 1
 fi
 
@@ -183,7 +183,7 @@ read -p "Have you already installed Shopware? (y/n) " -n 1 -r
 echo ""
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     log_info "Please run the installation command manually:"
-    log_info "docker compose -f docker-compose.prod.yml exec web php bin/console system:install --basic-setup"
+    log_info "docker compose --env-file .env.prod -f docker-compose.prod.yml exec web php bin/console system:install --basic-setup"
     log_warn "After installation, continue with plugin activation"
 else
     log_info "Skipping installation (already installed)"
@@ -191,43 +191,43 @@ fi
 
 # Activate plugins
 log_info "Activating plugins..."
-docker compose -f docker-compose.prod.yml exec -T web php bin/console plugin:refresh
-docker compose -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissSupplier || log_warn "ArtissSupplier plugin not found"
-docker compose -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissTools || log_warn "ArtissTools plugin not found"
-docker compose -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissTheme || log_warn "ArtissTheme plugin not found"
-docker compose -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissStorefront || log_warn "ArtissStorefront plugin not found"
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console plugin:refresh
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissSupplier || log_warn "ArtissSupplier plugin not found"
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissTools || log_warn "ArtissTools plugin not found"
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissTheme || log_warn "ArtissTheme plugin not found"
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console plugin:install --activate ArtissStorefront || log_warn "ArtissStorefront plugin not found"
 
 # Run migrations
 log_info "Running database migrations..."
-docker compose -f docker-compose.prod.yml exec -T web php bin/console database:migrate --all || {
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console database:migrate --all || {
     log_error "Migrations failed!"
     exit 1
 }
 
 # Build assets
 log_info "Building administration assets..."
-docker compose -f docker-compose.prod.yml exec -T web php bin/console assets:install
-docker compose -f docker-compose.prod.yml exec -T web php bin/console bundle:dump
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console assets:install
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console bundle:dump
 
 log_info "Building storefront assets..."
-docker compose -f docker-compose.prod.yml exec -T web php bin/console theme:compile --active-only
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console theme:compile --active-only
 
 # Clear and warmup cache
 log_info "Clearing and warming up cache..."
-docker compose -f docker-compose.prod.yml exec -T web php bin/console cache:clear
-docker compose -f docker-compose.prod.yml exec -T web php bin/console cache:warmup
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console cache:clear
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console cache:warmup
 
 # Index OpenSearch if enabled
 if [[ "${OPENSEARCH_ENABLED:-true}" == "true" ]]; then
     log_info "Indexing OpenSearch..."
-    docker compose -f docker-compose.prod.yml exec -T web php bin/console dal:refresh:index || {
+    docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web php bin/console dal:refresh:index || {
         log_warn "OpenSearch indexing had issues, but continuing..."
     }
 fi
 
 # Start worker and cron containers
 log_info "Starting worker and cron containers..."
-docker compose -f docker-compose.prod.yml up -d worker cron
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d worker cron
 
 # Run health check
 log_info "Running health check..."

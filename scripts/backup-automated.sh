@@ -51,24 +51,37 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Check if aws-cli is installed
-if ! command -v aws &> /dev/null; then
-    log_error "aws-cli not found! Install it first: apt-get install awscli"
-    exit 1
+# Check if S3 backup is configured
+S3_ENABLED=false
+if [[ -n "${HETZNER_S3_ACCESS_KEY:-}" ]] && \
+   [[ -n "${HETZNER_S3_SECRET_KEY:-}" ]] && \
+   [[ -n "${HETZNER_S3_ENDPOINT:-}" ]]; then
+    S3_ENABLED=true
+    # Configure S3 endpoint for Hetzner Storage Box
+    export AWS_ACCESS_KEY_ID="${HETZNER_S3_ACCESS_KEY}"
+    export AWS_SECRET_ACCESS_KEY="${HETZNER_S3_SECRET_KEY}"
+    export AWS_DEFAULT_REGION="${HETZNER_S3_REGION:-fsn1}"
+    S3_ENDPOINT="${HETZNER_S3_ENDPOINT}"
+    S3_BUCKET="${HETZNER_S3_BUCKET:-shopware-backups}"
+    
+    # Check if aws-cli is installed (only if S3 is enabled)
+    if ! command -v aws &> /dev/null; then
+        log_error "aws-cli not found! Install it first: apt-get install awscli"
+        log_error "Or disable S3 backup by removing HETZNER_S3_* variables from .env.prod"
+        exit 1
+    fi
+    
+    log_info "S3 backup enabled (Hetzner Storage Box)"
+else
+    log_warn "S3 backup variables not configured - backups will be saved locally only"
+    log_warn "Set HETZNER_S3_ACCESS_KEY, HETZNER_S3_SECRET_KEY, and HETZNER_S3_ENDPOINT to enable S3 uploads"
 fi
-
-# Configure S3 endpoint for Hetzner Storage Box
-export AWS_ACCESS_KEY_ID="${HETZNER_S3_ACCESS_KEY}"
-export AWS_SECRET_ACCESS_KEY="${HETZNER_S3_SECRET_KEY}"
-export AWS_DEFAULT_REGION="${HETZNER_S3_REGION:-fsn1}"
-S3_ENDPOINT="${HETZNER_S3_ENDPOINT}"
-S3_BUCKET="${HETZNER_S3_BUCKET:-shopware-backups}"
 
 log_info "Starting automated backup process..."
 
 # 1. Database backup (smart backup)
 log_info "Creating database backup..."
-docker compose -f docker-compose.prod.yml exec -T database mariadb-dump \
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database mariadb-dump \
     -u "${DB_USER:-shopware}" \
     -p"${DB_PASSWORD:-shopware}" \
     "${DB_NAME:-shopware}" \
@@ -88,7 +101,7 @@ docker compose -f docker-compose.prod.yml exec -T database mariadb-dump \
     > "$BACKUP_DIR/shopware-smart-${TIMESTAMP}.sql"
 
 # Add cache/log table structures only
-docker compose -f docker-compose.prod.yml exec -T database mariadb-dump \
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database mariadb-dump \
     -u "${DB_USER:-shopware}" \
     -p"${DB_PASSWORD:-shopware}" \
     "${DB_NAME:-shopware}" \
@@ -147,50 +160,81 @@ else
     log_warn "backup-verify.sh not found, skipping verification"
 fi
 
-# 4. Upload to Hetzner Storage Box
-log_info "Uploading backups to Hetzner Storage Box..."
-
-aws s3 cp "$BACKUP_DIR/shopware-smart-${TIMESTAMP}.sql.gz" \
-    "s3://${S3_BUCKET}/db/shopware-smart-${TIMESTAMP}.sql.gz" \
-    --endpoint-url "$S3_ENDPOINT" || {
-    log_error "Failed to upload database backup"
-    exit 1
-}
-
-if [[ -f "$BACKUP_DIR/shopware-media-${TIMESTAMP}.tar.gz" ]]; then
-    aws s3 cp "$BACKUP_DIR/shopware-media-${TIMESTAMP}.tar.gz" \
-        "s3://${S3_BUCKET}/media/shopware-media-${TIMESTAMP}.tar.gz" \
-        --endpoint-url "$S3_ENDPOINT" || log_warn "Failed to upload media backup"
-fi
-
-if [[ -f "$BACKUP_DIR/shopware-thumbnails-${TIMESTAMP}.tar.gz" ]]; then
-    aws s3 cp "$BACKUP_DIR/shopware-thumbnails-${TIMESTAMP}.tar.gz" \
-        "s3://${S3_BUCKET}/media/shopware-thumbnails-${TIMESTAMP}.tar.gz" \
-        --endpoint-url "$S3_ENDPOINT" || log_warn "Failed to upload thumbnails backup"
-fi
-
-if [[ -f "$BACKUP_DIR/opensearch-${TIMESTAMP}.tar.gz" ]]; then
-    aws s3 cp "$BACKUP_DIR/opensearch-${TIMESTAMP}.tar.gz" \
-        "s3://${S3_BUCKET}/opensearch/opensearch-${TIMESTAMP}.tar.gz" \
-        --endpoint-url "$S3_ENDPOINT" || log_warn "Failed to upload OpenSearch backup"
-fi
-
-log_info "Backups uploaded successfully"
-
-# 5. Cleanup old backups (older than retention period)
-log_info "Cleaning up old backups (older than ${RETENTION_DAYS} days)..."
-CUTOFF_DATE=$(date -d "${RETENTION_DAYS} days ago" +%Y%m%d)
-
-for path in "db/" "media/" "opensearch/"; do
-    aws s3 ls "s3://${S3_BUCKET}/${path}" --endpoint-url "$S3_ENDPOINT" | while read -r line; do
-        BACKUP_DATE=$(echo "$line" | awk '{print $4}' | grep -oE '[0-9]{8}' | head -1 || echo "")
-        if [[ -n "$BACKUP_DATE" ]] && [[ "$BACKUP_DATE" -lt "$CUTOFF_DATE" ]]; then
-            BACKUP_FILE=$(echo "$line" | awk '{print $4}')
-            log_info "Deleting old backup: ${path}${BACKUP_FILE}"
-            aws s3 rm "s3://${S3_BUCKET}/${path}${BACKUP_FILE}" --endpoint-url "$S3_ENDPOINT" || true
-        fi
+# 4. Upload to Hetzner Storage Box (if S3 is enabled) or save locally
+if [[ "$S3_ENABLED" == "true" ]]; then
+    log_info "Uploading backups to Hetzner Storage Box..."
+    
+    aws s3 cp "$BACKUP_DIR/shopware-smart-${TIMESTAMP}.sql.gz" \
+        "s3://${S3_BUCKET}/db/shopware-smart-${TIMESTAMP}.sql.gz" \
+        --endpoint-url "$S3_ENDPOINT" || {
+        log_error "Failed to upload database backup"
+        exit 1
+    }
+    
+    if [[ -f "$BACKUP_DIR/shopware-media-${TIMESTAMP}.tar.gz" ]]; then
+        aws s3 cp "$BACKUP_DIR/shopware-media-${TIMESTAMP}.tar.gz" \
+            "s3://${S3_BUCKET}/media/shopware-media-${TIMESTAMP}.tar.gz" \
+            --endpoint-url "$S3_ENDPOINT" || log_warn "Failed to upload media backup"
+    fi
+    
+    if [[ -f "$BACKUP_DIR/shopware-thumbnails-${TIMESTAMP}.tar.gz" ]]; then
+        aws s3 cp "$BACKUP_DIR/shopware-thumbnails-${TIMESTAMP}.tar.gz" \
+            "s3://${S3_BUCKET}/media/shopware-thumbnails-${TIMESTAMP}.tar.gz" \
+            --endpoint-url "$S3_ENDPOINT" || log_warn "Failed to upload thumbnails backup"
+    fi
+    
+    if [[ -f "$BACKUP_DIR/opensearch-${TIMESTAMP}.tar.gz" ]]; then
+        aws s3 cp "$BACKUP_DIR/opensearch-${TIMESTAMP}.tar.gz" \
+            "s3://${S3_BUCKET}/opensearch/opensearch-${TIMESTAMP}.tar.gz" \
+            --endpoint-url "$S3_ENDPOINT" || log_warn "Failed to upload OpenSearch backup"
+    fi
+    
+    log_info "Backups uploaded successfully to S3"
+    
+    # 5. Cleanup old backups on S3 (older than retention period)
+    log_info "Cleaning up old backups on S3 (older than ${RETENTION_DAYS} days)..."
+    CUTOFF_DATE=$(date -d "${RETENTION_DAYS} days ago" +%Y%m%d)
+    
+    for path in "db/" "media/" "opensearch/"; do
+        aws s3 ls "s3://${S3_BUCKET}/${path}" --endpoint-url "$S3_ENDPOINT" 2>/dev/null | while read -r line; do
+            BACKUP_DATE=$(echo "$line" | awk '{print $4}' | grep -oE '[0-9]{8}' | head -1 || echo "")
+            if [[ -n "$BACKUP_DATE" ]] && [[ "$BACKUP_DATE" -lt "$CUTOFF_DATE" ]]; then
+                BACKUP_FILE=$(echo "$line" | awk '{print $4}')
+                log_info "Deleting old backup: ${path}${BACKUP_FILE}"
+                aws s3 rm "s3://${S3_BUCKET}/${path}${BACKUP_FILE}" --endpoint-url "$S3_ENDPOINT" || true
+            fi
+        done
     done
-done
+else
+    # Save backups locally if S3 is not configured
+    LOCAL_BACKUP_DIR="${PROJECT_ROOT}/backups"
+    mkdir -p "$LOCAL_BACKUP_DIR"
+    
+    log_info "Saving backups locally to ${LOCAL_BACKUP_DIR}..."
+    
+    cp "$BACKUP_DIR/shopware-smart-${TIMESTAMP}.sql.gz" "${LOCAL_BACKUP_DIR}/" || {
+        log_error "Failed to save database backup locally"
+        exit 1
+    }
+    
+    if [[ -f "$BACKUP_DIR/shopware-media-${TIMESTAMP}.tar.gz" ]]; then
+        cp "$BACKUP_DIR/shopware-media-${TIMESTAMP}.tar.gz" "${LOCAL_BACKUP_DIR}/" || log_warn "Failed to save media backup locally"
+    fi
+    
+    if [[ -f "$BACKUP_DIR/shopware-thumbnails-${TIMESTAMP}.tar.gz" ]]; then
+        cp "$BACKUP_DIR/shopware-thumbnails-${TIMESTAMP}.tar.gz" "${LOCAL_BACKUP_DIR}/" || log_warn "Failed to save thumbnails backup locally"
+    fi
+    
+    if [[ -f "$BACKUP_DIR/opensearch-${TIMESTAMP}.tar.gz" ]]; then
+        cp "$BACKUP_DIR/opensearch-${TIMESTAMP}.tar.gz" "${LOCAL_BACKUP_DIR}/" || log_warn "Failed to save OpenSearch backup locally"
+    fi
+    
+    log_info "Backups saved locally to ${LOCAL_BACKUP_DIR}"
+    
+    # Cleanup old local backups
+    log_info "Cleaning up old local backups (older than ${RETENTION_DAYS} days)..."
+    find "$LOCAL_BACKUP_DIR" -name "*.gz" -type f -mtime +${RETENTION_DAYS} -delete || true
+fi
 
 log_info "Backup process completed successfully!"
 

@@ -46,8 +46,8 @@ echo ""
 
 # 1. Check container status
 echo "=== Container Status ==="
-if docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
-    docker compose -f docker-compose.prod.yml ps
+if docker compose --env-file .env.prod -f docker-compose.prod.yml ps | grep -q "Up"; then
+    docker compose --env-file .env.prod -f docker-compose.prod.yml ps
     log_info "All containers are running"
 else
     log_error "Some containers are not running"
@@ -57,8 +57,8 @@ echo ""
 
 # 2. Check database connectivity
 echo "=== Database Health ==="
-if docker compose -f docker-compose.prod.yml exec -T database mariadb-admin ping -h localhost -p"${DB_ROOT_PASSWORD:-}" &> /dev/null; then
-    DB_CONNECTIONS=$(docker compose -f docker-compose.prod.yml exec -T database mariadb -u root -p"${DB_ROOT_PASSWORD:-}" -e "SHOW STATUS LIKE 'Threads_connected';" 2>/dev/null | tail -1 | awk '{print $2}' || echo "0")
+if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database mariadb-admin ping -h localhost -p"${DB_ROOT_PASSWORD:-}" &> /dev/null; then
+    DB_CONNECTIONS=$(docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database mariadb -u root -p"${DB_ROOT_PASSWORD:-}" -e "SHOW STATUS LIKE 'Threads_connected';" 2>/dev/null | tail -1 | awk '{print $2}' || echo "0")
     log_info "Database is healthy (connections: ${DB_CONNECTIONS})"
 else
     log_error "Database is not responding"
@@ -69,7 +69,7 @@ echo ""
 # 3. Check OpenSearch health
 echo "=== OpenSearch Health ==="
 if [[ "${OPENSEARCH_ENABLED:-true}" == "true" ]]; then
-    OPENSEARCH_HEALTH=$(docker compose -f docker-compose.prod.yml exec -T opensearch curl -s http://localhost:9200/_cluster/health 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+    OPENSEARCH_HEALTH=$(docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T opensearch curl -s http://localhost:9200/_cluster/health 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
     if [[ "$OPENSEARCH_HEALTH" == "green" ]] || [[ "$OPENSEARCH_HEALTH" == "yellow" ]]; then
         log_info "OpenSearch is healthy (status: ${OPENSEARCH_HEALTH})"
     else
@@ -83,8 +83,8 @@ echo ""
 
 # 4. Check Redis connectivity
 echo "=== Redis Health ==="
-if docker compose -f docker-compose.prod.yml exec -T redis redis-cli ping &> /dev/null; then
-    REDIS_MEMORY=$(docker compose -f docker-compose.prod.yml exec -T redis redis-cli INFO memory 2>/dev/null | grep used_memory_human | cut -d: -f2 | tr -d '\r' || echo "unknown")
+if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T redis redis-cli ping &> /dev/null; then
+    REDIS_MEMORY=$(docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T redis redis-cli INFO memory 2>/dev/null | grep used_memory_human | cut -d: -f2 | tr -d '\r' || echo "unknown")
     log_info "Redis is healthy (memory: ${REDIS_MEMORY})"
 else
     log_error "Redis is not responding"
@@ -94,11 +94,14 @@ echo ""
 
 # 5. Check web container health
 echo "=== Web Container Health ==="
-if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000/api/_info/health-check &> /dev/null; then
+if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:80/api/_info/health-check &> /dev/null || \
+   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost/api/_info/health-check &> /dev/null || \
+   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000/api/_info/health-check &> /dev/null; then
     log_info "Web container basic health check: OK"
     
     # Detailed health check
-    DETAILED_HEALTH=$(docker compose -f docker-compose.prod.yml exec -T web curl -s http://localhost:8000/api/_info/health-check/detailed 2>/dev/null || echo "")
+    DETAILED_HEALTH=$(docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -s http://localhost:80/api/_info/health-check/detailed 2>/dev/null || \
+                      docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -s http://localhost:8000/api/_info/health-check/detailed 2>/dev/null || echo "")
     if [[ -n "$DETAILED_HEALTH" ]]; then
         STATUS=$(echo "$DETAILED_HEALTH" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "unknown")
         if [[ "$STATUS" == "ok" ]]; then
@@ -144,8 +147,8 @@ echo ""
 
 # 8. Check message queue size (if Redis is available)
 echo "=== Message Queue ==="
-if docker compose -f docker-compose.prod.yml exec -T redis redis-cli ping &> /dev/null; then
-    QUEUE_SIZE=$(docker compose -f docker-compose.prod.yml exec -T redis redis-cli LLEN messenger_messages 2>/dev/null || echo "0")
+if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T redis redis-cli ping &> /dev/null; then
+    QUEUE_SIZE=$(docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T redis redis-cli LLEN messenger_messages 2>/dev/null || echo "0")
     if [[ $QUEUE_SIZE -lt 1000 ]]; then
         log_info "Queue size is healthy (${QUEUE_SIZE} messages)"
     elif [[ $QUEUE_SIZE -lt 5000 ]]; then
@@ -161,7 +164,7 @@ echo ""
 
 # 9. Check worker container
 echo "=== Worker Container ==="
-if docker compose -f docker-compose.prod.yml ps worker | grep -q "Up"; then
+if docker compose --env-file .env.prod -f docker-compose.prod.yml ps worker | grep -q "Up"; then
     log_info "Worker container is running"
 else
     log_error "Worker container is not running"
@@ -171,7 +174,7 @@ echo ""
 
 # 10. Check cron container
 echo "=== Cron Container ==="
-if docker compose -f docker-compose.prod.yml ps cron | grep -q "Up"; then
+if docker compose --env-file .env.prod -f docker-compose.prod.yml ps cron | grep -q "Up"; then
     log_info "Cron container is running"
 else
     log_error "Cron container is not running"

@@ -1,3 +1,7 @@
+# Load environment variables from .env.prod file
+# Note: docker compose automatically loads .env file, but we use .env.prod for production
+# Use: docker compose --env-file .env.prod -f docker-compose.prod.yml up
+
 services:
 ###> shopware/core ###
   database:
