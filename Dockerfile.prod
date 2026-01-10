@@ -112,8 +112,9 @@ COPY docker/caddy/caddy-entrypoint.sh /usr/local/bin/caddy-entrypoint.sh
 RUN chmod +x /usr/local/bin/caddy-entrypoint.sh
 
 # Install gettext for envsubst (needed for CADDY_HOST variable substitution in Caddyfile)
+# Install tini for proper signal handling (PID 1 init system for Docker)
 # Must be done as root, before USER switch
-RUN apk add --no-cache gettext
+RUN apk add --no-cache gettext tini
 
 # Copy built application from builder
 COPY --from=builder --chown=www-data:www-data /var/www/html /var/www/html
@@ -140,5 +141,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
 # Entrypoint processes Caddyfile to replace {$CADDY_HOST} with actual value
 # CADDY_EMAIL is used automatically by Caddy if set as environment variable
 # The entrypoint script will process the Caddyfile and use the processed version
-ENTRYPOINT ["/usr/local/bin/caddy-entrypoint.sh"]
+# Use tini as PID 1 for proper signal handling and process management
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/caddy-entrypoint.sh"]
 CMD ["caddy", "run", "--config", "/tmp/Caddyfile.proc"]
