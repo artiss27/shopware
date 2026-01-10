@@ -29,7 +29,8 @@ Enhances Shopware default styles without breaking Bootstrap functionality.
 
         &.active {
             color: #007bff;
-            background: rgba(0, 123, 255, 0.1);
+            //background: rgba(0, 123, 255, 0.1);
+            background: white;
         }
 
         &.dropdown-toggle {
