@@ -116,7 +116,13 @@ COPY docker/php/php-fpm-prod.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/php/opcache-prod.ini /usr/local/etc/php/conf.d/opcache-prod.ini
 
 # Copy Caddy entrypoint script (for environment variable substitution in Caddyfile)
+# Note: File must be committed to git before build
 COPY docker/caddy/caddy-entrypoint.sh /usr/local/bin/caddy-entrypoint.sh
+RUN chmod +x /usr/local/bin/caddy-entrypoint.sh
+
+# Install gettext for envsubst (needed for CADDY_HOST variable substitution in Caddyfile)
+# Must be done as root, before USER switch
+RUN apk add --no-cache gettext
 
 # Copy built application from builder
 COPY --from=builder --chown=www-data:www-data /var/www/html /var/www/html
@@ -137,12 +143,6 @@ EXPOSE 8000
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/api/_info/health-check || exit 1
-
-# Make entrypoint script executable
-RUN chmod +x /usr/local/bin/caddy-entrypoint.sh
-
-# Install gettext for envsubst (needed for CADDY_HOST variable substitution in Caddyfile)
-RUN apk add --no-cache gettext
 
 # Start Caddy server via entrypoint script
 # Entrypoint processes Caddyfile to replace {$CADDY_HOST} with actual value
