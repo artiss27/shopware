@@ -107,7 +107,10 @@ log_info "Step 1: Checking if Caddy is running..."
 ELAPSED=0
 CADDY_READY=false
 while [ $ELAPSED -lt 60 ]; do
-    if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1; then
+    # Check if Caddy is listening on port 80 (or 8000 as fallback)
+    if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:80 &> /dev/null 2>&1 || \
+       docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost &> /dev/null 2>&1 || \
+       docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1; then
         CADDY_READY=true
         log_info "Caddy is running"
         break
@@ -148,7 +151,11 @@ fi
 # We'll just verify that Caddy is responding (even with 404/500 is ok)
 log_info "Step 2: Verifying Caddy is responding..."
 sleep 5
-if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1 || \
+# Check if Caddy is responding (try port 80 first, then 8000 as fallback)
+if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:80 &> /dev/null 2>&1 || \
+   docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost &> /dev/null 2>&1 || \
+   docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1 || \
+   docker compose -f docker-compose.prod.yml exec -T web curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -qE "[2345].." || \
    docker compose -f docker-compose.prod.yml exec -T web curl -s -o /dev/null -w "%{http_code}" http://localhost:8000 | grep -qE "[2345].."; then
     log_info "Caddy is responding (application may not be installed yet, that's ok)"
 else

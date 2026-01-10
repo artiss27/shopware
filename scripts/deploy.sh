@@ -83,7 +83,10 @@ sleep 10
 log_info "Waiting for web container to be healthy..."
 MAX_WAIT=120
 ELAPSED=0
-while ! docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000/api/_info/health-check &> /dev/null; do
+# Check health on port 80 (Caddy) or 8000 (fallback)
+while ! docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:80/api/_info/health-check &> /dev/null && \
+      ! docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost/api/_info/health-check &> /dev/null && \
+      ! docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000/api/_info/health-check &> /dev/null; do
     if [ $ELAPSED -ge $MAX_WAIT ]; then
         log_error "Web container failed to become healthy within ${MAX_WAIT}s"
         docker compose -f docker-compose.prod.yml logs web --tail=50

@@ -137,12 +137,13 @@ USER www-data
 
 WORKDIR /var/www/html
 
-# Expose port
-EXPOSE 8000
+# Expose ports for HTTP (80) and HTTPS (443) - required for Let's Encrypt
+# Port 8000 is used internally for PHP-FPM, but Caddy listens on 80/443
+EXPOSE 80 443
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8000/api/_info/health-check || exit 1
+# Healthcheck - check port 80 (Caddy) or 8000 (fallback)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
+    CMD curl -f http://localhost:80/api/_info/health-check || curl -f http://localhost/api/_info/health-check || curl -f http://localhost:8000/api/_info/health-check || exit 1
 
 # Start Caddy server via entrypoint script
 # Entrypoint processes Caddyfile to replace {$CADDY_HOST} with actual value
