@@ -120,7 +120,26 @@ echo ""
 
 if [ "$CADDY_READY" = false ]; then
     log_error "Caddy failed to start within 60s"
-    docker compose -f docker-compose.prod.yml logs web --tail=50
+    log_error "Container status:"
+    docker compose -f docker-compose.prod.yml ps web
+    log_error "Container logs (last 100 lines):"
+    docker compose -f docker-compose.prod.yml logs web --tail=100
+    log_error "Checking if Caddy process is running:"
+    docker compose -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i caddy || echo "Caddy process not found"
+    log_error "Checking if entrypoint script executed:"
+    docker compose -f docker-compose.prod.yml exec -T web ls -la /tmp/Caddyfile.proc 2>/dev/null || echo "Processed Caddyfile not found"
+    log_error "Checking processed Caddyfile (first 50 lines):"
+    docker compose -f docker-compose.prod.yml exec -T web head -50 /tmp/Caddyfile.proc 2>/dev/null || echo "Cannot read processed Caddyfile"
+    log_error "Checking Caddy validation:"
+    docker compose -f docker-compose.prod.yml exec -T web caddy validate --config /tmp/Caddyfile.proc 2>&1 || echo "Caddy validation failed or caddy not found"
+    log_error "Checking environment variables:"
+    docker compose -f docker-compose.prod.yml exec -T web env 2>/dev/null | grep -E "CADDY_|APP_" | head -20 || echo "Cannot access container"
+    log_error ""
+    log_error "TROUBLESHOOTING:"
+    log_error "1. If CADDY_HOST is set to a domain (e.g., stage.artiss.ua), Caddy will try to get SSL certificate"
+    log_error "2. If domain DNS is not configured yet, Caddy will fail"
+    log_error "3. For first setup, you can use: CADDY_HOST=localhost:8000"
+    log_error "4. After DNS is configured, change CADDY_HOST to your domain"
     exit 1
 fi
 
