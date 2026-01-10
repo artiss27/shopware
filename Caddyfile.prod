@@ -1,0 +1,163 @@
+# Caddyfile for Production with Let's Encrypt and Rate Limiting
+# This file is mounted to /etc/caddy/Caddyfile in the web container
+
+{
+    email {$CADDY_EMAIL}
+    # Use Let's Encrypt staging for testing, remove for production
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$CADDY_HOST} {
+    log {
+        output file /var/www/html/var/log/caddy.log
+        format json
+    }
+
+    # Health check endpoint - no rate limiting (must be accessible for monitoring)
+    handle /api/_info/health-check* {
+        reverse_proxy localhost:8000 {
+            header_up X-Real-IP {http.request.remote.host}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Forwarded-Proto {http.request.scheme}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up Host {http.request.host}
+        }
+    }
+
+    # Rate limiting for login endpoints (5 requests per 5 minutes per IP - very strict)
+    handle /api/oauth/token {
+        rate_limit {
+            zone login_zone {
+                key {http.request.remote.host}
+                events 5
+                window 5m
+            }
+        }
+        reverse_proxy localhost:8000 {
+            header_up X-Real-IP {http.request.remote.host}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Forwarded-Proto {http.request.scheme}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up Host {http.request.host}
+        }
+    }
+
+    handle /account/login {
+        rate_limit {
+            zone login_zone {
+                key {http.request.remote.host}
+                events 5
+                window 5m
+            }
+        }
+        reverse_proxy localhost:8000 {
+            header_up X-Real-IP {http.request.remote.host}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Forwarded-Proto {http.request.scheme}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up Host {http.request.host}
+        }
+    }
+
+    # Rate limiting for API endpoints (100 requests per minute per IP)
+    handle /api/* {
+        rate_limit {
+            zone api_zone {
+                key {http.request.remote.host}
+                events 100
+                window 1m
+            }
+        }
+        reverse_proxy localhost:8000 {
+            header_up X-Real-IP {http.request.remote.host}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Forwarded-Proto {http.request.scheme}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up Host {http.request.host}
+        }
+    }
+
+    # File server for media and static files (no rate limiting)
+    handle_path /media/* {
+        root * /var/www/html/public
+        file_server
+    }
+
+    handle_path /thumbnail/* {
+        root * /var/www/html/public
+        file_server
+    }
+
+    handle_path /theme/* {
+        root * /var/www/html/public
+        file_server
+    }
+
+    handle_path /bundles/* {
+        root * /var/www/html/public
+        file_server
+    }
+
+    handle_path /sitemap/* {
+        root * /var/www/html/public
+        file_server
+    }
+
+    # Default reverse proxy for all other requests (general rate limiting: 200 requests per minute)
+    handle {
+        rate_limit {
+            zone general_zone {
+                key {http.request.remote.host}
+                events 200
+                window 1m
+            }
+        }
+        reverse_proxy localhost:8000 {
+            header_up X-Real-IP {http.request.remote.host}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Forwarded-Proto {http.request.scheme}
+            header_up X-Forwarded-Host {http.request.host}
+            header_up Host {http.request.host}
+            
+            # Health check and retry
+            health_uri /api/_info/health-check
+            health_interval 30s
+            health_timeout 5s
+            health_status 200
+            
+            # Retry on failure
+            fail_duration 30s
+            max_fails 3
+            unhealthy_status 429 500 502 503 504
+            
+            # Timeouts
+            flush_interval -1
+            dial_timeout 10s
+            read_timeout 300s
+            write_timeout 300s
+        }
+    }
+    
+    # Security headers (applied to all responses)
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Prevent MIME type sniffing
+        X-Content-Type-Options "nosniff"
+        # XSS protection
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Permissions policy
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        # Content Security Policy (adjust based on your needs)
+        # Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+        # Remove server information
+        -Server
+    }
+
+    # Compression (applied to all responses)
+    encode zstd gzip
+}

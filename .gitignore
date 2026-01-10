@@ -86,3 +86,9 @@ yarn-error.log
 /hlam/
 /.claude/
 /AGENTS.md
+
+# Production deployment files
+.env.prod
+.env.prod.gpg
+.deployment-history
+.deployment-previous-tag

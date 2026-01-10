@@ -1,0 +1,82 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github
+
+# Documentation
+*.md
+README*
+BACKUP-README.md
+AGENTS.md
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Dependencies (will be installed in container)
+node_modules/
+vendor/
+
+# Build artifacts
+/public/bundles/*
+/public/media/*
+/public/theme/*
+/public/thumbnail/*
+/public/sitemap/*
+
+# Cache and logs
+/var/cache/*
+/var/log/*
+!/var/cache/.gitkeep
+!/var/log/.gitkeep
+
+# Temporary files
+/files/*
+!/files/.htaccess
+/tmp/*
+/var/tmp/*
+
+# Backups
+*.sql
+*.sql.gz
+*.tar
+*.tar.gz
+/backups/
+/artiss-backups/
+
+# Environment files
+.env
+.env.*
+!.env.prod.example
+!env.prod.template
+
+# Development files
+compose.override.yaml
+
+# Bitrix export (not needed in production)
+/bitrix-export/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Scripts (will be copied selectively)
+# scripts/ are needed for deployment
+
+# Hlam directory (development notes)
+/hlam/
+/.claude/
+
+# Install lock (will be created on server)
+/install.lock

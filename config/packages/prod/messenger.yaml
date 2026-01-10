@@ -1,0 +1,24 @@
+framework:
+    messenger:
+        default_bus: messenger.bus.default
+        buses:
+            messenger.bus.default:
+                middleware:
+                    - validation
+                    - doctrine_ping_connection
+                    - doctrine_close_connection
+                    - doctrine_clear_entity_manager
+                    - doctrine_ping_connection
+
+        transports:
+            async:
+                dsn: '%env(REDIS_URL)%'
+                options:
+                    stream_max_entries: 10000
+                    delete_after_ack: true
+                    delete_after_reject: true
+                    lazy: true
+
+        routing:
+            'Shopware\Core\Framework\MessageQueue\AsyncMessageInterface': async
+            'Symfony\Component\Messenger\AsynchronousMessageInterface': async

@@ -1,0 +1,45 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    default_locale: en
+    http_method_override: false
+    
+    php_errors:
+        log: true
+
+    cache:
+        pools:
+            cache.object:
+                adapter: cache.adapter.redis
+                provider: 'redis://%env(REDIS_URL)%'
+            cache.system:
+                adapter: cache.adapter.redis
+                provider: 'redis://%env(REDIS_URL)%'
+
+    session:
+        handler_id: ~
+        cookie_secure: auto
+        cookie_samesite: lax
+        cookie_httponly: true
+
+    validation:
+        enabled: true
+        email_validation_mode: html5
+
+    serializer:
+        enabled: true
+        enable_annotations: false
+
+    property_access:
+        enabled: true
+
+    property_info:
+        enabled: true
+
+    router:
+        utf8: true
+        default_uri: '%env(APP_URL)%'
+
+    profiler:
+        enabled: false
+        only_exceptions: false
+        collect_serializer_data: false

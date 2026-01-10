@@ -1,0 +1,278 @@
+services:
+###> shopware/core ###
+  database:
+    container_name: shopware-database-prod
+    image: mariadb:11.8
+    networks:
+      - shopware-prod
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-shopware}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_USER: ${DB_USER:-shopware}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data-prod:/var/lib/mysql:delegated
+      - mysql-slow-log:/var/log/mysql:delegated
+    command:
+      - --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --log_bin_trust_function_creators=1
+      - --binlog_cache_size=16M
+      - --key_buffer_size=0
+      - --join_buffer_size=1024M
+      - --innodb_log_file_size=256M
+      - --innodb_buffer_pool_size=8G
+      - --innodb_buffer_pool_instances=4
+      - --group_concat_max_len=320000
+      - --default-time-zone=+00:00
+      - --max_binlog_size=512M
+      - --binlog_expire_logs_seconds=86400
+      - --max_connections=200
+      - --query_cache_type=0
+      - --query_cache_size=0
+      - --slow_query_log=1
+      - --slow_query_log_file=/var/log/mysql/slow-query.log
+      - --long_query_time=1
+      - --log_slow_verbosity=query_plan,explain
+      - --log_queries_not_using_indexes=1
+      - --min_examined_row_limit=100
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -p${DB_ROOT_PASSWORD} || exit 1"]
+      start_period: 15s
+      start_interval: 3s
+      interval: 10s
+      timeout: 2s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 12G
+        reservations:
+          memory: 8G
+###< shopware/core ###
+
+###> shopware/elasticsearch ###
+  opensearch:
+    container_name: shopware-opensearch-prod
+    image: opensearchproject/opensearch:2
+    networks:
+      - shopware-prod
+    volumes:
+      - opensearch-data-prod:/usr/share/opensearch/data:delegated
+    environment:
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${OPENSEARCH_PASSWORD}
+      discovery.type: single-node
+      plugins.security.disabled: 'true'
+      OPENSEARCH_JAVA_OPTS: "-Xms2g -Xmx2g"
+      bootstrap.memory_lock: 'false'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      start_period: 90s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+###< shopware/elasticsearch ###
+
+###> redis ###
+  redis:
+    container_name: shopware-redis-prod
+    image: redis:7-alpine
+    networks:
+      - shopware-prod
+    volumes:
+      - redis-data-prod:/data:delegated
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 10s
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+###< redis ###
+
+###> shopware/web ###
+  web:
+    container_name: shopware-web-prod
+    image: ${DOCKER_IMAGE:-ghcr.io/${GITHUB_REPOSITORY:-username/shopware}:${IMAGE_TAG:-latest}}
+    networks:
+      - shopware-prod
+    ports:
+      - "80:8000"
+      - "443:8000"
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      APP_DEBUG: ${APP_DEBUG:-0}
+      APP_URL: ${APP_URL}
+      HOST: 0.0.0.0
+      DATABASE_URL: mysql://${DB_USER:-shopware}:${DB_PASSWORD}@database:3306/${DB_NAME:-shopware}
+      OPENSEARCH_URL: http://opensearch:9200
+      OPENSEARCH_ENABLED: ${OPENSEARCH_ENABLED:-true}
+      OPENSEARCH_INDEXING_ENABLED: ${OPENSEARCH_INDEXING_ENABLED:-true}
+      OPENSEARCH_INDEX_PREFIX: ${OPENSEARCH_INDEX_PREFIX:-sw6}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      MAILER_DSN: ${MAILER_DSN}
+      SHOPWARE_ES_ENABLED: ${OPENSEARCH_ENABLED:-true}
+      SHOPWARE_ES_INDEXING_ENABLED: ${OPENSEARCH_INDEXING_ENABLED:-true}
+      SHOPWARE_CDN_STRATEGY_DEFAULT: ${SHOPWARE_CDN_STRATEGY_DEFAULT:-physical_filename}
+    volumes:
+      - media-data-prod:/var/www/html/public/media:delegated
+      - thumbnail-data-prod:/var/www/html/public/thumbnail:delegated
+      - log-data-prod:/var/www/html/var/log:delegated
+      - caddy-data-prod:/data:delegated
+      - caddy-config-prod:/config:delegated
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+    depends_on:
+      database:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/_info/health-check || exit 1"]
+      start_period: 90s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+###< shopware/web ###
+
+###> shopware/worker ###
+  worker:
+    container_name: shopware-worker-prod
+    image: ${DOCKER_IMAGE:-ghcr.io/${GITHUB_REPOSITORY:-username/shopware}:${IMAGE_TAG:-latest}}
+    networks:
+      - shopware-prod
+    command: php bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=512M
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      APP_DEBUG: ${APP_DEBUG:-0}
+      APP_URL: ${APP_URL}
+      DATABASE_URL: mysql://${DB_USER:-shopware}:${DB_PASSWORD}@database:3306/${DB_NAME:-shopware}
+      OPENSEARCH_URL: http://opensearch:9200
+      OPENSEARCH_ENABLED: ${OPENSEARCH_ENABLED:-true}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      MAILER_DSN: ${MAILER_DSN}
+    volumes:
+      - log-data-prod:/var/www/html/var/log:delegated
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+###< shopware/worker ###
+
+###> shopware/cron ###
+  cron:
+    container_name: shopware-cron-prod
+    image: ${DOCKER_IMAGE:-ghcr.io/${GITHUB_REPOSITORY:-username/shopware}:${IMAGE_TAG:-latest}}
+    networks:
+      - shopware-prod
+    command: >
+      sh -c "
+      apk add --no-cache dcron &&
+      echo '*/5 * * * * cd /var/www/html && php bin/console scheduled-task:run >> /var/www/html/var/log/cron.log 2>&1' | crontab - &&
+      crond -f -l 2
+      "
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      APP_DEBUG: ${APP_DEBUG:-0}
+      APP_URL: ${APP_URL}
+      DATABASE_URL: mysql://${DB_USER:-shopware}:${DB_PASSWORD}@database:3306/${DB_NAME:-shopware}
+      OPENSEARCH_URL: http://opensearch:9200
+      OPENSEARCH_ENABLED: ${OPENSEARCH_ENABLED:-true}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      MAILER_DSN: ${MAILER_DSN}
+    volumes:
+      - log-data-prod:/var/www/html/var/log:delegated
+    depends_on:
+      database:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+    restart: unless-stopped
+    user: root
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+###< shopware/cron ###
+
+volumes:
+###> shopware/core ###
+  db-data-prod:
+    driver: local
+###< shopware/core ###
+
+###> shopware/elasticsearch ###
+  opensearch-data-prod:
+    driver: local
+###< shopware/elasticsearch ###
+
+###> redis ###
+  redis-data-prod:
+    driver: local
+###< redis ###
+
+###> shopware/web ###
+  media-data-prod:
+    driver: local
+  thumbnail-data-prod:
+    driver: local
+  log-data-prod:
+    driver: local
+  caddy-data-prod:
+    driver: local
+  caddy-config-prod:
+    driver: local
+  mysql-slow-log:
+    driver: local
+###< shopware/web ###
+
+networks:
+  shopware-prod:
+    driver: bridge

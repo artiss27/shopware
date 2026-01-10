@@ -1,0 +1,111 @@
+# Multi-stage production build for Shopware 6.7
+# Stage 1: Build assets (storefront, administration)
+FROM ghcr.io/shopware/docker-dev:php8.3-node22-caddy AS builder
+
+USER root
+
+# Install build dependencies
+RUN apk add --no-cache \
+    libheif-dev \
+    libde265-dev \
+    x265-dev \
+    imagemagick-dev \
+    imagemagick \
+    pkgconfig \
+    autoconf \
+    g++ \
+    make \
+    jq \
+    mariadb-client \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && php -m | grep -i imagick
+
+WORKDIR /var/www/html
+
+# Copy package files first for better caching
+COPY package.json package-lock.json ./
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies (production only)
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+
+# Copy project files
+COPY . .
+
+# Generate plugins.json (required before building assets)
+RUN php bin/console plugin:refresh --skip-asset-build || true
+
+# Build administration (may fail if no admin assets, that's ok)
+RUN SHOPWARE_SKIP_ASSET_COPY=1 SHOPWARE_SKIP_BUNDLE_DUMP=1 ./bin/build-administration.sh || true
+
+# Build storefront (may fail if no storefront assets, that's ok)
+RUN SHOPWARE_SKIP_ASSET_COPY=1 SHOPWARE_SKIP_BUNDLE_DUMP=1 ./bin/build-storefront.sh || true
+
+# Install production dependencies only
+RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
+
+# Clear cache and optimize
+RUN php bin/console cache:clear --env=prod --no-debug || true
+
+# Stage 2: Production runtime
+FROM ghcr.io/shopware/docker-dev:php8.3-node22-caddy
+
+USER root
+
+# Install runtime dependencies and build tools for Caddy with rate limiting plugin
+RUN apk add --no-cache \
+    libheif \
+    libde265 \
+    x265 \
+    imagemagick \
+    mariadb-client \
+    go \
+    git \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && php -m | grep -i imagick
+
+# Install and configure OPcache (enabled by default in PHP 8.3)
+RUN docker-php-ext-install opcache && \
+    docker-php-ext-enable opcache
+
+# Install xcaddy and build Caddy with rate limiting plugin
+RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest && \
+    CGO_ENABLED=0 /root/go/bin/xcaddy build \
+        --with github.com/mholt/caddy-ratelimit \
+        --output /tmp/caddy && \
+    mv /tmp/caddy /usr/bin/caddy && \
+    chmod +x /usr/bin/caddy && \
+    # Verify Caddy version and plugin installation
+    /usr/bin/caddy version && \
+    # Clean up Go and build tools to reduce image size
+    apk del go git && \
+    rm -rf /root/go /root/.cache /tmp/go-* /usr/local/go
+
+# Copy PHP production configurations
+COPY docker/php/php-fpm-prod.conf /usr/local/etc/php-fpm.d/www.conf
+COPY docker/php/opcache-prod.ini /usr/local/etc/php/conf.d/opcache-prod.ini
+
+# Copy built application from builder
+COPY --from=builder --chown=www-data:www-data /var/www/html /var/www/html
+
+# Set production environment
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
+ENV COMPOSER_HOME=/tmp/composer
+
+# Switch to www-data user
+USER www-data
+
+WORKDIR /var/www/html
+
+# Expose port
+EXPOSE 8000
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/api/_info/health-check || exit 1
+
+# Start Caddy server
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
