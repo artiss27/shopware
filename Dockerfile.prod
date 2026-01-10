@@ -53,18 +53,26 @@ FROM ghcr.io/shopware/docker-dev:php8.3-node22-caddy
 
 USER root
 
-# Install runtime dependencies and build tools for Caddy with rate limiting plugin
-RUN apk add --no-cache \
-    libheif \
-    libde265 \
-    x265 \
+# Install runtime and build dependencies in one step for better caching
+# Note: HEIC support (libheif/libde265/x265) removed to avoid package availability issues
+# It can be added later via edge repository if needed
+RUN apk update && \
+    apk add --no-cache \
     imagemagick \
+    imagemagick-dev \
     mariadb-client \
+    pkgconfig \
+    autoconf \
+    g++ \
+    make \
     go \
     git \
-    && pecl install imagick \
-    && docker-php-ext-enable imagick \
-    && php -m | grep -i imagick
+    curl
+
+# Install PHP Imagick extension
+RUN pecl install imagick && \
+    docker-php-ext-enable imagick && \
+    php -m | grep -i imagick
 
 # Install and configure OPcache (enabled by default in PHP 8.3)
 RUN docker-php-ext-install opcache && \
@@ -77,11 +85,18 @@ RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest && \
         --output /tmp/caddy && \
     mv /tmp/caddy /usr/bin/caddy && \
     chmod +x /usr/bin/caddy && \
-    # Verify Caddy version and plugin installation
-    /usr/bin/caddy version && \
-    # Clean up Go and build tools to reduce image size
-    apk del go git && \
-    rm -rf /root/go /root/.cache /tmp/go-* /usr/local/go
+    /usr/bin/caddy version
+
+# Clean up build dependencies to reduce image size
+RUN apk del --purge \
+    imagemagick-dev \
+    pkgconfig \
+    autoconf \
+    g++ \
+    make \
+    go \
+    git && \
+    rm -rf /root/go /root/.cache /tmp/go-* /usr/local/go /var/cache/apk/* /tmp/pear
 
 # Copy PHP production configurations
 COPY docker/php/php-fpm-prod.conf /usr/local/etc/php-fpm.d/www.conf
