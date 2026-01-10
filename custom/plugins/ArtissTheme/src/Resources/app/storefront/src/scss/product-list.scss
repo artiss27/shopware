@@ -69,7 +69,9 @@ Product listing enhancements.
     }
 
     .product-variant-characteristics {
-        display: none;
+        //display: none;
+        min-height: 0;
+        height: 20px;
     }
 
     .product-price-info {
