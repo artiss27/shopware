@@ -1,6 +1,7 @@
-# Caddyfile for Production with Let's Encrypt and Rate Limiting
+# Caddyfile for Production with Let's Encrypt
 # Note: CADDY_EMAIL environment variable is used automatically by Caddy for Let's Encrypt
 # CADDY_HOST environment variable is used via {$CADDY_HOST} syntax (Caddy built-in support)
+# Rate limiting is handled by fail2ban (configured on server level)
 
 {
     # Email is optional - Caddy will use CADDY_EMAIL environment variable if set
@@ -20,8 +21,9 @@
         format json
     }
 
-    # Health check endpoint - no rate limiting, no basic auth (must be accessible for monitoring)
+    # Health check endpoint - no basic auth (must be accessible for monitoring)
     # This handle block is processed FIRST, so health checks bypass basic auth
+    # Rate limiting is handled by fail2ban on server level
     handle /api/_info/health-check* {
         reverse_proxy localhost:8000 {
             header_up X-Real-IP {http.request.remote.host}
@@ -33,15 +35,8 @@
     }
 
 
-    # Rate limiting for login endpoints (5 requests per 5 minutes per IP - very strict)
+    # Login endpoints (rate limiting handled by fail2ban on server level)
     handle /api/oauth/token {
-        rate_limit {
-            zone login_zone {
-                key {http.request.remote.host}
-                events 5
-                window 5m
-            }
-        }
         reverse_proxy localhost:8000 {
             header_up X-Real-IP {http.request.remote.host}
             header_up X-Forwarded-For {http.request.remote.host}
@@ -52,13 +47,6 @@
     }
 
     handle /account/login {
-        rate_limit {
-            zone login_zone {
-                key {http.request.remote.host}
-                events 5
-                window 5m
-            }
-        }
         reverse_proxy localhost:8000 {
             header_up X-Real-IP {http.request.remote.host}
             header_up X-Forwarded-For {http.request.remote.host}
@@ -68,15 +56,8 @@
         }
     }
 
-    # Rate limiting for API endpoints (100 requests per minute per IP)
+    # API endpoints
     handle /api/* {
-        rate_limit {
-            zone api_zone {
-                key {http.request.remote.host}
-                events 100
-                window 1m
-            }
-        }
         reverse_proxy localhost:8000 {
             header_up X-Real-IP {http.request.remote.host}
             header_up X-Forwarded-For {http.request.remote.host}
@@ -86,7 +67,7 @@
         }
     }
 
-    # File server for media and static files (no rate limiting)
+    # File server for media and static files
     handle_path /media/* {
         root * /var/www/html/public
         file_server
@@ -112,21 +93,15 @@
         file_server
     }
 
-    # Default reverse proxy for all other requests (general rate limiting: 200 requests per minute)
+    # Default reverse proxy for all other requests
     # HTTP Basic Auth is applied here if enabled (marker {{BASIC_AUTH}} will be inserted)
     # This handle block processes all paths NOT matched above (excludes health check which is handled separately above)
+    # Note: Rate limiting is handled by fail2ban (configured on server level)
     handle {
         # HTTP Basic Auth (optional, enabled via CADDY_BASIC_AUTH_ENABLED=true)
         # Applied only to paths in this handle block (excludes health check which is handled above)
         # To enable: set CADDY_BASIC_AUTH_ENABLED=true, CADDY_BASIC_AUTH_USER, CADDY_BASIC_AUTH_PASS
         {{BASIC_AUTH}}
-        rate_limit {
-            zone general_zone {
-                key {http.request.remote.host}
-                events 200
-                window 1m
-            }
-        }
         reverse_proxy localhost:8000 {
             header_up X-Real-IP {http.request.remote.host}
             header_up X-Forwarded-For {http.request.remote.host}

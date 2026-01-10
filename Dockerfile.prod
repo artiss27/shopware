@@ -78,8 +78,6 @@ RUN apk update && \
     autoconf \
     g++ \
     make \
-    go \
-    git \
     curl
 
 # Install PHP Imagick extension
@@ -91,14 +89,9 @@ RUN pecl install imagick && \
 RUN docker-php-ext-install opcache && \
     docker-php-ext-enable opcache
 
-# Install xcaddy and build Caddy with rate limiting plugin
-RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest && \
-    CGO_ENABLED=0 /root/go/bin/xcaddy build \
-        --with github.com/mholt/caddy-ratelimit \
-        --output /tmp/caddy && \
-    mv /tmp/caddy /usr/bin/caddy && \
-    chmod +x /usr/bin/caddy && \
-    /usr/bin/caddy version
+# Note: Rate limiting is handled by fail2ban (configured on server level)
+# Caddy built-in rate limiting requires plugins that may not work correctly
+# Using fail2ban for rate limiting is more reliable and easier to configure
 
 # Clean up build dependencies to reduce image size
 RUN apk del --purge \
@@ -106,10 +99,8 @@ RUN apk del --purge \
     pkgconfig \
     autoconf \
     g++ \
-    make \
-    go \
-    git && \
-    rm -rf /root/go /root/.cache /tmp/go-* /usr/local/go /var/cache/apk/* /tmp/pear
+    make && \
+    rm -rf /var/cache/apk/* /tmp/pear
 
 # Copy PHP production configurations
 COPY docker/php/php-fpm-prod.conf /usr/local/etc/php-fpm.d/www.conf
