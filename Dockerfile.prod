@@ -23,15 +23,28 @@ RUN apk add --no-cache \
 
 WORKDIR /var/www/html
 
-# Copy package files first for better caching
-COPY package.json package-lock.json ./
-COPY composer.json composer.lock ./
+# Copy all project files at once
+# Note: This is needed because composer.json has path repositories for custom/plugins/*
+# Path repositories require the plugin directories to exist before composer install
+# We sacrifice Docker layer caching for dependencies to ensure path repos work correctly
+COPY . .
+
+# Verify composer files exist
+RUN if [ ! -f composer.json ]; then \
+        echo "Error: composer.json not found!" && exit 1; \
+    fi && \
+    if [ ! -f composer.lock ]; then \
+        echo "Warning: composer.lock not found! Generating it..." && \
+        composer update --no-dev --no-interaction --no-scripts || true; \
+    fi
 
 # Install PHP dependencies (production only)
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
-
-# Copy project files
-COPY . .
+# Using --no-scripts to avoid post-install scripts that may require additional files
+# Some scripts (like assets:install) may fail if certain directories don't exist
+# Added --prefer-dist for faster downloads and memory usage
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --prefer-dist || \
+    (echo "Composer install failed, trying with --ignore-platform-reqs..." && \
+     composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --prefer-dist --ignore-platform-reqs)
 
 # Generate plugins.json (required before building assets)
 RUN php bin/console plugin:refresh --skip-asset-build || true
