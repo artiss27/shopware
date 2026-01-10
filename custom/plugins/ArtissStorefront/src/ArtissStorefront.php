@@ -30,13 +30,21 @@ class ArtissStorefront extends Plugin
     public function install(InstallContext $installContext): void
     {
         parent::install($installContext);
-        $this->getCustomFieldInstaller()->install($installContext->getContext());
+
+        $customFieldSetRepository = $this->container->get('custom_field_set.repository');
+        $customFieldRepository = $this->container->get('custom_field.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository, $customFieldRepository);
+        $customFieldInstaller->install($installContext->getContext());
     }
 
     public function update(UpdateContext $updateContext): void
     {
         parent::update($updateContext);
-        $this->getCustomFieldInstaller()->install($updateContext->getContext());
+
+        $customFieldSetRepository = $this->container->get('custom_field_set.repository');
+        $customFieldRepository = $this->container->get('custom_field.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository, $customFieldRepository);
+        $customFieldInstaller->install($updateContext->getContext());
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
@@ -47,11 +55,9 @@ class ArtissStorefront extends Plugin
             return;
         }
 
-        $this->getCustomFieldInstaller()->uninstall($uninstallContext->getContext());
-    }
-
-    private function getCustomFieldInstaller(): CustomFieldInstaller
-    {
-        return $this->container->get(CustomFieldInstaller::class);
+        $customFieldSetRepository = $this->container->get('custom_field_set.repository');
+        $customFieldRepository = $this->container->get('custom_field.repository');
+        $customFieldInstaller = new CustomFieldInstaller($customFieldSetRepository, $customFieldRepository);
+        $customFieldInstaller->uninstall($uninstallContext->getContext());
     }
 }

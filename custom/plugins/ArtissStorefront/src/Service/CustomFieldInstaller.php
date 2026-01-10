@@ -78,13 +78,16 @@ class CustomFieldInstaller
         ]], $context);
     }
 
+
     public function uninstall(Context $context): void
     {
-        // Delete category_seo_fields custom field set
+        $this->deleteCustomFieldSet('category_seo_fields', $context);
+    }
+
+    private function deleteCustomFieldSet(string $name, Context $context): void
+    {
         $criteria = new Criteria();
-        $criteria->addFilter(
-            new EqualsFilter('name', 'category_seo_fields')
-        );
+        $criteria->addFilter(new EqualsFilter('name', $name));
 
         $ids = $this->customFieldSetRepository->searchIds($criteria, $context);
 

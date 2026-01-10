@@ -42,9 +42,24 @@
         </service>
 
         <!-- Custom Field Installer - manages category custom fields -->
-        <service id="ArtissStorefront\Service\CustomFieldInstaller">
+        <service id="ArtissStorefront\Service\CustomFieldInstaller" public="true">
             <argument type="service" id="custom_field_set.repository"/>
             <argument type="service" id="custom_field.repository"/>
+        </service>
+
+        <!-- Product Variant Name Subscriber - auto-generates variant names -->
+        <service id="ArtissStorefront\Subscriber\ProductVariantNameSubscriber">
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="language.repository"/>
+            <argument type="service" id="logger"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <!-- CLI Command: Regenerate Variant Names -->
+        <service id="ArtissStorefront\Command\RegenerateVariantNamesCommand">
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="language.repository"/>
+            <tag name="console.command"/>
         </service>
     </services>
 </container>
