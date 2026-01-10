@@ -24,11 +24,12 @@ Simple and unobtrusive category description with image wrapping.
     }
 
     .category-info__img {
+        box-shadow: none;
         width: 100%;
         height: auto;
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        //box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        //transition: transform 0.3s ease, box-shadow 0.3s ease;
         display: block;
 
         &:hover {

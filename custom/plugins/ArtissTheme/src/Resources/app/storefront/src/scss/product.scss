@@ -216,7 +216,7 @@ Modern product detail page with elegant gallery and buy widget.
 .gallery-slider {
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  //box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   background: #ffffff;
   position: relative;
 
@@ -230,6 +230,7 @@ Modern product detail page with elegant gallery and buy widget.
       .gallery-slider-item {
         position: relative;
         overflow: hidden;
+        background-color: white;
 
         .gallery-slider-image {
           width: 100%;
@@ -239,7 +240,7 @@ Modern product detail page with elegant gallery and buy widget.
         }
 
         &:hover .gallery-slider-image {
-          transform: scale(1.05);
+          //transform: scale(1.05);
         }
       }
     }
@@ -284,7 +285,7 @@ Modern product detail page with elegant gallery and buy widget.
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+      //box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
       transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
       color: #495057;
       pointer-events: all;
@@ -341,6 +342,9 @@ Modern product detail page with elegant gallery and buy widget.
 // Gallery Thumbnails Container
 .gallery-slider-thumbnails-container {
   position: relative;
+  border: 2px solid white;
+  border-radius: 12px;
+  padding: 20px 10px 10px;
 
   &.is-underneath {
     margin-top: 1rem;
@@ -366,6 +370,7 @@ Modern product detail page with elegant gallery and buy widget.
         margin-bottom: 0.5rem;
         flex-shrink: 0;
         min-width: 80px;
+        background-color: white;
 
         .gallery-slider-thumbnails-image {
           width: 100%;
@@ -423,11 +428,12 @@ Modern product detail page with elegant gallery and buy widget.
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      //box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
       color: #495057;
       cursor: pointer;
       flex-shrink: 0;
+      box-shadow: none;
 
       &:hover {
         background: #ffffff;
@@ -447,7 +453,11 @@ Modern product detail page with elegant gallery and buy widget.
       }
     }
     .gallery-slider-thumbnails-controls-prev {
-      top: -3rem;
+      top: -24px;
+      .icon {
+        top: -3px;
+        position: relative;
+      }
     }
     .gallery-slider-thumbnails-controls-next {
       //top: 0;
