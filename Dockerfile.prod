@@ -147,5 +147,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
 # Start Caddy server via entrypoint script
 # Entrypoint processes Caddyfile to replace {$CADDY_HOST} with actual value
 # CADDY_EMAIL is used automatically by Caddy if set as environment variable
+# The entrypoint script will process the Caddyfile and use the processed version
 ENTRYPOINT ["/usr/local/bin/caddy-entrypoint.sh"]
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
+CMD ["caddy", "run", "--config", "/tmp/Caddyfile.proc"]

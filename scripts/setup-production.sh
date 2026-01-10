@@ -101,19 +101,55 @@ docker compose -f docker-compose.prod.yml up -d web
 sleep 15
 
 # Wait for web container to be healthy
+# First check if Caddy is running (port 8000 is accessible)
+log_info "Waiting for web container to become ready..."
+log_info "Step 1: Checking if Caddy is running..."
 ELAPSED=0
-while ! docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000/api/_info/health-check &> /dev/null; do
-    if [ $ELAPSED -ge $MAX_WAIT ]; then
-        log_error "Web container failed to become ready within ${MAX_WAIT}s"
-        docker compose -f docker-compose.prod.yml logs web --tail=50
-        exit 1
+CADDY_READY=false
+while [ $ELAPSED -lt 60 ]; do
+    if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1; then
+        CADDY_READY=true
+        log_info "Caddy is running"
+        break
     fi
     sleep 5
     ELAPSED=$((ELAPSED + 5))
     echo -n "."
 done
 echo ""
-log_info "Web container is ready"
+
+if [ "$CADDY_READY" = false ]; then
+    log_error "Caddy failed to start within 60s"
+    docker compose -f docker-compose.prod.yml logs web --tail=50
+    exit 1
+fi
+
+# Now check if health check endpoint is available (Shopware may not be installed yet)
+# On first run, Shopware is not installed, so health check may return 404
+# We'll just verify that Caddy is responding (even with 404/500 is ok)
+log_info "Step 2: Verifying Caddy is responding..."
+sleep 5
+if docker compose -f docker-compose.prod.yml exec -T web curl -f http://localhost:8000 &> /dev/null 2>&1 || \
+   docker compose -f docker-compose.prod.yml exec -T web curl -s -o /dev/null -w "%{http_code}" http://localhost:8000 | grep -qE "[2345].."; then
+    log_info "Caddy is responding (application may not be installed yet, that's ok)"
+else
+    log_error "Caddy is not responding properly"
+    log_error "Container status:"
+    docker compose -f docker-compose.prod.yml ps web
+    log_error "Container logs (last 100 lines):"
+    docker compose -f docker-compose.prod.yml logs web --tail=100
+    log_error "Checking if Caddy is running:"
+    docker compose -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i caddy || echo "Caddy process not found or container not accessible"
+    log_error "Checking if PHP-FPM is running:"
+    docker compose -f docker-compose.prod.yml exec -T web ps aux 2>/dev/null | grep -i php-fpm || echo "PHP-FPM process not found or container not accessible"
+    log_error "Checking processed Caddyfile:"
+    docker compose -f docker-compose.prod.yml exec -T web cat /tmp/Caddyfile.proc 2>/dev/null || echo "Processed Caddyfile not found or container not accessible"
+    log_error "Checking environment variables:"
+    docker compose -f docker-compose.prod.yml exec -T web env 2>/dev/null | grep -E "CADDY_|APP_" | head -20 || echo "Cannot access container"
+    exit 1
+fi
+
+log_info "Web container is ready (Caddy is running)"
 
 # Run Shopware installation
 log_info "Running Shopware installation..."
