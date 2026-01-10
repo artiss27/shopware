@@ -37,6 +37,7 @@ Modern footer design with clean layout, elegant typography, and smooth hover eff
     background: rgba(0, 0, 0, 0.2);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     .footer-service-menu-link {
+        text-decoration: none;
         &:hover {
             color: #f15928;
         }

@@ -2,6 +2,8 @@
 
 {% block layout_breadcrumb_list %}
     {% set breadcrumbKeys = breadcrumbCategories|keys %}
+    {% set currentRoute = app.request.attributes.get('_route') %}
+    {% set isProductPage = currentRoute == 'frontend.detail.page' %}
 
     <ol class="breadcrumb"
         itemscope
@@ -42,13 +44,24 @@
                     itemscope
                     itemtype="https://schema.org/ListItem">
 
-                    {# --- FOLDER or CURRENT or LAST: NOT A LINK --- #}
-                    {% if breadcrumbCategory.type == 'folder' or isLast or isCurrent %}
+                    {# --- FOLDER or CURRENT or LAST: NOT A LINK (except product page last element) --- #}
+                    {% if breadcrumbCategory.type == 'folder' %}
                         <span class="breadcrumb-link is-active">
                             <span class="breadcrumb-title" itemprop="name">{{ name }}</span>
                         </span>
-
-                        {# --- NORMAL LINK --- #}
+                    {% elseif (isLast or isCurrent) and not isProductPage %}
+                        <span class="breadcrumb-link is-active">
+                            <span class="breadcrumb-title" itemprop="name">{{ name }}</span>
+                        </span>
+                    {% elseif (isLast or isCurrent) and isProductPage %}
+                        <a href="{{ categoryUrl }}"
+                           class="breadcrumb-link"
+                           title="{{ name }}"
+                           {% if breadcrumbCategory.shouldOpenInNewTab %}target="_blank"{% endif %}
+                           itemprop="item">
+                            <span class="breadcrumb-title" itemprop="name">{{ name }}</span>
+                        </a>
+                    {# --- NORMAL LINK --- #}
                     {% else %}
                         <a href="{{ categoryUrl }}"
                            class="breadcrumb-link"
