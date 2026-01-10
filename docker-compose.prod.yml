@@ -141,6 +141,8 @@ services:
       SHOPWARE_ES_ENABLED: ${OPENSEARCH_ENABLED:-true}
       SHOPWARE_ES_INDEXING_ENABLED: ${OPENSEARCH_INDEXING_ENABLED:-true}
       SHOPWARE_CDN_STRATEGY_DEFAULT: ${SHOPWARE_CDN_STRATEGY_DEFAULT:-physical_filename}
+      CADDY_EMAIL: ${CADDY_EMAIL}
+      CADDY_HOST: ${CADDY_HOST}
     volumes:
       - media-data-prod:/var/www/html/public/media:delegated
       - thumbnail-data-prod:/var/www/html/public/thumbnail:delegated

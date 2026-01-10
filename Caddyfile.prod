@@ -1,12 +1,19 @@
 # Caddyfile for Production with Let's Encrypt and Rate Limiting
-# This file is mounted to /etc/caddy/Caddyfile in the web container
+# Note: CADDY_EMAIL environment variable is used automatically by Caddy for Let's Encrypt
+# CADDY_HOST environment variable is used via {$CADDY_HOST} syntax (Caddy built-in support)
 
 {
-    email {$CADDY_EMAIL}
-    # Use Let's Encrypt staging for testing, remove for production
+    # Email is optional - Caddy will use CADDY_EMAIL environment variable if set
+    # If you need to set it explicitly, uncomment and set your email:
+    # email admin@example.com
+    
+    # Use Let's Encrypt staging for testing, uncomment for staging:
     # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
+# Domain name from CADDY_HOST environment variable
+# Caddy automatically replaces {$CADDY_HOST} with the value from environment
+# Example: CADDY_HOST=stage.artiss.ua
 {$CADDY_HOST} {
     log {
         output file /var/www/html/var/log/caddy.log
