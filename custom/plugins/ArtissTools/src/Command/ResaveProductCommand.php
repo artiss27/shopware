@@ -5,7 +5,6 @@ namespace ArtissTools\Command;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -47,7 +46,7 @@ class ResaveProductCommand extends Command
         $this
             ->addArgument('product-id', InputArgument::OPTIONAL, 'Product ID to resave')
             ->addOption('all', null, InputOption::VALUE_NONE, 'Resave all products')
-            ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Number of products to process in one batch', 100);
+            ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Number of products to process in one batch', 10);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -111,7 +110,6 @@ class ResaveProductCommand extends Command
         $io->section('Resaving all products');
 
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('parentId', null));
         $totalProducts = $this->productRepository->searchIds($criteria, $context)->getTotal();
 
         if ($totalProducts === 0) {
@@ -129,7 +127,6 @@ class ResaveProductCommand extends Command
 
         while ($offset < $totalProducts) {
             $criteria = new Criteria();
-            $criteria->addFilter(new EqualsFilter('parentId', null));
             $criteria->setLimit($batchSize);
             $criteria->setOffset($offset);
 
@@ -158,6 +155,11 @@ class ResaveProductCommand extends Command
                 }
 
                 unset($updates, $productIds);
+                
+                // Force garbage collection to free memory
+                if (function_exists('gc_collect_cycles')) {
+                    gc_collect_cycles();
+                }
             }
 
             $offset += $batchSize;
