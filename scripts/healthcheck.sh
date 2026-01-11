@@ -1,9 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT"
+cd "$(dirname "$0")/.."
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -14,77 +12,69 @@ ok()   { echo -e "${GREEN}[OK]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 fail() { echo -e "${RED}[FAIL]${NC} $1"; }
 
-set -a
-source .env.prod 2>/dev/null || true
-set +a
+source .env.prod || true
 
-EXIT_CODE=0
+EXIT=0
 
-echo "=== Web Container ==="
-if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
-   curl -k -f https://localhost >/dev/null 2>&1; then
-  ok "Web is responding"
+echo "=== Core Services ==="
+
+# DB
+if docker compose -f docker-compose.prod.yml exec -T database mariadb-admin ping &>/dev/null; then
+  ok "Database reachable"
 else
-  fail "Web is not responding"
-  EXIT_CODE=1
+  fail "Database down"
+  EXIT=1
 fi
-echo ""
 
-echo "=== Database ==="
-if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database \
-   mariadb-admin ping -h localhost -p"${DB_ROOT_PASSWORD:-}" >/dev/null 2>&1; then
-  ok "Database is alive"
+# Redis
+if docker compose -f docker-compose.prod.yml exec -T redis redis-cli ping | grep -q PONG; then
+  ok "Redis reachable"
 else
-  fail "Database is not responding"
-  EXIT_CODE=1
+  fail "Redis down"
+  EXIT=1
 fi
-echo ""
 
-echo "=== Redis ==="
-if docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T redis redis-cli ping >/dev/null 2>&1; then
-  ok "Redis is alive"
-else
-  fail "Redis is not responding"
-  EXIT_CODE=1
-fi
-echo ""
-
-echo "=== OpenSearch ==="
+# OpenSearch
 if [[ "${OPENSEARCH_ENABLED:-true}" == "true" ]]; then
-  STATUS=$(docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T opensearch \
-           curl -s http://localhost:9200/_cluster/health | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+  STATUS=$(docker compose -f docker-compose.prod.yml exec -T opensearch curl -s http://localhost:9200/_cluster/health | jq -r .status 2>/dev/null || echo red)
   if [[ "$STATUS" == "green" || "$STATUS" == "yellow" ]]; then
-    ok "OpenSearch healthy ($STATUS)"
+    ok "OpenSearch $STATUS"
   else
     fail "OpenSearch unhealthy ($STATUS)"
-    EXIT_CODE=1
+    EXIT=1
   fi
-else
-  warn "OpenSearch disabled"
 fi
-echo ""
 
-echo "=== Worker ==="
-if docker compose --env-file .env.prod -f docker-compose.prod.yml ps worker | grep -q "Up"; then
+# Web (Shopware)
+if docker compose -f docker-compose.prod.yml exec -T web curl -sf http://localhost/api/_info/health-check >/dev/null; then
+  ok "Shopware responding"
+else
+  fail "Shopware not responding"
+  EXIT=1
+fi
+
+echo ""
+echo "=== Background (non-blocking) ==="
+
+# Worker
+if docker compose -f docker-compose.prod.yml ps worker | grep -q Up; then
   ok "Worker running"
 else
-  warn "Worker not running yet"
+  warn "Worker not running"
 fi
-echo ""
 
-echo "=== Cron ==="
-if docker compose --env-file .env.prod -f docker-compose.prod.yml ps cron | grep -q "Up"; then
+# Cron
+if docker compose -f docker-compose.prod.yml ps cron | grep -q Up; then
   ok "Cron running"
 else
   warn "Cron not running"
 fi
-echo ""
 
-echo "=== Summary ==="
-if [[ $EXIT_CODE -eq 0 ]]; then
-  ok "System healthy"
-  exit 0
+echo ""
+if [[ $EXIT -eq 0 ]]; then
+  ok "System is READY"
 else
-  fail "System unhealthy"
-  exit 1
+  fail "System is NOT READY"
 fi
+
+exit $EXIT
