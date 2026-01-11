@@ -35,10 +35,11 @@ sleep 5
 log "Starting web"
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d web
 
-log "Waiting for web (Caddy + PHP)"
-MAX_WAIT=120
+log "Waiting for web (Caddy + PHP only)"
+MAX_WAIT=180
 ELAPSED=0
-while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -k -f https://localhost >/dev/null 2>&1; do
+while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
+        curl -k -f https://localhost >/dev/null 2>&1; do
   if [ $ELAPSED -ge $MAX_WAIT ]; then
     error "Web not reachable"
     docker compose --env-file .env.prod -f docker-compose.prod.yml logs web --tail=100
@@ -50,23 +51,23 @@ while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T w
 done
 echo ""
 
-log "Fixing permissions"
+log "Fixing filesystem permissions"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
-  chown -R www-data:www-data /var/www/html/var || true
+  chown -R 1000:1000 /var/www/html/var /var/www/html/public || true
 
 log "Checking if Shopware is installed"
 if ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database \
      mariadb -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" \
      -e "SHOW TABLES LIKE 'system_config'" | grep -q system_config; then
 
-  log "Shopware not installed, running install"
+  log "Shopware not installed, running initial install"
   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
     php bin/console system:install --create-database --basic-setup --force
 else
   log "Shopware already installed"
 fi
 
-log "Running migrations"
+log "Running database migrations"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
   php bin/console database:migrate --all
 
@@ -76,20 +77,24 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
 
 log "Warming cache"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
-  php bin/console cache:warmup || warn "Cache warmup failed"
+  php bin/console cache:warmup || warn "Cache warmup had issues"
 
 log "Compiling themes"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
   php bin/console theme:compile --active-only
 
-log "Starting workers"
+log "Starting workers and cron"
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d worker cron
+sleep 10
 
 if [[ "${OPENSEARCH_ENABLED:-true}" == "true" ]]; then
   log "Refreshing OpenSearch"
   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
     php bin/console dal:refresh:index || warn "Indexing failed"
 fi
+
+log "Running health check"
+"$SCRIPT_DIR/healthcheck.sh"
 
 log "Deployment finished"
 docker compose --env-file .env.prod -f docker-compose.prod.yml ps
