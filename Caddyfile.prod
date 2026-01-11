@@ -17,7 +17,7 @@
 # Example: CADDY_HOST=stage.artiss.ua
 {$CADDY_HOST} {
     log {
-        output file /var/www/html/var/log/caddy.log
+        output stdout
         format json
     }
 
