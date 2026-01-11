@@ -46,7 +46,7 @@ class ResaveProductCommand extends Command
         $this
             ->addArgument('product-id', InputArgument::OPTIONAL, 'Product ID to resave')
             ->addOption('all', null, InputOption::VALUE_NONE, 'Resave all products')
-            ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Number of products to process in one batch', 10);
+            ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Number of products to process in one batch', 50);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

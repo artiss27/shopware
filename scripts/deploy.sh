@@ -25,27 +25,22 @@ set +a
 
 log "Starting deployment"
 
-# Pull images
 log "Pulling images"
 docker compose --env-file .env.prod -f docker-compose.prod.yml pull web worker cron
 
-# Start infra
-log "Starting database, redis, opensearch"
+log "Starting infrastructure"
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d database redis opensearch
 sleep 5
 
-# Start web
-log "Starting web container"
+log "Starting web"
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d web
 
-# Wait until Caddy is reachable (not Shopware)
-log "Waiting for web to accept connections"
+log "Waiting for web (Caddy + PHP)"
 MAX_WAIT=120
 ELAPSED=0
-
 while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web curl -k -f https://localhost >/dev/null 2>&1; do
   if [ $ELAPSED -ge $MAX_WAIT ]; then
-    error "Web did not become reachable"
+    error "Web not reachable"
     docker compose --env-file .env.prod -f docker-compose.prod.yml logs web --tail=100
     exit 1
   fi
@@ -55,49 +50,43 @@ while ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T w
 done
 echo ""
 
-# Fix permissions for logs/cache
-log "Fixing filesystem permissions"
+log "Fixing permissions"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
   chown -R www-data:www-data /var/www/html/var || true
 
-# Detect if Shopware is installed
 log "Checking if Shopware is installed"
-if ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
-     php bin/console system:status >/dev/null 2>&1; then
+if ! docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T database \
+     mariadb -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" \
+     -e "SHOW TABLES LIKE 'system_config'" | grep -q system_config; then
 
-  log "Shopware not installed, running initial install"
+  log "Shopware not installed, running install"
   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
     php bin/console system:install --create-database --basic-setup --force
 else
   log "Shopware already installed"
 fi
 
-# Run migrations
-log "Running database migrations"
+log "Running migrations"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
   php bin/console database:migrate --all
 
-# Clear and warm cache
 log "Clearing cache"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
   php bin/console cache:clear
 
 log "Warming cache"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
-  php bin/console cache:warmup || warn "Cache warmup had issues"
+  php bin/console cache:warmup || warn "Cache warmup failed"
 
-# Compile themes
 log "Compiling themes"
 docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
   php bin/console theme:compile --active-only
 
-# Start workers
 log "Starting workers"
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d worker cron
 
-# OpenSearch
 if [[ "${OPENSEARCH_ENABLED:-true}" == "true" ]]; then
-  log "Refreshing OpenSearch index"
+  log "Refreshing OpenSearch"
   docker compose --env-file .env.prod -f docker-compose.prod.yml exec -T web \
     php bin/console dal:refresh:index || warn "Indexing failed"
 fi
