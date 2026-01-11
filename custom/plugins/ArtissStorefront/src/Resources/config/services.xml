@@ -61,5 +61,11 @@
             <argument type="service" id="language.repository"/>
             <tag name="console.command"/>
         </service>
+
+        <!-- CLI Command: Save Product (Trigger Events) -->
+        <service id="ArtissStorefront\Command\ExportProductCommand">
+            <argument type="service" id="product.repository"/>
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
