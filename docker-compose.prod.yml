@@ -153,6 +153,8 @@ services:
       SHOPWARE_CDN_STRATEGY_DEFAULT: ${SHOPWARE_CDN_STRATEGY_DEFAULT:-physical_filename}
       CADDY_EMAIL: ${CADDY_EMAIL}
       CADDY_HOST: ${CADDY_HOST}
+      CADDY_HTTP_ONLY: ${CADDY_HTTP_ONLY:-false}
+      CADDY_ACME_CA: ${CADDY_ACME_CA:-}
       CADDY_BASIC_AUTH_ENABLED: ${CADDY_BASIC_AUTH_ENABLED:-false}
       CADDY_BASIC_AUTH_USER: ${CADDY_BASIC_AUTH_USER:-}
       CADDY_BASIC_AUTH_PASS: ${CADDY_BASIC_AUTH_PASS:-}
@@ -187,11 +189,12 @@ services:
     healthcheck:
       # Check internal port 80 (Caddy listens on 80/443, proxies to localhost:8000)
       # Fallback to port 8000 for compatibility
+      # Increased start_period to 300s to allow time for SSL certificate acquisition
       test: ["CMD-SHELL", "curl -f http://localhost:80/api/_info/health-check || curl -f http://localhost/api/_info/health-check || curl -f http://localhost:8000/api/_info/health-check || exit 1"]
-      start_period: 120s
+      start_period: 300s
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
     restart: unless-stopped
     deploy:
       resources:
@@ -278,32 +281,32 @@ services:
 volumes:
 ###> shopware/core ###
   db-data-prod:
-    driver: local
+    name: shopware_db-data-prod
 ###< shopware/core ###
 
 ###> shopware/elasticsearch ###
   opensearch-data-prod:
-    driver: local
+    name: shopware_opensearch-data-prod
 ###< shopware/elasticsearch ###
 
 ###> redis ###
   redis-data-prod:
-    driver: local
+    name: shopware_redis-data-prod
 ###< redis ###
 
 ###> shopware/web ###
   media-data-prod:
-    driver: local
+    name: shopware_media-data-prod
   thumbnail-data-prod:
-    driver: local
+    name: shopware_thumbnail-data-prod
   log-data-prod:
-    driver: local
+    name: shopware_log-data-prod
   caddy-data-prod:
-    driver: local
+    name: shopware_caddy-data-prod
   caddy-config-prod:
-    driver: local
+    name: shopware_caddy-config-prod
   mysql-slow-log:
-    driver: local
+    name: shopware_mysql-slow-log
 ###< shopware/web ###
 
 networks:

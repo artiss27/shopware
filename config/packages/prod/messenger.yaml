@@ -1,14 +1,6 @@
 framework:
     messenger:
         default_bus: messenger.bus.default
-        buses:
-            messenger.bus.default:
-                middleware:
-                    - validation
-                    - doctrine_ping_connection
-                    - doctrine_close_connection
-                    - doctrine_clear_entity_manager
-                    - doctrine_ping_connection
 
         transports:
             async:
@@ -21,4 +13,3 @@ framework:
 
         routing:
             'Shopware\Core\Framework\MessageQueue\AsyncMessageInterface': async
-            'Symfony\Component\Messenger\AsynchronousMessageInterface': async

@@ -2,14 +2,20 @@
 # Note: CADDY_EMAIL environment variable is used automatically by Caddy for Let's Encrypt
 # CADDY_HOST environment variable is used via {$CADDY_HOST} syntax (Caddy built-in support)
 # Rate limiting is handled by fail2ban (configured on server level)
+#
+# CADDY_HTTP_ONLY=true - disables HTTPS (for first setup or local testing)
+# CADDY_ACME_CA=staging - uses Let's Encrypt staging (for testing)
 
 {
     # Email is optional - Caddy will use CADDY_EMAIL environment variable if set
     # If you need to set it explicitly, uncomment and set your email:
-    # email admin@example.com
-    
-    # Use Let's Encrypt staging for testing, uncomment for staging:
-    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+    # email {$CADDY_EMAIL}
+
+    # ACME CA configuration (marker will be replaced by processor script)
+    {{ACME_CA}}
+
+    # Auto HTTPS configuration (marker will be replaced by processor script)
+    {{AUTO_HTTPS}}
 }
 
 # Domain name from CADDY_HOST environment variable

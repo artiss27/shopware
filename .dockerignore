@@ -59,7 +59,7 @@ vendor/
 .env
 .env.*
 !.env.prod.example
-!env.prod.template
+!.env.prod.template
 
 # Development files
 compose.override.yaml

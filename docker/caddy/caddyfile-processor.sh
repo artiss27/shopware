@@ -23,7 +23,14 @@ fi
 
 # Remove protocol if present
 CADDY_HOST_CLEANED=$(echo "$CADDY_HOST" | sed -e 's|^http://||' -e 's|^https://||')
-export CADDY_HOST="$CADDY_HOST_CLEANED"
+
+# In HTTP-only mode, add http:// prefix to force HTTP
+if [ "${CADDY_HTTP_ONLY:-false}" = "true" ] || [ "${CADDY_HTTP_ONLY}" = "1" ]; then
+    export CADDY_HOST="http://$CADDY_HOST_CLEANED"
+    echo "Using HTTP-only mode with host: $CADDY_HOST" >&2
+else
+    export CADDY_HOST="$CADDY_HOST_CLEANED"
+fi
 
 # Process with envsubst - write to /tmp first (always writable)
 # First, replace Caddy syntax {$CADDY_HOST} with envsubst syntax ${CADDY_HOST}
@@ -38,6 +45,27 @@ if cp "$CADDYFILE_DST_TMP" "$CADDYFILE_DST" 2>/dev/null; then
 else
     echo "Warning: Cannot write to $CADDYFILE_DST (permission denied), using $CADDYFILE_DST_TMP" >&2
     CADDYFILE_DST="$CADDYFILE_DST_TMP"
+fi
+
+# Handle ACME CA marker
+if [ "${CADDY_ACME_CA:-}" = "staging" ]; then
+    ACME_CA_CONFIG="acme_ca https://acme-staging-v02.api.letsencrypt.org/directory"
+    sed -i "s|{{ACME_CA}}|$ACME_CA_CONFIG|g" "$CADDYFILE_DST" 2>/dev/null || true
+    echo "Using Let's Encrypt staging CA" >&2
+else
+    # Remove marker - use default production Let's Encrypt
+    sed -i '/{{ACME_CA}}/d' "$CADDYFILE_DST" 2>/dev/null || true
+fi
+
+# Handle HTTP-only mode marker
+if [ "${CADDY_HTTP_ONLY:-false}" = "true" ] || [ "${CADDY_HTTP_ONLY}" = "1" ]; then
+    # When using http:// prefix, auto_https is automatically disabled by Caddy
+    # No need to add "auto_https off" directive
+    sed -i '/{{AUTO_HTTPS}}/d' "$CADDYFILE_DST" 2>/dev/null || true
+    echo "HTTP-only mode enabled (HTTPS disabled)" >&2
+else
+    # Remove marker - use default auto HTTPS
+    sed -i '/{{AUTO_HTTPS}}/d' "$CADDYFILE_DST" 2>/dev/null || true
 fi
 
 # Handle Basic Auth marker
