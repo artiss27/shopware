@@ -27,7 +27,7 @@ framework:
 
     serializer:
         enabled: true
-        enable_annotations: false
+        enable_attributes: true
 
     property_access:
         enabled: true

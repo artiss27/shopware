@@ -89,6 +89,11 @@ RUN pecl install imagick && \
 RUN docker-php-ext-install opcache && \
     docker-php-ext-enable opcache
 
+# Create log directory for PHP-FPM with correct permissions
+RUN mkdir -p /usr/local/var/log && \
+    chown www-data:www-data /usr/local/var/log && \
+    chmod 755 /usr/local/var/log
+
 # Note: Rate limiting is handled by fail2ban (configured on server level)
 # Caddy built-in rate limiting requires plugins that may not work correctly
 # Using fail2ban for rate limiting is more reliable and easier to configure
@@ -106,15 +111,13 @@ RUN apk del --purge \
 COPY docker/php/php-fpm-prod.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/php/opcache-prod.ini /usr/local/etc/php/conf.d/opcache-prod.ini
 
-# Copy Caddy entrypoint script (for environment variable substitution in Caddyfile)
-# Note: File must be committed to git before build
-COPY docker/caddy/caddy-entrypoint.sh /usr/local/bin/caddy-entrypoint.sh
-RUN chmod +x /usr/local/bin/caddy-entrypoint.sh
-
 # Install gettext for envsubst (needed for CADDY_HOST variable substitution in Caddyfile)
-# Install tini for proper signal handling (PID 1 init system for Docker)
 # Must be done as root, before USER switch
-RUN apk add --no-cache gettext tini
+RUN apk add --no-cache gettext
+
+# Copy simple Caddyfile processor script (only processes Caddyfile, doesn't manage services)
+COPY docker/caddy/caddyfile-processor.sh /usr/local/bin/caddyfile-processor.sh
+RUN chmod +x /usr/local/bin/caddyfile-processor.sh
 
 # Copy built application from builder
 COPY --from=builder --chown=www-data:www-data /var/www/html /var/www/html
@@ -137,10 +140,5 @@ EXPOSE 80 443
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:80/api/_info/health-check || curl -f http://localhost/api/_info/health-check || curl -f http://localhost:8000/api/_info/health-check || exit 1
 
-# Start Caddy server via entrypoint script
-# Entrypoint processes Caddyfile to replace {$CADDY_HOST} with actual value
-# CADDY_EMAIL is used automatically by Caddy if set as environment variable
-# The entrypoint script will process the Caddyfile and use the processed version
-# Use tini as PID 1 for proper signal handling and process management
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/caddy-entrypoint.sh"]
-CMD ["caddy", "run", "--config", "/tmp/Caddyfile.proc"]
+# Do NOT override ENTRYPOINT/CMD - base image already handles PHP-FPM and Caddy startup
+# Caddyfile will be processed via docker-compose command before services start

@@ -123,12 +123,16 @@ services:
 ###> shopware/web ###
   web:
     container_name: shopware-web-prod
-    image: ${DOCKER_IMAGE:-ghcr.io/${GITHUB_REPOSITORY:-username/shopware}:${IMAGE_TAG:-latest}}
+    # Use build for local testing, image for production
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: ${DOCKER_IMAGE:-shopware-prod:local}
     networks:
       - shopware-prod
     ports:
-      - "80:80"   # HTTP для Let's Encrypt ACME challenge
-      - "443:443" # HTTPS для SSL
+      - "${WEB_HTTP_PORT:-8080}:80"   # HTTP - use 8080 for local testing to avoid conflicts with dev
+      - "${WEB_HTTPS_PORT:-8443}:443" # HTTPS - use 8443 for local testing
     cap_add:
       - NET_BIND_SERVICE # Allow binding to ports < 1024 (80, 443)
     environment:
@@ -159,7 +163,20 @@ services:
       - log-data-prod:/var/www/html/var/log:delegated
       - caddy-data-prod:/data:delegated
       - caddy-config-prod:/config:delegated
-      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile.template:ro
+    # Process Caddyfile before starting services
+    # We use a simple command that processes Caddyfile, then starts PHP-FPM and Caddy
+    # Note: Base image entrypoint is overridden - we handle service startup manually
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        /usr/local/bin/caddyfile-processor.sh || (echo "ERROR: caddyfile-processor.sh failed!" >&2 && exit 1) &&
+        CADDYFILE_PATH=$(cat /tmp/caddyfile_path.txt 2>/dev/null || echo /tmp/Caddyfile.proc) &&
+        php-fpm -t -y /usr/local/etc/php-fpm.d/www.conf >/dev/null 2>&1 || (echo "ERROR: PHP-FPM config test failed!" >&2 && exit 1) &&
+        php-fpm -D &&
+        sleep 2 &&
+        pgrep -f "php-fpm.*master" >/dev/null 2>&1 || (echo "ERROR: PHP-FPM failed to start!" >&2 && exit 1) &&
+        exec caddy run --config "$CADDYFILE_PATH"
     depends_on:
       database:
         condition: service_healthy
@@ -223,12 +240,14 @@ services:
     image: ${DOCKER_IMAGE:-ghcr.io/${GITHUB_REPOSITORY:-username/shopware}:${IMAGE_TAG:-latest}}
     networks:
       - shopware-prod
-    command: >
-      sh -c "
-      apk add --no-cache dcron &&
-      echo '*/5 * * * * cd /var/www/html && php bin/console scheduled-task:run >> /var/www/html/var/log/cron.log 2>&1' | crontab - &&
-      crond -f -l 2
-      "
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache dcron &&
+        echo '*/5 * * * * cd /var/www/html && php bin/console scheduled-task:run >> /var/www/html/var/log/cron.log 2>&1' | crontab - &&
+        exec crond -l 2
+    init: true
     environment:
       APP_ENV: ${APP_ENV:-prod}
       APP_DEBUG: ${APP_DEBUG:-0}
