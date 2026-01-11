@@ -18,7 +18,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Description:
  *   Cleans up orphaned price list files from Suppliers Prices media folder.
- *   Deletes files older than specified days that are not linked to any supplier.
+ *   Deletes physical files, database records, and thumbnails older than specified days
+ *   that are not linked to any supplier.
  *
  * Usage:
  *   bin/console artiss:supplier:cleanup-orphaned-pricelists [options]
@@ -39,7 +40,8 @@ class CleanupOrphanedPriceListsCommand extends Command
     public function __construct(
         private readonly EntityRepository $mediaRepository,
         private readonly EntityRepository $mediaFolderRepository,
-        private readonly Connection $connection
+        private readonly Connection $connection,
+        private readonly string $projectDir
     ) {
         parent::__construct();
     }
@@ -110,6 +112,7 @@ class CleanupOrphanedPriceListsCommand extends Command
                         'fileName' => $media->getFileName(),
                         'uploadedAt' => $uploadDate->format('Y-m-d H:i:s'),
                         'fileSize' => $media->getFileSize(),
+                        'path' => $media->getPath(),
                     ];
                 }
             }
@@ -132,15 +135,48 @@ class CleanupOrphanedPriceListsCommand extends Command
             return Command::SUCCESS;
         }
 
-        if (!$io->confirm('Do you want to delete these files?', false)) {
+        if (!$input->getOption('no-interaction') && !$io->confirm('Do you want to delete these files?', false)) {
             $io->info('Cleanup cancelled.');
             return Command::SUCCESS;
         }
 
-        // Delete files
+        // Delete files and database records
         $deletedCount = 0;
+        $deletedFilesCount = 0;
+        $deletedRecordsCount = 0;
+        $deletedThumbnailsCount = 0;
+
         foreach ($orphanedFiles as $file) {
             try {
+                // Delete from art_supplier_media table (if exists)
+                $deleted = $this->connection->executeStatement(
+                    'DELETE FROM art_supplier_media WHERE media_id = :mediaId',
+                    ['mediaId' => hex2bin($file['id'])]
+                );
+                if ($deleted > 0) {
+                    $deletedRecordsCount++;
+                }
+
+                // Delete thumbnails
+                $thumbnailsDeleted = $this->connection->executeStatement(
+                    'DELETE FROM media_thumbnail WHERE media_id = :mediaId',
+                    ['mediaId' => hex2bin($file['id'])]
+                );
+                $deletedThumbnailsCount += $thumbnailsDeleted;
+
+                // Delete physical file
+                if (!empty($file['path'])) {
+                    $filePath = $this->projectDir . '/public/media/' . ltrim($file['path'], '/');
+                    if (file_exists($filePath) && is_file($filePath)) {
+                        if (@unlink($filePath)) {
+                            $deletedFilesCount++;
+                        } else {
+                            $io->warning(sprintf('Failed to delete physical file: %s', $filePath));
+                        }
+                    }
+                }
+
+                // Delete media record from database (this also triggers Shopware cleanup events)
                 $this->mediaRepository->delete([['id' => $file['id']]], $context);
                 $deletedCount++;
             } catch (\Exception $e) {
@@ -148,7 +184,13 @@ class CleanupOrphanedPriceListsCommand extends Command
             }
         }
 
-        $io->success(sprintf('Successfully deleted %d orphaned files.', $deletedCount));
+        $io->success(sprintf(
+            'Successfully deleted %d orphaned files (%d physical files, %d database records, %d thumbnails).',
+            $deletedCount,
+            $deletedFilesCount,
+            $deletedRecordsCount,
+            $deletedThumbnailsCount
+        ));
 
         return Command::SUCCESS;
     }

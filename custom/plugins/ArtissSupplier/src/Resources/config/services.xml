@@ -84,6 +84,7 @@
             <argument type="service" id="media.repository"/>
             <argument type="service" id="media_folder.repository"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument>%kernel.project_dir%</argument>
             <tag name="console.command"/>
         </service>
 
