@@ -119,12 +119,6 @@
             fail_duration 30s
             max_fails 3
             unhealthy_status 429 500 502 503 504
-            
-            # Timeouts
-            flush_interval -1
-            dial_timeout 10s
-            read_timeout 300s
-            write_timeout 300s
         }
     }
     
