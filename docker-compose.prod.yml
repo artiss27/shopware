@@ -146,7 +146,7 @@ services:
       OPENSEARCH_INDEXING_ENABLED: ${OPENSEARCH_INDEXING_ENABLED:-true}
       OPENSEARCH_INDEX_PREFIX: ${OPENSEARCH_INDEX_PREFIX:-sw6}
       OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: ${REDIS_URL}
       MAILER_DSN: ${MAILER_DSN}
       SHOPWARE_ES_ENABLED: ${OPENSEARCH_ENABLED:-true}
       SHOPWARE_ES_INDEXING_ENABLED: ${OPENSEARCH_INDEXING_ENABLED:-true}
@@ -219,7 +219,7 @@ services:
       OPENSEARCH_URL: http://opensearch:9200
       OPENSEARCH_ENABLED: ${OPENSEARCH_ENABLED:-true}
       OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: ${REDIS_URL}
       MAILER_DSN: ${MAILER_DSN}
     volumes:
       - log-data-prod:/var/www/html/var/log:delegated
@@ -259,7 +259,7 @@ services:
       OPENSEARCH_URL: http://opensearch:9200
       OPENSEARCH_ENABLED: ${OPENSEARCH_ENABLED:-true}
       OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: ${REDIS_URL}
       MAILER_DSN: ${MAILER_DSN}
     volumes:
       - log-data-prod:/var/www/html/var/log:delegated

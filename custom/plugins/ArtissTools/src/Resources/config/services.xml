@@ -254,6 +254,12 @@
             <tag name="console.command"/>
         </service>
 
+        <!-- Product Resave Command -->
+        <service id="ArtissTools\Command\ResaveProductCommand">
+            <argument type="service" id="product.repository"/>
+            <tag name="console.command"/>
+        </service>
+
         <!-- Subscribers -->
         <service id="ArtissTools\Subscriber\PluginLifecycleSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>

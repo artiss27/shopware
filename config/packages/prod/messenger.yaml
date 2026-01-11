@@ -4,7 +4,7 @@ framework:
 
         transports:
             async:
-                dsn: '%env(REDIS_URL)%'
+                dsn: '%env(MESSENGER_REDIS_URL)%'
                 options:
                     stream_max_entries: 10000
                     delete_after_ack: true
