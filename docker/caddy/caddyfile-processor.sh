@@ -26,7 +26,10 @@ CADDY_HOST_CLEANED=$(echo "$CADDY_HOST" | sed -e 's|^http://||' -e 's|^https://|
 export CADDY_HOST="$CADDY_HOST_CLEANED"
 
 # Process with envsubst - write to /tmp first (always writable)
-envsubst '${CADDY_HOST}' < "$CADDYFILE_SRC" > "$CADDYFILE_DST_TMP"
+# First, replace Caddy syntax {$CADDY_HOST} with envsubst syntax ${CADDY_HOST}
+# Then use envsubst to replace ${CADDY_HOST} with actual value
+sed -e 's|{$CADDY_HOST}|${CADDY_HOST}|g' "$CADDYFILE_SRC" | \
+    envsubst '${CADDY_HOST}' > "$CADDYFILE_DST_TMP"
 
 # Try to copy to /etc/caddy/Caddyfile if we have permissions, otherwise use /tmp version
 if cp "$CADDYFILE_DST_TMP" "$CADDYFILE_DST" 2>/dev/null; then
