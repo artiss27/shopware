@@ -66,6 +66,8 @@ Product listing enhancements.
 
     .product-name {
         transition: color 0.2s ease;
+        height: 4rem;
+        display: block;
     }
 
     .product-variant-characteristics {
