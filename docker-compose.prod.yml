@@ -70,11 +70,11 @@ services:
       OPENSEARCH_JAVA_OPTS: "-Xms2g -Xmx2g"
       bootstrap.memory_lock: 'false'
     healthcheck:
-      test: ["CMD-SHELL", "curl -f https://localhost:9200/_cluster/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'" ]
       start_period: 90s
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      interval: 15s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
     deploy:
       resources:
